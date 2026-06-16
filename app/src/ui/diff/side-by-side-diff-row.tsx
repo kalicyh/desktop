@@ -473,7 +473,7 @@ export class SideBySideDiffRow extends React.Component<
       case DiffHunkExpansionType.Up:
         return {
           icon: octicons.foldUp,
-          title: 'Expand Up',
+          title: t('diff.expand.up'),
           handler: this.onExpandHunk(hunkIndex, expansionType),
         }
       // This can only be the last dummy hunk. In this case, we expand the
@@ -481,13 +481,13 @@ export class SideBySideDiffRow extends React.Component<
       case DiffHunkExpansionType.Down:
         return {
           icon: octicons.foldDown,
-          title: 'Expand Down',
+          title: t('diff.expand.down'),
           handler: this.onExpandHunk(hunkIndex - 1, expansionType),
         }
       case DiffHunkExpansionType.Short:
         return {
           icon: octicons.fold,
-          title: 'Expand All',
+          title: t('diff.expand.all'),
           handler: this.onExpandHunk(hunkIndex, expansionType),
         }
     }
