@@ -7382,7 +7382,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
         if (match === null) {
           this.emitError(
             new ExternalEditorError(
-              `No suitable editors installed for GitHub Desktop to launch. Install ${suggestedExternalEditor.name} for your platform and restart GitHub Desktop to try again.`,
+              t('editor.error.noSuitableEditors', {
+                editor: suggestedExternalEditor.name,
+              }),
               { suggestDefaultEditor: true }
             )
           )
@@ -7416,7 +7418,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       if (match === null) {
         this.emitError(
           new ExternalEditorError(
-            `No suitable editors installed for GitHub Desktop to launch. Install ${suggestedExternalEditor.name} for your platform and restart GitHub Desktop to try again.`,
+            t('editor.error.noSuitableEditors', {
+              editor: suggestedExternalEditor.name,
+            }),
             { suggestDefaultEditor: true }
           )
         )
