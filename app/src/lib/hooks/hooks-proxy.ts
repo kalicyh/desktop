@@ -6,6 +6,7 @@ import { resolveGitBinary } from 'dugite'
 import { ShellEnvResult } from './get-shell-env'
 import { shellFriendlyNames } from './config'
 import { Writable } from 'stream'
+import { t } from '../i18n'
 
 const ignoredOnFailureHooks = [
   'post-applypatch',
@@ -120,19 +121,25 @@ export const createHooksProxy = (
     const shellEnv = await getShellEnv(proxyCwd)
 
     if (shellEnv.kind === 'failure') {
-      let errMsg = `Failed to load shell environment for hook ${hookName}.`
+      let errMsg = t('hooksProxy.error.loadShellEnvironmentFailed', {
+        hookName,
+      })
       debug(errMsg)
 
       if (shellEnv.shellKind) {
         const friendlyName = shellFriendlyNames[shellEnv.shellKind]
         if (shellEnv.shellKind === 'git-bash') {
-          errMsg += `\n${friendlyName} not found. Please ensure Git for Windows is installed and added to your PATH.`
+          errMsg += `\n${t('hooksProxy.error.gitBashNotFound', {
+            shell: friendlyName,
+          })}`
         } else {
-          errMsg += `\n${friendlyName} not found. Please ensure it's installed and added to your PATH.`
+          errMsg += `\n${t('hooksProxy.error.shellNotFound', {
+            shell: friendlyName,
+          })}`
         }
       }
 
-      errMsg += '\n\nConfigure the shell to use in Preferences > Git > Hooks.'
+      errMsg += `\n\n${t('hooksProxy.error.configureShell')}`
 
       return exitWithError(conn, errMsg)
     }
