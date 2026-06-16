@@ -311,9 +311,7 @@ export class CompareSidebar extends React.Component<
       )
     ) {
       defaultErrorHandler(
-        new Error(
-          `Unable to reorder. Reordering replays all commits up to the last one required for the reorder. A merge commit cannot exist among those commits.`
-        ),
+        new Error(t('history.reorderMergeCommitError')),
         this.props.dispatcher
       )
       return

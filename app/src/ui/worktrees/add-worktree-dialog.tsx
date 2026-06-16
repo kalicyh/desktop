@@ -121,7 +121,7 @@ export class AddWorktreeDialog extends React.Component<
 
     if (!worktree) {
       this.props.dispatcher.postError(
-        new Error('Failed to find the newly created worktree')
+        new Error(t('worktree.add.error.createdWorktreeNotFound'))
       )
       this.setState({ creating: false })
       return
