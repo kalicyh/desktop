@@ -7,6 +7,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Ref } from '../lib/ref'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { t } from '../../lib/i18n'
 
 interface IDeleteBranchProps {
   readonly dispatcher: Dispatcher
@@ -39,7 +40,7 @@ export class DeleteBranch extends React.Component<
     return (
       <Dialog
         id="delete-branch"
-        title={__DARWIN__ ? 'Delete Branch' : 'Delete branch'}
+        title={t('deleteBranch.title')}
         type="warning"
         onSubmit={this.deleteBranch}
         onDismissed={this.props.onDismissed}
@@ -51,15 +52,19 @@ export class DeleteBranch extends React.Component<
         <DialogContent>
           <div id="delete-branch-confirmation-message">
             <p>
-              Delete branch <Ref>{this.props.branch.name}</Ref>?
+              {t('deleteBranch.confirmPrefix')}{' '}
+              <Ref>{this.props.branch.name}</Ref>?
             </p>
-            <p>This action cannot be undone.</p>
+            <p>{t('deleteBranch.cannotBeUndone')}</p>
 
             {this.renderDeleteOnRemote()}
           </div>
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup destructive={true} okButtonText="Delete" />
+          <OkCancelButtonGroup
+            destructive={true}
+            okButtonText={t('dialog.delete')}
+          />
         </DialogFooter>
       </Dialog>
     )
@@ -70,13 +75,10 @@ export class DeleteBranch extends React.Component<
       return (
         <div>
           <p id="delete-branch-confirmation-message-remote">
-            <strong>
-              The branch also exists on the remote, do you wish to delete it
-              there as well?
-            </strong>
+            <strong>{t('deleteBranch.remoteAlsoExists')}</strong>
           </p>
           <Checkbox
-            label="Yes, delete this branch on the remote"
+            label={t('deleteBranch.deleteRemoteCheckbox')}
             value={
               this.state.includeRemoteBranch
                 ? CheckboxValue.On

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { encodePathAsUrl } from '../../lib/path'
 import { Button } from '../lib/button'
 import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
+import { t } from '../../lib/i18n'
 
 const BlankSlateImage = encodePathAsUrl(
   __dirname,
@@ -24,10 +25,10 @@ export class NoBranches extends React.Component<INoBranchesProps> {
         <div className="no-branches">
           <img src={BlankSlateImage} className="blankslate-image" alt="" />
 
-          <div className="title">Sorry, I can't find that branch</div>
+          <div className="title">{t('branches.noBranches.title')}</div>
 
           <div className="subtitle">
-            Do you want to create a new branch instead?
+            {t('branches.noBranches.createInstead')}
           </div>
 
           <Button
@@ -35,7 +36,7 @@ export class NoBranches extends React.Component<INoBranchesProps> {
             onClick={this.props.onCreateNewBranch}
             type="submit"
           >
-            {__DARWIN__ ? 'Create New Branch' : 'Create new branch'}
+            {t('branches.noBranches.createNewBranch')}
           </Button>
 
           <div className="protip">
@@ -44,7 +45,7 @@ export class NoBranches extends React.Component<INoBranchesProps> {
               darwinKeys={['⌘', '⇧', 'N']}
               keys={['Ctrl', 'Shift', 'N']}
             />{' '}
-            to quickly create a new branch from anywhere within the app
+            {t('branches.noBranches.proTipSuffix')}
           </div>
         </div>
       )
@@ -52,7 +53,7 @@ export class NoBranches extends React.Component<INoBranchesProps> {
 
     return (
       <div className="no-branches">
-        {this.props.noBranchesMessage ?? "Sorry, I can't find that branch"}
+        {this.props.noBranchesMessage ?? t('branches.noBranches.title')}
       </div>
     )
   }

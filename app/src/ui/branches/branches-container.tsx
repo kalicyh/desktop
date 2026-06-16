@@ -39,6 +39,7 @@ import {
 import { PullRequestQuickView } from '../pull-request-quick-view'
 import { Emoji } from '../../lib/emoji'
 import classNames from 'classnames'
+import { t } from '../../lib/i18n'
 
 interface IBranchesContainerProps {
   readonly dispatcher: Dispatcher
@@ -213,9 +214,9 @@ export class BranchesContainer extends React.Component<
         selectedIndex={this.props.selectedTab}
         allowDragOverSwitching={true}
       >
-        <span id="branches-tab">Branches</span>
+        <span id="branches-tab">{t('branches.tabs.branches')}</span>
         <span id="pull-requests-tab" className="pull-request-tab">
-          {__DARWIN__ ? 'Pull Requests' : 'Pull requests'}
+          {t('branches.tabs.pullRequests')}
           {this.renderOpenPullRequestsBubble()}
         </span>
       </TabBar>
@@ -314,7 +315,7 @@ export class BranchesContainer extends React.Component<
       return null
     }
 
-    const label = __DARWIN__ ? 'New Branch' : 'New branch'
+    const label = t('branches.newBranch')
 
     return (
       /**

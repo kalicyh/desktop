@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Repository } from '../../models/repository'
 import { Ref } from '../lib/ref'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { t } from '../../lib/i18n'
 
 interface IPushBranchCommitsProps {
   readonly dispatcher: Dispatcher
@@ -41,10 +42,10 @@ interface IPushBranchCommitsState {
  *                        to it can be paired with a zero digit or a number
  *                        greater than one.
  */
-function pluralize(numberOfCommits: number, unit: string) {
+function formatLocalCommitCount(numberOfCommits: number) {
   return numberOfCommits === 1
-    ? `${numberOfCommits} ${unit}`
-    : `${numberOfCommits} ${unit}s`
+    ? t('branches.push.oneLocalCommit')
+    : t('branches.push.localCommitCount', { count: numberOfCommits })
 }
 
 /**
@@ -101,26 +102,28 @@ export class PushBranchCommits extends React.Component<
       return (
         <DialogContent>
           <p id="push-branch-commits-title">
-            Your branch must be published before opening a pull request.
+            {t('branches.push.mustPublishBeforePullRequest')}
           </p>
           <p id="push-branch-commits-message">
-            Would you like to publish <Ref>{this.props.branch.name}</Ref> now
-            and open a pull request?
+            {t('branches.push.publishNowPrefix')}{' '}
+            <Ref>{this.props.branch.name}</Ref>{' '}
+            {t('branches.push.publishNowSuffix')}
           </p>
         </DialogContent>
       )
     }
 
-    const localCommits = pluralize(this.props.unPushedCommits, 'local commit')
+    const localCommits = formatLocalCommitCount(this.props.unPushedCommits)
 
     return (
       <DialogContent>
         <p id="push-branch-commits-title">
-          You have {localCommits} that haven't been pushed to the remote yet.
+          {t('branches.push.unpushedCommits', { localCommits })}
         </p>
         <p id="push-branch-commits-message">
-          Would you like to push your changes to{' '}
-          <Ref>{this.props.branch.name}</Ref> before creating your pull request?
+          {t('branches.push.pushBeforePullRequestPrefix')}{' '}
+          <Ref>{this.props.branch.name}</Ref>{' '}
+          {t('branches.push.pushBeforePullRequestSuffix')}
         </p>
       </DialogContent>
     )
@@ -128,27 +131,23 @@ export class PushBranchCommits extends React.Component<
 
   private renderDialogTitle() {
     if (renderPublishView(this.props.unPushedCommits)) {
-      return __DARWIN__ ? 'Publish Branch?' : 'Publish branch?'
+      return t('branches.push.publishTitle')
     }
 
-    return __DARWIN__ ? `Push Local Changes?` : `Push local changes?`
+    return t('branches.push.pushTitle')
   }
 
   private renderButtonGroup() {
     if (renderPublishView(this.props.unPushedCommits)) {
       return (
-        <OkCancelButtonGroup
-          okButtonText={__DARWIN__ ? 'Publish Branch' : 'Publish branch'}
-        />
+        <OkCancelButtonGroup okButtonText={t('branches.push.publishButton')} />
       )
     }
 
     return (
       <OkCancelButtonGroup
-        okButtonText={__DARWIN__ ? 'Push Commits' : 'Push commits'}
-        cancelButtonText={
-          __DARWIN__ ? 'Create Without Pushing' : 'Create without pushing'
-        }
+        okButtonText={t('branches.push.pushCommits')}
+        cancelButtonText={t('branches.push.createWithoutPushing')}
         onCancelButtonClick={this.onCreateWithoutPushButtonClick}
       />
     )

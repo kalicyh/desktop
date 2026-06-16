@@ -10,6 +10,7 @@ import {
 } from './branch-renderer'
 import { IBranchListItem } from './group-branches'
 import { Repository } from '../../models/repository'
+import { t } from '../../lib/i18n'
 
 interface IBranchSelectProps {
   readonly repository: Repository
@@ -111,14 +112,16 @@ export class BranchSelect extends React.Component<
 
     const buttonContent = (
       <>
-        <span className="popover-dropdown-button-label">base:</span>
+        <span className="popover-dropdown-button-label">
+          {t('branches.baseLabel')}:
+        </span>
         {selectedBranch?.name ?? ''}
       </>
     )
 
     return (
       <PopoverDropdown
-        contentTitle="Choose a base branch"
+        contentTitle={t('branches.chooseBaseBranch')}
         buttonContent={buttonContent}
         ref={this.popoverRef}
       >

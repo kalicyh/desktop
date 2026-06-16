@@ -9,6 +9,7 @@ import { startTimer } from '../lib/timing'
 import { Ref } from '../lib/ref'
 import { RefNameTextBox } from '../lib/ref-name-text-box'
 import { enablePreviousTagSuggestions } from '../../lib/feature-flag'
+import { t } from '../../lib/i18n'
 
 interface ICreateTagProps {
   readonly repository: Repository
@@ -56,7 +57,7 @@ export class CreateTag extends React.Component<
     return (
       <Dialog
         id="create-tag"
-        title={__DARWIN__ ? 'Create a Tag' : 'Create a tag'}
+        title={t('tag.create.title')}
         onSubmit={this.createTag}
         onDismissed={this.props.onDismissed}
         loading={this.state.isCreatingTag}
@@ -66,7 +67,7 @@ export class CreateTag extends React.Component<
 
         <DialogContent>
           <RefNameTextBox
-            label="Name"
+            label={t('tag.nameLabel')}
             initialValue={this.props.initialName}
             onValueChange={this.updateTagName}
           />
@@ -76,7 +77,7 @@ export class CreateTag extends React.Component<
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Create Tag' : 'Create tag'}
+            okButtonText={t('tag.create.button')}
             okButtonDisabled={disabled}
           />
         </DialogFooter>
@@ -96,14 +97,14 @@ export class CreateTag extends React.Component<
       return null
     }
 
-    const title = __DARWIN__ ? 'Previous Tags' : 'Previous tags'
+    const title = t('tag.previous.title')
     const lastThreeTags = previousTags.slice(-3)
 
     return (
       <>
         <p>{title}</p>
         {lastThreeTags.length === 0 ? (
-          <p>{`No matches found for '${tagName}'`}</p>
+          <p>{t('tag.previous.noMatches', { tagName })}</p>
         ) : (
           lastThreeTags.map((item: string, index: number) => (
             <Ref key={index}>{item}</Ref>
@@ -115,9 +116,7 @@ export class CreateTag extends React.Component<
 
   private getCurrentError(): JSX.Element | null {
     if (this.state.tagName.length > MaxTagNameLength) {
-      return (
-        <>The tag name cannot be longer than {MaxTagNameLength} characters</>
-      )
+      return <>{t('tag.error.tooLong', { count: MaxTagNameLength })}</>
     }
 
     const alreadyExists =
@@ -125,7 +124,8 @@ export class CreateTag extends React.Component<
     if (alreadyExists) {
       return (
         <>
-          A tag named <Ref>{this.state.tagName}</Ref> already exists
+          {t('tag.error.alreadyExistsPrefix')} <Ref>{this.state.tagName}</Ref>{' '}
+          {t('tag.error.alreadyExistsSuffix')}
         </>
       )
     }

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { encodePathAsUrl } from '../../lib/path'
 import { Ref } from '../lib/ref'
 import { LinkButton } from '../lib/link-button'
+import { t } from '../../lib/i18n'
 
 const BlankSlateImage = encodePathAsUrl(
   __dirname,
@@ -42,15 +43,20 @@ export class NoPullRequests extends React.Component<INoPullRequestsProps, {}> {
 
   private renderTitle() {
     if (this.props.isSearch) {
-      return <div className="title">Sorry, I can't find that pull request!</div>
+      return (
+        <div className="title">{t('branches.noPullRequests.notFound')}</div>
+      )
     } else if (this.props.isLoadingPullRequests) {
-      return <div className="title">Hang tight</div>
+      return (
+        <div className="title">{t('branches.noPullRequests.hangTight')}</div>
+      )
     } else {
       return (
         <div>
-          <div className="title">You're all set!</div>
+          <div className="title">{t('branches.noPullRequests.allSet')}</div>
           <div className="no-prs">
-            No open pull requests in <Ref>{this.props.repositoryName}</Ref>
+            {t('branches.noPullRequests.noneOpenPrefix')}{' '}
+            <Ref>{this.props.repositoryName}</Ref>
           </div>
         </div>
       )
@@ -61,7 +67,7 @@ export class NoPullRequests extends React.Component<INoPullRequestsProps, {}> {
     if (this.props.isLoadingPullRequests) {
       return (
         <div className="call-to-action">
-          Loading pull requests as fast as I can!
+          {t('branches.noPullRequests.loading')}
         </div>
       )
     }
@@ -69,21 +75,21 @@ export class NoPullRequests extends React.Component<INoPullRequestsProps, {}> {
     if (this.props.isOnDefaultBranch) {
       return (
         <div className="call-to-action">
-          Would you like to{' '}
+          {t('branches.noPullRequests.wouldYouLikeTo')}{' '}
           <LinkButton onClick={this.props.onCreateBranch}>
-            create a new branch
+            {t('branches.noPullRequests.createNewBranch')}
           </LinkButton>{' '}
-          and get going on your next project?
+          {t('branches.noPullRequests.defaultBranchSuffix')}
         </div>
       )
     } else {
       return (
         <div className="call-to-action">
-          Would you like to{' '}
+          {t('branches.noPullRequests.wouldYouLikeTo')}{' '}
           <LinkButton onClick={this.props.onCreatePullRequest}>
-            create a pull request
+            {t('branches.noPullRequests.createPullRequest')}
           </LinkButton>{' '}
-          from the current branch?
+          {t('branches.noPullRequests.currentBranchSuffix')}
         </div>
       )
     }
