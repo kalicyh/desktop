@@ -4578,8 +4578,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   ) {
     this.updateCheckoutProgress(repository, {
       kind: 'checkout',
-      title: `Refreshing ${__DARWIN__ ? 'Repository' : 'repository'}`,
-      description: 'Checking out',
+      title: t('progress.refreshingRepository'),
+      description: t('progress.checkingOut'),
       value: 1,
       target: commitish,
     })
@@ -5220,15 +5220,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
             })
           })
 
-          const refreshTitle = __DARWIN__
-            ? 'Refreshing Repository'
-            : 'Refreshing repository'
+          const refreshTitle = t('progress.refreshingRepository')
           const refreshStartProgress = pushWeight + fetchWeight
 
           this.updatePushPullFetchProgress(repository, {
             kind: 'generic',
             title: refreshTitle,
-            description: 'Fast-forwarding branches',
+            description: t('progress.fastForwardingBranches'),
             value: refreshStartProgress,
           })
 
@@ -5479,14 +5477,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
           }
 
           const refreshStartProgress = pullWeight + fetchWeight
-          const refreshTitle = __DARWIN__
-            ? 'Refreshing Repository'
-            : 'Refreshing repository'
+          const refreshTitle = t('progress.refreshingRepository')
 
           this.updatePushPullFetchProgress(repository, {
             kind: 'generic',
             title: refreshTitle,
-            description: 'Fast-forwarding branches',
+            description: t('progress.fastForwardingBranches'),
             value: refreshStartProgress,
           })
 
@@ -5854,14 +5850,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
           )
         }
 
-        const refreshTitle = __DARWIN__
-          ? 'Refreshing Repository'
-          : 'Refreshing repository'
+        const refreshTitle = t('progress.refreshingRepository')
 
         this.updatePushPullFetchProgress(repository, {
           kind: 'generic',
           title: refreshTitle,
-          description: 'Fast-forwarding branches',
+          description: t('progress.fastForwardingBranches'),
           value: fetchWeight,
         })
 
