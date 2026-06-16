@@ -29,8 +29,10 @@ import {
 } from '../../../lib/status'
 import { revealInFileManager } from '../../../lib/app-shell'
 import { DialogPreferredFocusClassName } from '../../dialog'
+import { t } from '../../../lib/i18n'
 
-const defaultConflictsResolvedMessage = 'No conflicts remaining'
+const defaultConflictsResolvedMessage = () =>
+  t('multiCommit.conflicts.noConflictsRemaining')
 
 /**
  * Renders an unmerged file status and associated buttons for the merge conflicts modal
@@ -151,7 +153,7 @@ const renderResolvedFile: React.FunctionComponent<{
         <PathText path={props.path} />
         <div className="file-conflicts-status">{fileStatusSummary}</div>
       </div>
-      {fileStatusSummary === defaultConflictsResolvedMessage ? null : (
+      {fileStatusSummary === defaultConflictsResolvedMessage() ? null : (
         <Button
           className="undo-button"
           onClick={makeUndoManualResolutionClickHandler(
@@ -161,7 +163,7 @@ const renderResolvedFile: React.FunctionComponent<{
           )}
           ariaDescribedBy={props.path}
         >
-          Undo
+          {t('multiCommit.conflicts.undo')}
         </Button>
       )}
       <div className="green-circle">
@@ -202,10 +204,10 @@ const renderManualConflictedFile: React.FunctionComponent<{
   const { ourBranch, theirBranch } = props
   const { entry } = props.status
 
-  let conflictTypeString = manualConflictString
+  let conflictTypeString = t('multiCommit.conflicts.manualConflict')
 
   if ([entry.us, entry.them].includes(GitStatusEntry.Deleted)) {
-    let targetBranch = 'target branch'
+    let targetBranch = t('multiCommit.conflicts.targetBranch')
     if (entry.us === GitStatusEntry.Deleted && ourBranch !== undefined) {
       targetBranch = ourBranch
     }
@@ -213,7 +215,9 @@ const renderManualConflictedFile: React.FunctionComponent<{
     if (entry.them === GitStatusEntry.Deleted && theirBranch !== undefined) {
       targetBranch = theirBranch
     }
-    conflictTypeString = `File does not exist on ${targetBranch}.`
+    conflictTypeString = t('multiCommit.conflicts.fileDoesNotExistOnBranch', {
+      branch: targetBranch,
+    })
   }
 
   const resolveButtonClassName = props.isFirstConflictedFile
@@ -232,7 +236,7 @@ const renderManualConflictedFile: React.FunctionComponent<{
           onClick={onDropdownClick}
           onKeyDown={onDropdownKeyDown}
         >
-          Resolve
+          {t('multiCommit.conflicts.resolve')}
           <Octicon symbol={octicons.triangleDown} />
         </Button>
       </div>
@@ -321,7 +325,7 @@ const renderConflictedFileWithConflictMarkers: React.FunctionComponent<{
           onClick={onDropdownClick}
           onKeyDown={onDropdownKeyDown}
           className="small-button button-group-item arrow-menu"
-          ariaLabel="File resolution options"
+          ariaLabel={t('multiCommit.conflicts.fileResolutionOptions')}
           ariaHaspopup="menu"
           ariaExpanded={props.isFileResolutionOptionsMenuOpen}
         >
@@ -477,7 +481,7 @@ function resolvedFileStatusString(
   if (manualResolution === ManualConflictResolution.theirs) {
     return getUnmergedStatusEntryDescription(status.entry.them, branch)
   }
-  return defaultConflictsResolvedMessage
+  return defaultConflictsResolvedMessage()
 }
 
 const getResolvedFileStatusSummary = (
@@ -489,7 +493,7 @@ const getResolvedFileStatusSummary = (
     isConflictWithMarkers(status) && status.conflictMarkerCount === 0
 
   return noConflictMarkers
-    ? defaultConflictsResolvedMessage
+    ? defaultConflictsResolvedMessage()
     : resolvedFileStatusString(status, manualResolution, branch)
 }
 
@@ -520,8 +524,9 @@ function calculateConflicts(conflictMarkers: number) {
 }
 
 function editorButtonString(editorName: string | null): string {
-  const defaultEditorString = 'editor'
-  return `Open in ${editorName || defaultEditorString}`
+  return t('multiCommit.conflicts.openInEditor', {
+    editor: editorName || t('multiCommit.conflicts.editor'),
+  })
 }
 
 function editorButtonTooltip(editorName: string | null): string | undefined {
@@ -531,10 +536,8 @@ function editorButtonTooltip(editorName: string | null): string | undefined {
   }
 
   if (__DARWIN__) {
-    return `No editor configured in Preferences > Advanced`
+    return t('multiCommit.conflicts.noEditorConfiguredMac')
   } else {
-    return `No editor configured in Options > Advanced`
+    return t('multiCommit.conflicts.noEditorConfiguredWindows')
   }
 }
-
-const manualConflictString = 'Manual conflict'
