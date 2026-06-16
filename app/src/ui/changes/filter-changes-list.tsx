@@ -66,7 +66,6 @@ import { IMatches } from '../../lib/fuzzy-find'
 import { TextBox } from '../lib/text-box'
 import { Button } from '../lib/button'
 import { LinkButton } from '../lib/link-button'
-import { plural } from '../lib/plural'
 import {
   isCommittingFileHiddenByFilter,
   getNoResultsMessage,
@@ -1247,10 +1246,14 @@ export class FilterChangesList extends React.Component<
     const disableAllCheckbox =
       files.length === 0 || isCommitting || rebaseConflictState !== null
 
-    const checkAllLabel = `${
-      visibleFiles !== files.length ? `${formatNumber(visibleFiles)} of ` : ''
-    }
-    ${formatNumber(files.length)} changed file${plural(files.length)}`
+    const changedFileCount = this.getChangedFileCountText(files.length)
+    const checkAllLabel =
+      visibleFiles !== files.length
+        ? t('changes.list.visibleOfTotal', {
+            visible: formatNumber(visibleFiles),
+            total: changedFileCount,
+          })
+        : changedFileCount
 
     return (
       <div className="checkbox-container">
@@ -1310,7 +1313,16 @@ export class FilterChangesList extends React.Component<
 
   private getListAriaLabel = () => {
     const { files } = this.props.workingDirectory
-    return `${formatNumber(files.length)} changed file${plural(files.length)}`
+    return this.getChangedFileCountText(files.length)
+  }
+
+  private getChangedFileCountText(count: number) {
+    return t(
+      count === 1
+        ? 'changes.list.changedFileCount.one'
+        : 'changes.list.changedFileCount.other',
+      { count: formatNumber(count) }
+    )
   }
 
   public render() {

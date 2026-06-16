@@ -1,5 +1,7 @@
 import * as React from 'react'
 import { encodePathAsUrl } from '../../lib/path'
+import { formatNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
 
 const BlankSlateImage = encodePathAsUrl(
   __dirname,
@@ -19,7 +21,14 @@ export class MultipleSelection extends React.Component<
     return (
       <div className="panel blankslate" id="no-changes">
         <img src={BlankSlateImage} className="blankslate-image" alt="" />
-        <div>{this.props.count} files selected</div>
+        <div>
+          {t(
+            this.props.count === 1
+              ? 'changes.multipleSelection.filesSelected.one'
+              : 'changes.multipleSelection.filesSelected.other',
+            { count: formatNumber(this.props.count) }
+          )}
+        </div>
       </div>
     )
   }

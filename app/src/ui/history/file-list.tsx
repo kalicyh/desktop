@@ -1,9 +1,8 @@
 import * as React from 'react'
-import { mapStatus } from '../../lib/status'
-
 import { CommittedFileChange } from '../../models/status'
 import { ClickSource, List } from '../lib/list'
 import { CommittedFileItem } from './committed-file-item'
+import { getLocalizedStatus } from '../lib/localized-status'
 
 interface IFileListProps {
   readonly files: ReadonlyArray<CommittedFileChange>
@@ -64,7 +63,7 @@ export class FileList extends React.Component<IFileListProps, IFileListState> {
   private getFileAriaLabel = (row: number) => {
     const file = this.props.files[row]
     const { path, status } = file
-    const fileStatus = mapStatus(status)
+    const fileStatus = getLocalizedStatus(status)
     return `${path} ${fileStatus}`
   }
 

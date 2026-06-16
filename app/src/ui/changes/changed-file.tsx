@@ -10,6 +10,7 @@ import { TooltippedContent } from '../lib/tooltipped-content'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
 import { IMatches } from '../../lib/fuzzy-find'
 import { t } from '../../lib/i18n'
+import { getLocalizedStatus } from '../lib/localized-status'
 
 interface IChangedFileProps {
   readonly file: WorkingDirectoryFileChange
@@ -54,6 +55,7 @@ export class ChangedFile extends React.Component<IChangedFileProps, {}> {
     } = this.props
     const { status, path } = file
     const fileStatus = mapStatus(status)
+    const localizedFileStatus = getLocalizedStatus(status)
 
     const listItemPadding = 10 * 2
     const checkboxWidth = 20
@@ -74,9 +76,7 @@ export class ChangedFile extends React.Component<IChangedFileProps, {}> {
         ? t('changes.file.partiallyIncluded')
         : t('changes.file.notIncluded')
 
-    const pathScreenReaderMessage = `${path} ${mapStatus(
-      status
-    )} ${includedText}`
+    const pathScreenReaderMessage = `${path} ${localizedFileStatus} ${includedText}`
 
     return (
       <div className="file">
@@ -108,7 +108,7 @@ export class ChangedFile extends React.Component<IChangedFileProps, {}> {
         <TooltippedContent
           ancestorFocused={focused}
           openOnFocus={true}
-          tooltip={fileStatus}
+          tooltip={localizedFileStatus}
           direction={TooltipDirection.EAST}
         >
           <Octicon

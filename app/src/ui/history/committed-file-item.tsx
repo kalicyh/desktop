@@ -6,6 +6,7 @@ import { PathLabel } from '../lib/path-label'
 import { Octicon, iconForStatus } from '../octicons'
 import { TooltippedContent } from '../lib/tooltipped-content'
 import { TooltipDirection } from '../lib/tooltip'
+import { getLocalizedStatus } from '../lib/localized-status'
 
 interface ICommittedFileItemProps {
   readonly availableWidth: number
@@ -18,6 +19,7 @@ export class CommittedFileItem extends React.Component<ICommittedFileItemProps> 
     const { file, focused } = this.props
     const { status } = file
     const fileStatus = mapStatus(status)
+    const localizedFileStatus = getLocalizedStatus(status)
 
     const listItemPadding = 10 * 2
     const statusWidth = 16
@@ -39,7 +41,7 @@ export class CommittedFileItem extends React.Component<ICommittedFileItemProps> 
         <TooltippedContent
           ancestorFocused={focused}
           openOnFocus={true}
-          tooltip={fileStatus}
+          tooltip={localizedFileStatus}
           direction={TooltipDirection.NORTH}
         >
           <Octicon
