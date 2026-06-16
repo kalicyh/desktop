@@ -17,6 +17,7 @@ import { kStringMaxLength } from 'buffer'
 import { withHooksEnv } from '../hooks/with-hooks-env'
 import { coerceToString } from './coerce-to-string'
 import { pushTerminalChunk } from './push-terminal-chunk'
+import { t } from '../i18n'
 
 export const isMaxBufferExceededError = (
   error: unknown
@@ -450,116 +451,111 @@ export function getDescriptionForError(
 ): string | null {
   if (isAuthFailureError(error)) {
     const menuHint = __DARWIN__
-      ? 'GitHub Desktop > Settings.'
-      : 'File > Options.'
-    return `Authentication failed. Some common reasons include:
-
-- You are not logged in to your account: see ${menuHint}
-- You may need to log out and log back in to refresh your token.
-- You do not have permission to access this repository.
-- The repository is archived on GitHub. Check the repository settings to confirm you are still permitted to push commits.
-- If you use SSH authentication, check that your key is added to the ssh-agent and associated with your account.
-- If you use SSH authentication, ensure the host key verification passes for your repository hosting service.
-- If you used username / password authentication, you might need to use a Personal Access Token instead of your account password. Check the documentation of your repository hosting service.`
+      ? t('git.error.auth.menuHint.mac')
+      : t('git.error.auth.menuHint.windows')
+    return t('git.error.authenticationFailed', { menuHint })
   }
 
   switch (error) {
     case DugiteError.BadConfigValue:
       const errorInfo = parseBadConfigValueErrorInfo(stderr)
       if (errorInfo === null) {
-        return 'Unsupported git configuration value.'
+        return t('git.error.badConfigValue')
       }
 
-      return `Unsupported value '${errorInfo.value}' for git config key '${errorInfo.key}'`
+      return t('git.error.badConfigValueWithDetails', {
+        value: errorInfo.value,
+        key: errorInfo.key,
+      })
     case DugiteError.SSHKeyAuditUnverified:
-      return 'The SSH key is unverified.'
+      return t('git.error.sshKeyUnverified')
     case DugiteError.RemoteDisconnection:
-      return 'The remote disconnected. Check your Internet connection and try again.'
+      return t('git.error.remoteDisconnected')
     case DugiteError.HostDown:
-      return 'The host is down. Check your Internet connection and try again.'
+      return t('git.error.hostDown')
     case DugiteError.RebaseConflicts:
-      return 'We found some conflicts while trying to rebase. Please resolve the conflicts before continuing.'
+      return t('git.error.rebaseConflicts')
     case DugiteError.MergeConflicts:
-      return 'We found some conflicts while trying to merge. Please resolve the conflicts and commit the changes.'
+      return t('git.error.mergeConflicts')
     case DugiteError.HTTPSRepositoryNotFound:
     case DugiteError.SSHRepositoryNotFound:
-      return 'The repository does not seem to exist anymore. You may not have access, or it may have been deleted or renamed.'
+      return t('git.error.repositoryNotFound')
     case DugiteError.PushNotFastForward:
-      return 'The repository has been updated since you last pulled. Try pulling before pushing.'
+      return t('git.error.pushNotFastForward')
     case DugiteError.BranchDeletionFailed:
-      return 'Could not delete the branch. It was probably already deleted.'
+      return t('git.error.branchDeletionFailed')
     case DugiteError.DefaultBranchDeletionFailed:
-      return `The branch is the repository's default branch and cannot be deleted.`
+      return t('git.error.defaultBranchDeletionFailed')
     case DugiteError.RevertConflicts:
-      return 'To finish reverting, please merge and commit the changes.'
+      return t('git.error.revertConflicts')
     case DugiteError.EmptyRebasePatch:
-      return 'There aren’t any changes left to apply.'
+      return t('git.error.emptyRebasePatch')
     case DugiteError.NoMatchingRemoteBranch:
-      return 'There aren’t any remote branches that match the current branch.'
+      return t('git.error.noMatchingRemoteBranch')
     case DugiteError.NothingToCommit:
-      return 'There are no changes to commit.'
+      return t('git.error.nothingToCommit')
     case DugiteError.NoSubmoduleMapping:
-      return 'A submodule was removed from .gitmodules, but the folder still exists in the repository. Delete the folder, commit the change, then try again.'
+      return t('git.error.noSubmoduleMapping')
     case DugiteError.SubmoduleRepositoryDoesNotExist:
-      return 'A submodule points to a location which does not exist.'
+      return t('git.error.submoduleRepositoryDoesNotExist')
     case DugiteError.InvalidSubmoduleSHA:
-      return 'A submodule points to a commit which does not exist.'
+      return t('git.error.invalidSubmoduleSHA')
     case DugiteError.LocalPermissionDenied:
-      return 'Permission denied.'
+      return t('git.error.localPermissionDenied')
     case DugiteError.InvalidMerge:
-      return 'This is not something we can merge.'
+      return t('git.error.invalidMerge')
     case DugiteError.InvalidRebase:
-      return 'This is not something we can rebase.'
+      return t('git.error.invalidRebase')
     case DugiteError.NonFastForwardMergeIntoEmptyHead:
-      return 'The merge you attempted is not a fast-forward, so it cannot be performed on an empty branch.'
+      return t('git.error.nonFastForwardMergeIntoEmptyHead')
     case DugiteError.PatchDoesNotApply:
-      return 'The requested changes conflict with one or more files in the repository.'
+      return t('git.error.patchDoesNotApply')
     case DugiteError.BranchAlreadyExists:
-      return 'A branch with that name already exists.'
+      return t('git.error.branchAlreadyExists')
     case DugiteError.BadRevision:
-      return 'Bad revision.'
+      return t('git.error.badRevision')
     case DugiteError.NotAGitRepository:
-      return 'This is not a git repository.'
+      return t('git.error.notAGitRepository')
     case DugiteError.ProtectedBranchForcePush:
-      return 'This branch is protected from force-push operations.'
+      return t('git.error.protectedBranchForcePush')
     case DugiteError.ProtectedBranchRequiresReview:
-      return 'This branch is protected and any changes requires an approved review. Open a pull request with changes targeting this branch instead.'
+      return t('git.error.protectedBranchRequiresReview')
     case DugiteError.PushWithFileSizeExceedingLimit:
-      return "The push operation includes a file which exceeds GitHub's file size restriction of 100MB. Please remove the file from history and try again."
+      return t('git.error.pushWithFileSizeExceedingLimit')
     case DugiteError.HexBranchNameRejected:
-      return 'The branch name cannot be a 40-character string of hexadecimal characters, as this is the format that Git uses for representing objects.'
+      return t('git.error.hexBranchNameRejected')
     case DugiteError.ForcePushRejected:
-      return 'The force push has been rejected for the current branch.'
+      return t('git.error.forcePushRejected')
     case DugiteError.InvalidRefLength:
-      return 'A ref cannot be longer than 255 characters.'
+      return t('git.error.invalidRefLength')
     case DugiteError.CannotMergeUnrelatedHistories:
-      return 'Unable to merge unrelated histories in this repository.'
+      return t('git.error.cannotMergeUnrelatedHistories')
     case DugiteError.PushWithPrivateEmail:
-      return 'Cannot push these commits as they contain an email address marked as private on GitHub. To push anyway, visit https://github.com/settings/emails, uncheck "Keep my email address private", then switch back to GitHub Desktop to push your commits. You can then enable the setting again.'
+      return t('git.error.pushWithPrivateEmail')
     case DugiteError.LFSAttributeDoesNotMatch:
-      return 'Git LFS attribute found in global Git configuration does not match expected value.'
+      return t('git.error.lfsAttributeDoesNotMatch')
     case DugiteError.ProtectedBranchDeleteRejected:
-      return 'This branch cannot be deleted from the remote repository because it is marked as protected.'
+      return t('git.error.protectedBranchDeleteRejected')
     case DugiteError.ProtectedBranchRequiredStatus:
-      return 'The push was rejected by the remote server because a required status check has not been satisfied.'
+      return t('git.error.protectedBranchRequiredStatus')
     case DugiteError.BranchRenameFailed:
-      return 'The branch could not be renamed.'
+      return t('git.error.branchRenameFailed')
     case DugiteError.PathDoesNotExist:
-      return 'The path does not exist on disk.'
+      return t('git.error.pathDoesNotExist')
     case DugiteError.InvalidObjectName:
-      return 'The object was not found in the Git repository.'
+      return t('git.error.invalidObjectName')
     case DugiteError.OutsideRepository:
-      return 'This path is not a valid path inside the repository.'
+      return t('git.error.outsideRepository')
     case DugiteError.LockFileAlreadyExists:
-      return 'A lock file already exists in the repository, which blocks this operation from completing.'
+      return t('git.error.lockFileAlreadyExists')
     case DugiteError.NoMergeToAbort:
-      return 'There is no merge in progress, so there is nothing to abort.'
+      return t('git.error.noMergeToAbort')
     case DugiteError.NoExistingRemoteBranch:
-      return 'The remote branch does not exist.'
+      return t('git.error.noExistingRemoteBranch')
     case DugiteError.LocalChangesOverwritten:
-      return 'Unable to switch branches as there are working directory changes which would be overwritten. Please commit or stash your changes.'
+      return t('git.error.localChangesOverwritten')
     case DugiteError.UnresolvedConflicts:
-      return 'There are unresolved conflicts in the working directory.'
+      return t('git.error.unresolvedConflicts')
     case DugiteError.ConfigLockFileAlreadyExists:
       // Added in dugite 1.88.0 (https://github.com/desktop/dugite/pull/386)
       // in support of https://github.com/desktop/desktop/issues/8675 but we're
@@ -570,7 +566,7 @@ export function getDescriptionForError(
     case DugiteError.RemoteAlreadyExists:
       return null
     case DugiteError.TagAlreadyExists:
-      return 'A tag with that name already exists'
+      return t('git.error.tagAlreadyExists')
     case DugiteError.MergeWithLocalChanges:
     case DugiteError.RebaseWithLocalChanges:
     case DugiteError.GPGFailedToSignData:
