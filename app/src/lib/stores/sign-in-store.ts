@@ -20,6 +20,7 @@ import { IOAuthAction } from '../parse-app-url'
 import { shell } from '../app-shell'
 import noop from 'lodash/noop'
 import { AccountsStore } from './accounts-store'
+import { t } from '../i18n'
 
 /**
  * An enumeration of the possible steps that the sign in
@@ -421,13 +422,9 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
     } catch (e) {
       let error = e
       if (e.name === InvalidURLErrorName) {
-        error = new Error(
-          `The GitHub Enterprise instance address doesn't appear to be a valid URL. We're expecting something like https://example.ghe.com.`
-        )
+        error = new Error(t('signIn.enterpriseInvalidUrl'))
       } else if (e.name === InvalidProtocolErrorName) {
-        error = new Error(
-          'Unsupported protocol. Only https is supported when authenticating with GitHub Enterprise instances.'
-        )
+        error = new Error(t('signIn.enterpriseInvalidProtocol'))
       }
 
       this.setState({ ...currentState, loading: false, error })

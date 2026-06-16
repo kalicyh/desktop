@@ -8,6 +8,7 @@ import {
 } from '../branches/ci-status'
 import { IAPIWorkflowJobStep } from '../../lib/api'
 import {
+  getCheckRunConclusionAdjective,
   getFormattedCheckRunDuration,
   getFormattedCheckRunLongDuration,
 } from '../../lib/ci-checks/ci-checks'
@@ -47,9 +48,11 @@ export class CICheckRunActionsJobStepListItem extends React.PureComponent<ICIChe
       <li
         className="ci-check-run-job-step"
         ref={this.onStepHeaderRef(step)}
-        aria-label={`${step.name}, ${getFormattedCheckRunLongDuration(
-          step
-        )}, ${getClassNameForCheck(step)}`}
+        aria-label={t('checkRuns.stepAriaLabel', {
+          name: step.name,
+          duration: getFormattedCheckRunLongDuration(step),
+          status: getCheckRunConclusionAdjective(step.conclusion),
+        })}
       >
         <div className="job-step-status-symbol">
           <Octicon
