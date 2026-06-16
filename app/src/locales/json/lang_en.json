@@ -1646,6 +1646,8 @@
   "copilot.byok.provider.validation.bearerTokenRequired": "Please enter a bearer token.",
   "copilot.byok.provider.validation.apiKeyRequired": "Please enter an API key.",
   "copilot.byok.provider.validation.invalidTimeout": "Request timeout must be a positive number of seconds.",
+  "copilot.byok.provider.error.couldNotReadCredential": "Could not read the credential for the custom Copilot provider '{provider}' from the OS keychain: {message}",
+  "copilot.byok.provider.error.missingCredential": "No {credential} is stored for the custom Copilot provider '{provider}'. Open Settings → Copilot → Providers and re-enter the credential.",
   "copilot.byok.confirmDelete.title": "Remove Custom Provider",
   "copilot.byok.confirmDelete.messagePrefix": "Are you sure you want to remove the custom provider",
   "copilot.byok.confirmDelete.remove": "Remove",

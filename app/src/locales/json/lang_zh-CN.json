@@ -1646,6 +1646,8 @@
   "copilot.byok.provider.validation.bearerTokenRequired": "请输入 bearer token。",
   "copilot.byok.provider.validation.apiKeyRequired": "请输入 API key。",
   "copilot.byok.provider.validation.invalidTimeout": "请求超时必须是正数秒。",
+  "copilot.byok.provider.error.couldNotReadCredential": "无法从 OS keychain 读取自定义 Copilot 提供商“{provider}”的凭据：{message}",
+  "copilot.byok.provider.error.missingCredential": "自定义 Copilot 提供商“{provider}”没有保存 {credential}。请打开设置 → Copilot → Providers 并重新输入凭据。",
   "copilot.byok.confirmDelete.title": "移除自定义提供商",
   "copilot.byok.confirmDelete.messagePrefix": "确定要移除自定义提供商",
   "copilot.byok.confirmDelete.remove": "移除",

@@ -10115,18 +10115,23 @@ export class AppStore extends TypedBaseStore<IAppState> {
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e)
         throw new Error(
-          `Could not read the credential for the custom Copilot provider ` +
-            `'${provider.name}' from the OS keychain: ${message}`
+          t('copilot.byok.provider.error.couldNotReadCredential', {
+            provider: provider.name,
+            message,
+          })
         )
       }
     }
 
     if (provider.authKind !== 'none' && (secret === null || secret === '')) {
       throw new Error(
-        `No ${
-          provider.authKind === 'bearer' ? 'bearer token' : 'API key'
-        } is stored for the custom Copilot provider '${provider.name}'. ` +
-          `Open Settings → Copilot → Providers and re-enter the credential.`
+        t('copilot.byok.provider.error.missingCredential', {
+          credential:
+            provider.authKind === 'bearer'
+              ? t('copilot.byok.provider.bearerToken')
+              : t('copilot.byok.provider.apiKey'),
+          provider: provider.name,
+        })
       )
     }
 
