@@ -18,6 +18,11 @@ type LocaleTable = Record<string, string>
 const allowedEnglishTerms = [
   'AI',
   'API',
+  'API key',
+  'base URL',
+  'Base URL',
+  'bearer token',
+  'Bearer token',
   'BYOK',
   'Copilot',
   'Enterprise',
@@ -50,10 +55,12 @@ function diffKeys(source: LocaleTable, target: LocaleTable): string[] {
 }
 
 function stripAllowedEnglish(value: string): string {
-  return allowedEnglishTerms.reduce(
-    (text, term) => text.replace(new RegExp(`\\b${term}\\b`, 'g'), ''),
-    value
-  )
+  return [...allowedEnglishTerms]
+    .sort((a, b) => b.length - a.length)
+    .reduce(
+      (text, term) => text.replace(new RegExp(`\\b${term}\\b`, 'g'), ''),
+      value
+    )
 }
 
 const en = readLocale(enPath)
