@@ -1306,6 +1306,7 @@
   "copilot.byok.provider.addTitle": "Add Custom Provider",
   "copilot.byok.provider.sectionProvider": "Provider",
   "copilot.byok.provider.name": "Name",
+  "copilot.byok.provider.namePlaceholder": "My provider",
   "copilot.byok.provider.type": "Type",
   "copilot.byok.provider.baseUrl": "Base URL",
   "copilot.byok.provider.apiFormat": "API Format",

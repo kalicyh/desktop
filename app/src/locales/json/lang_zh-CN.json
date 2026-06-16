@@ -1306,6 +1306,7 @@
   "copilot.byok.provider.addTitle": "添加自定义提供商",
   "copilot.byok.provider.sectionProvider": "提供商",
   "copilot.byok.provider.name": "名称",
+  "copilot.byok.provider.namePlaceholder": "我的提供商",
   "copilot.byok.provider.type": "类型",
   "copilot.byok.provider.baseUrl": "基础 URL",
   "copilot.byok.provider.apiFormat": "API 格式",
