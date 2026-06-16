@@ -16,6 +16,7 @@ import { ManualConflictResolution } from '../../models/manual-conflict-resolutio
 import { CommitOneLine, shortenSHA } from '../../models/commit'
 import { IRemote } from '../../models/remote'
 import { updateSubmodulesAfterOperation } from './submodule'
+import { t } from '../i18n'
 
 export type ProgressCallback = (progress: ICheckoutProgress) => void
 
@@ -167,7 +168,9 @@ export async function checkoutCommit(
   progressCallback?: ProgressCallback,
   allowFileProtocol: boolean = false
 ): Promise<true> {
-  const title = `Checking out ${__DARWIN__ ? 'Commit' : 'commit'}`
+  const title = __DARWIN__
+    ? t('progress.checkingOutCommit.mac')
+    : t('progress.checkingOutCommit.windows')
   const target = shortenSHA(commit.sha)
   const opts = await getCheckoutOpts(
     repository,

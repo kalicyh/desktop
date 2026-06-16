@@ -13,6 +13,7 @@ import { AccountsStore } from './accounts-store'
 import { IDesktopChecksFailedAliveEvent } from './alive-store'
 import { NotificationsStore } from './notifications-store'
 import { PullRequestCoordinator } from './pull-request-coordinator'
+import { t } from '../i18n'
 
 /**
  * This class allows the TestNotifications dialog to fetch real data to simulate
@@ -229,12 +230,19 @@ export class NotificationsDebugStore {
       check => check.conclusion === APICheckConclusion.Failure
     ).length
 
-    const pluralChecks =
-      numberOfFailedChecks === 1 ? 'check was' : 'checks were'
-
     const shortSHA = shortenSHA(commitSha)
-    const title = 'Pull Request checks failed'
-    const body = `${pullRequest.title} #${pullRequest.pullRequestNumber} (${shortSHA})\n${numberOfFailedChecks} ${pluralChecks} not successful.`
+    const title = t('notifications.checksFailed.notificationTitle')
+    const body = t(
+      numberOfFailedChecks === 1
+        ? 'notifications.checksFailed.notificationBody.one'
+        : 'notifications.checksFailed.notificationBody.other',
+      {
+        title: pullRequest.title,
+        number: pullRequest.pullRequestNumber,
+        shortSHA,
+        count: numberOfFailedChecks,
+      }
+    )
     const onClick = () => {
       dispatcher.onChecksFailedNotification(repository, pullRequest, checks)
     }

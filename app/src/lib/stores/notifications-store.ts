@@ -37,6 +37,7 @@ import {
   IDesktopPullRequestReviewSubmitAliveEvent,
 } from './alive-store'
 import { PullRequestCoordinator } from './pull-request-coordinator'
+import { t } from '../i18n'
 
 export type OnChecksFailedCallback = (
   repository: RepositoryWithGitHubRepository,
@@ -392,12 +393,19 @@ export class NotificationsStore {
       this.skipCheckRuns.add(check.id)
     }
 
-    const pluralChecks =
-      numberOfFailedChecks === 1 ? 'check was' : 'checks were'
-
     const shortSHA = shortenSHA(commitSHA)
-    const title = 'Pull Request checks failed'
-    const body = `${pullRequest.title} #${pullRequest.pullRequestNumber} (${shortSHA})\n${numberOfFailedChecks} ${pluralChecks} not successful.`
+    const title = t('notifications.checksFailed.notificationTitle')
+    const body = t(
+      numberOfFailedChecks === 1
+        ? 'notifications.checksFailed.notificationBody.one'
+        : 'notifications.checksFailed.notificationBody.other',
+      {
+        title: pullRequest.title,
+        number: pullRequest.pullRequestNumber,
+        shortSHA,
+        count: numberOfFailedChecks,
+      }
+    )
     const onClick = () => {
       this.statsStore.increment('checksFailedNotificationClicked')
 

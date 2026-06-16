@@ -38,8 +38,8 @@ import {
 } from '../../lib/feature-flag'
 import { PullRequestQuickView } from '../pull-request-quick-view'
 import { Emoji } from '../../lib/emoji'
-import classNames from 'classnames'
 import { t } from '../../lib/i18n'
+import classNames from 'classnames'
 
 interface IBranchesContainerProps {
   readonly dispatcher: Dispatcher
@@ -184,10 +184,13 @@ export class BranchesContainer extends React.Component<
         <Button
           className="merge-button"
           onClick={this.onMergeClick}
-          tooltip={`Choose a branch to merge into ${currentBranch.name}`}
+          tooltip={t('branches.merge.chooseBranchTooltip', {
+            branch: currentBranch.name,
+          })}
         >
           <Octicon className="icon" symbol={octicons.gitMerge} />
-          Choose a branch to merge into <strong>{currentBranch.name}</strong>
+          {t('branches.merge.chooseBranchPrefix')}{' '}
+          <strong>{currentBranch.name}</strong>
         </Button>
       </Row>
     )

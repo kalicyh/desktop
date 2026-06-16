@@ -12,6 +12,7 @@ import { IRemote } from '../../models/remote'
 import { Progress } from '../../models/progress'
 import { join, resolve } from 'path'
 import { readFile } from 'fs/promises'
+import { t } from '../i18n'
 
 /**
  * Update submodules after a git operation.
@@ -59,7 +60,7 @@ export async function updateSubmodulesAfterOperation<T extends Progress>(
   progressCallback({
     kind: progressKind,
     title,
-    description: 'Updating submodules',
+    description: t('progress.submodules.updating'),
     value: 0,
     // Add the target or remote field based on the progress kind
     ...(progressKind === 'checkout'
@@ -82,7 +83,7 @@ export async function updateSubmodulesAfterOperation<T extends Progress>(
 
         return {
           kind: 'context',
-          text: `Updating submodules: ${line}`,
+          text: t('progress.submodules.line', { line }),
           // Math taken from https://math.stackexchange.com/a/2323106
           // We do this to fake a progress that slows down as we process more
           // events, as we don't know how many submodules there are upfront, or
@@ -116,7 +117,7 @@ export async function updateSubmodulesAfterOperation<T extends Progress>(
   progressCallback({
     kind: progressKind,
     title,
-    description: 'Submodules updated',
+    description: t('progress.submodules.updated'),
     value: 1,
     ...(progressKind === 'checkout'
       ? { target: targetOrRemote }
