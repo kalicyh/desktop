@@ -10,6 +10,7 @@ import {
 } from '../models/status'
 import { assertNever } from './fatal-error'
 import { ManualConflictResolution } from '../models/manual-conflict-resolution'
+import { t } from './i18n'
 
 /**
  * Convert a given `AppFileStatusKind` value to a human-readable string to be
@@ -98,15 +99,19 @@ export function getUnmergedStatusEntryDescription(
   entry: UnmergedStatusEntry,
   branch?: string
 ): string {
-  const suffix = branch ? ` from ${branch}` : ''
-
   switch (entry) {
     case GitStatusEntry.Added:
-      return `Using the added file${suffix}`
+      return branch
+        ? t('multiCommit.conflicts.status.usingAddedFromBranch', { branch })
+        : t('multiCommit.conflicts.status.usingAdded')
     case GitStatusEntry.UpdatedButUnmerged:
-      return `Using the modified file${suffix}`
+      return branch
+        ? t('multiCommit.conflicts.status.usingModifiedFromBranch', { branch })
+        : t('multiCommit.conflicts.status.usingModified')
     case GitStatusEntry.Deleted:
-      return `Using the deleted file${suffix}`
+      return branch
+        ? t('multiCommit.conflicts.status.usingDeletedFromBranch', { branch })
+        : t('multiCommit.conflicts.status.usingDeleted')
     default:
       return assertNever(entry, 'Unknown status entry to format')
   }
@@ -119,16 +124,19 @@ export function getLabelForManualResolutionOption(
   entry: UnmergedStatusEntry,
   branch?: string
 ): string {
-  const suffix = branch ? ` from ${branch}` : ''
-
   switch (entry) {
     case GitStatusEntry.Added:
-      return `Use the added file${suffix}`
+      return branch
+        ? t('multiCommit.conflicts.option.useAddedFromBranch', { branch })
+        : t('multiCommit.conflicts.option.useAdded')
     case GitStatusEntry.UpdatedButUnmerged:
-      return `Use the modified file${suffix}`
+      return branch
+        ? t('multiCommit.conflicts.option.useModifiedFromBranch', { branch })
+        : t('multiCommit.conflicts.option.useModified')
     case GitStatusEntry.Deleted:
-      const deleteSuffix = branch ? ` on ${branch}` : ''
-      return `Do not include this file${deleteSuffix}`
+      return branch
+        ? t('multiCommit.conflicts.option.doNotIncludeOnBranch', { branch })
+        : t('multiCommit.conflicts.option.doNotInclude')
     default:
       return assertNever(entry, 'Unknown status entry to format')
   }
