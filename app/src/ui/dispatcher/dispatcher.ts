@@ -95,6 +95,7 @@ import { TipState, IValidBranch } from '../../models/tip'
 import { Banner, BannerType } from '../../models/banner'
 
 import { ApplicationTheme } from '../lib/application-theme'
+import { ApplicationLanguage } from '../../lib/i18n'
 import { installCLI } from '../lib/install-cli'
 import {
   executeMenuItem,
@@ -2669,6 +2670,13 @@ export class Dispatcher {
    */
   public setSelectedTheme(theme: ApplicationTheme) {
     return this.appStore._setSelectedTheme(theme)
+  }
+
+  /**
+   * Set the application-wide language preference
+   */
+  public setSelectedApplicationLanguage(language: ApplicationLanguage) {
+    return this.appStore._setSelectedApplicationLanguage(language)
   }
 
   /**

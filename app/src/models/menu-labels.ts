@@ -1,4 +1,5 @@
 import { Shell } from '../lib/shells'
+import type { ResolvedApplicationLanguage } from '../lib/i18n'
 
 export type MenuLabelsEvent = {
   /**
@@ -74,4 +75,9 @@ export type MenuLabelsEvent = {
    * says "Show favorites sidebar" or "Hide favorites sidebar".
    */
   readonly isFavoritesSidebarVisible?: boolean
+
+  /**
+   * The currently resolved application language.
+   */
+  readonly currentLanguage?: ResolvedApplicationLanguage
 }

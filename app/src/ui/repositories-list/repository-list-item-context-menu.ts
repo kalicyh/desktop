@@ -3,6 +3,7 @@ import { IMenuItem } from '../../lib/menu-item'
 import { Repositoryish } from './group-repositories'
 import { RepositoryGroup } from '../../models/repository-group'
 import { clipboard } from 'electron'
+import { t } from '../../lib/i18n'
 import {
   RevealInFileManagerLabel,
   DefaultEditorLabel,
@@ -99,12 +100,8 @@ const buildFavoriteMenuItems = (
   return [
     {
       label: repository.isFavorite
-        ? __DARWIN__
-          ? 'Remove from Favorites'
-          : 'Remove from favorites'
-        : __DARWIN__
-        ? 'Add to Favorites'
-        : 'Add to favorites',
+        ? t('repositoryContext.removeFromFavorites')
+        : t('repositoryContext.addToFavorites'),
       action: () =>
         config.onSetRepositoryFavorite(repository, !repository.isFavorite),
     },
@@ -132,7 +129,7 @@ const buildGroupMenuItems = (
   }
 
   submenu.push({
-    label: __DARWIN__ ? 'New Group…' : 'New group…',
+    label: t('repositoryContext.newGroup'),
     action: () => config.onCreateRepositoryGroupForRepository(repository),
   })
 
@@ -140,19 +137,15 @@ const buildGroupMenuItems = (
     {
       label:
         repository.groupId === null
-          ? __DARWIN__
-            ? 'Add to Group'
-            : 'Add to group'
-          : __DARWIN__
-          ? 'Move to Group'
-          : 'Move to group',
+          ? t('repositoryContext.addToGroup')
+          : t('repositoryContext.moveToGroup'),
       submenu,
     },
   ]
 
   if (repository.groupId !== null) {
     items.push({
-      label: __DARWIN__ ? 'Remove from Group' : 'Remove from group',
+      label: t('repositoryContext.removeFromGroup'),
       action: () => config.onSetRepositoryGroup(repository, null),
     })
   }

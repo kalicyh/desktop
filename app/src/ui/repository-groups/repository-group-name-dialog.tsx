@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Repository } from '../../models/repository'
 import { RepositoryGroup } from '../../models/repository-group'
 import { Dispatcher } from '../dispatcher'
+import { t } from '../../lib/i18n'
 import { Dialog, DialogContent, DialogError, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { TextBox } from '../lib/text-box'
@@ -39,7 +40,6 @@ export class RepositoryGroupNameDialog extends React.Component<
 
   public render() {
     const { mode, repository } = this.props
-    const verb = mode === 'create' ? 'Create' : 'Rename'
     const trimmed = this.state.name.trim()
     const validationError = this.getValidationError(trimmed)
 
@@ -48,12 +48,8 @@ export class RepositoryGroupNameDialog extends React.Component<
         id="repository-group-name"
         title={
           mode === 'create'
-            ? __DARWIN__
-              ? 'Create Repository Group'
-              : 'Create repository group'
-            : __DARWIN__
-            ? 'Rename Repository Group'
-            : 'Rename repository group'
+            ? t('repositoryGroups.createTitle')
+            : t('repositoryGroups.renameTitle')
         }
         ariaDescribedBy="repository-group-name-description"
         onDismissed={this.props.onDismissed}
@@ -62,12 +58,14 @@ export class RepositoryGroupNameDialog extends React.Component<
         <DialogContent>
           <p id="repository-group-name-description">
             {repository === undefined
-              ? 'Choose a name for this repository group.'
-              : `Choose a group name for "${repository.name}".`}
+              ? t('repositoryGroups.createDescription')
+              : t('repositoryGroups.createForRepositoryDescription', {
+                  name: repository.name,
+                })}
           </p>
           <p>
             <TextBox
-              ariaLabel="Group name"
+              ariaLabel={t('repositoryGroups.nameAriaLabel')}
               value={this.state.name}
               onValueChanged={this.onNameChanged}
             />
@@ -79,7 +77,11 @@ export class RepositoryGroupNameDialog extends React.Component<
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? `${verb} Group` : `${verb} group`}
+            okButtonText={
+              mode === 'create'
+                ? t('repositoryGroups.createButton')
+                : t('repositoryGroups.renameButton')
+            }
             okButtonDisabled={validationError !== null}
           />
         </DialogFooter>
@@ -93,7 +95,7 @@ export class RepositoryGroupNameDialog extends React.Component<
 
   private getValidationError(trimmed: string): string | null {
     if (trimmed.length === 0) {
-      return 'Group name cannot be empty.'
+      return t('repositoryGroups.emptyNameError')
     }
 
     const currentGroupId =
@@ -103,7 +105,7 @@ export class RepositoryGroupNameDialog extends React.Component<
       g => g.id !== currentGroupId && g.name.trim().toLowerCase() === normalized
     )
 
-    return duplicate ? 'A group with this name already exists.' : null
+    return duplicate ? t('repositoryGroups.duplicateNameError') : null
   }
 
   private onSubmit = async () => {
@@ -126,7 +128,7 @@ export class RepositoryGroupNameDialog extends React.Component<
       } else {
         const { groupId } = this.props
         if (groupId === undefined) {
-          throw new Error('Missing repository group id.')
+          throw new Error(t('repositoryGroups.missingGroupIdError'))
         }
         await this.props.dispatcher.renameRepositoryGroup(groupId, name)
       }

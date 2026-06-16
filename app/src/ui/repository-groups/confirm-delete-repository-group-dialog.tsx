@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { Dispatcher } from '../dispatcher'
+import { t } from '../../lib/i18n'
 import { Dialog, DialogContent, DialogError, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 
@@ -28,14 +29,14 @@ export class ConfirmDeleteRepositoryGroupDialog extends React.Component<
   public render() {
     const { groupName, memberCount } = this.props
     const repositoryText =
-      memberCount === 1 ? '1 repository' : `${memberCount} repositories`
+      memberCount === 1
+        ? t('repositoryGroups.repositoryCount.one')
+        : t('repositoryGroups.repositoryCount.other', { count: memberCount })
 
     return (
       <Dialog
         id="confirm-delete-repository-group"
-        title={
-          __DARWIN__ ? 'Delete Repository Group' : 'Delete repository group'
-        }
+        title={t('repositoryGroups.deleteTitle')}
         type="warning"
         ariaDescribedBy="confirm-delete-repository-group-description"
         onDismissed={this.props.onDismissed}
@@ -43,8 +44,10 @@ export class ConfirmDeleteRepositoryGroupDialog extends React.Component<
       >
         <DialogContent>
           <p id="confirm-delete-repository-group-description">
-            Delete "{groupName}"? {repositoryText} will return to the automatic
-            repository groups.
+            {t('repositoryGroups.deleteDescription', {
+              name: groupName,
+              repositoryCount: repositoryText,
+            })}
           </p>
           {this.state.error !== null && (
             <DialogError>{this.state.error}</DialogError>
@@ -53,7 +56,7 @@ export class ConfirmDeleteRepositoryGroupDialog extends React.Component<
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Delete Group' : 'Delete group'}
+            okButtonText={t('repositoryGroups.deleteButton')}
             destructive={true}
           />
         </DialogFooter>

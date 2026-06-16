@@ -106,6 +106,11 @@ import {
   setPersistedTheme,
 } from '../../ui/lib/application-theme'
 import {
+  ApplicationLanguage,
+  getCurrentLanguage,
+  setCurrentLanguage,
+} from '../i18n'
+import {
   getAppMenu,
   getCurrentWindowState,
   getCurrentWindowZoomFactor,
@@ -498,6 +503,8 @@ const tabSizeKey: string = 'tab-size'
 
 const shellKey = 'shell'
 
+const applicationLanguageKey = 'application-language'
+
 const repositoryIndicatorsEnabledKey = 'enable-repository-indicators'
 
 // background fetching should occur hourly when Desktop is active, but this
@@ -666,6 +673,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private selectedBranchesTab = BranchesTab.Branches
   private selectedTheme = ApplicationTheme.System
   private currentTheme: ApplicableTheme = ApplicationTheme.Light
+  private selectedApplicationLanguage = ApplicationLanguage.System
+  private currentApplicationLanguage = getCurrentLanguage()
   private selectedTabSize = tabSizeDefault
 
   private useWindowsOpenSSH: boolean = false
@@ -763,6 +772,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.updateResizableConstraints()
       this.emitUpdate()
     })
+    window.addEventListener('languagechange', this.onSystemLanguageChanged)
 
     this.initializeWindowState()
     this.initializeZoomFactor()
@@ -1244,6 +1254,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       selectedBranchesTab: this.selectedBranchesTab,
       selectedTheme: this.selectedTheme,
       currentTheme: this.currentTheme,
+      selectedApplicationLanguage: this.selectedApplicationLanguage,
+      currentApplicationLanguage: this.currentApplicationLanguage,
       selectedTabSize: this.selectedTabSize,
       apiRepositories: this.apiRepositoriesStore.getState(),
       useWindowsOpenSSH: this.useWindowsOpenSSH,
@@ -2465,6 +2477,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const shellValue = localStorage.getItem(shellKey)
     this.selectedShell = shellValue ? parseShell(shellValue) : DefaultShell
 
+    this.selectedApplicationLanguage =
+      getEnum(applicationLanguageKey, ApplicationLanguage) ??
+      ApplicationLanguage.System
+    this.applyApplicationLanguagePreference()
+
     this.updateMenuLabelsForSelectedRepository()
 
     const imageDiffTypeValue = localStorage.getItem(imageDiffTypeKey)
@@ -2775,6 +2792,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       selectedExternalEditor,
       askForConfirmationOnRepositoryRemoval,
       askForConfirmationOnForcePush,
+      currentApplicationLanguage,
     } = this
 
     const labels: MenuLabelsEvent = {
@@ -2783,6 +2801,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       askForConfirmationOnRepositoryRemoval,
       askForConfirmationOnForcePush,
       isFavoritesSidebarVisible: this.showFavoritesSidebar,
+      currentLanguage: currentApplicationLanguage,
     }
 
     if (state === null) {
@@ -8422,6 +8441,38 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.emitUpdate()
 
     return Promise.resolve()
+  }
+
+  /**
+   * Set the application-wide language preference.
+   */
+  public _setSelectedApplicationLanguage(language: ApplicationLanguage) {
+    this.selectedApplicationLanguage = language
+    localStorage.setItem(applicationLanguageKey, language)
+    this.applyApplicationLanguagePreference()
+    this.updateMenuLabelsForSelectedRepository()
+    this.emitUpdate()
+
+    return Promise.resolve()
+  }
+
+  private onSystemLanguageChanged = () => {
+    if (this.selectedApplicationLanguage !== ApplicationLanguage.System) {
+      return
+    }
+
+    const previousLanguage = this.currentApplicationLanguage
+    this.applyApplicationLanguagePreference()
+
+    if (this.currentApplicationLanguage !== previousLanguage) {
+      this.updateMenuLabelsForSelectedRepository()
+      this.emitUpdate()
+    }
+  }
+
+  private applyApplicationLanguagePreference() {
+    setCurrentLanguage(this.selectedApplicationLanguage)
+    this.currentApplicationLanguage = getCurrentLanguage()
   }
 
   /**

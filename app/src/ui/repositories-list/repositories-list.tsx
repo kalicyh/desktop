@@ -28,6 +28,7 @@ import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { SectionFilterList } from '../lib/section-filter-list'
 import { assertNever } from '../../lib/fatal-error'
 import { IAheadBehind } from '../../models/branch'
+import { t } from '../../lib/i18n'
 
 const BlankSlateImage = encodePathAsUrl(__dirname, 'static/empty-no-repo.svg')
 
@@ -249,11 +250,11 @@ export class RepositoriesList extends React.Component<
     if (kind === 'enterprise') {
       return group.host
     } else if (kind === 'other') {
-      return 'Other'
+      return t('repositories.group.other')
     } else if (kind === 'dotcom') {
       return group.owner.login
     } else if (kind === 'recent') {
-      return 'Recent'
+      return t('repositories.group.recent')
     } else if (kind === 'group') {
       return group.group.name
     } else {

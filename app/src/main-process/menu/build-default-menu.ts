@@ -6,6 +6,7 @@ import { getLogDirectoryPath } from '../../lib/logging/get-log-path'
 import { UNSAFE_openDirectory } from '../shell'
 import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { MenuLabelsEvent } from '../../models/menu-labels'
+import { ApplicationLanguage, translate } from '../../lib/i18n'
 import * as ipcWebContents from '../ipc-webcontents'
 import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
@@ -52,6 +53,7 @@ export function buildDefaultMenuTemplate({
   askForConfirmationWhenStashingAllChanges = true,
   isChangesFilterVisible = true,
   isFavoritesSidebarVisible = false,
+  currentLanguage = ApplicationLanguage.English,
 }: MenuLabelsEvent): Electron.MenuItemConstructorOptions[] {
   contributionTargetDefaultBranch = truncateWithEllipsis(
     contributionTargetDefaultBranch,
@@ -199,9 +201,12 @@ export function buildDefaultMenuTemplate({
         click: emit('choose-repository'),
       },
       {
-        label: __DARWIN__
-          ? `${isFavoritesSidebarVisible ? 'Hide' : 'Show'} Favorites Sidebar`
-          : `${isFavoritesSidebarVisible ? 'Hide' : 'Show'} Favorites sidebar`,
+        label: translate(
+          isFavoritesSidebarVisible
+            ? 'menu.hideFavoritesSidebar'
+            : 'menu.showFavoritesSidebar',
+          currentLanguage
+        ),
         id: 'toggle-favorites-sidebar',
         click: emit('toggle-favorites-sidebar'),
       },

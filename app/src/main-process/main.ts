@@ -13,6 +13,7 @@ import * as Fs from 'fs'
 
 import { AppWindow } from './app-window'
 import { buildDefaultMenu, getAllMenuItems } from './menu'
+import { ApplicationLanguage } from '../lib/i18n'
 import { shellNeedsPatching, updateEnvironmentForProcess } from '../lib/shell'
 import { parseAppURL } from '../lib/parse-app-url'
 import {
@@ -355,6 +356,7 @@ app.on('ready', () => {
       selectedExternalEditor: null,
       askForConfirmationOnRepositoryRemoval: false,
       askForConfirmationOnForcePush: false,
+      currentLanguage: ApplicationLanguage.English,
     })
   )
 

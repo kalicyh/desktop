@@ -5,6 +5,7 @@ import {
   buildDefaultMenuTemplate,
 } from '../../../src/main-process/menu'
 import type { MenuLabelsEvent } from '../../../src/models/menu-labels'
+import { ApplicationLanguage } from '../../../src/lib/i18n'
 
 /** Extract the Windows-style access key from a menu item label, if any. */
 function getAccessKey(label: string): string | null {
@@ -65,6 +66,27 @@ function findDuplicateAccessKeys(
   }
 
   return duplicates
+}
+
+function findMenuItemById(
+  items: ReadonlyArray<Electron.MenuItemConstructorOptions>,
+  id: string
+): Electron.MenuItemConstructorOptions | null {
+  for (const item of items) {
+    if (item.id === id) {
+      return item
+    }
+
+    const submenu = item.submenu
+    if (submenu !== undefined && Array.isArray(submenu)) {
+      const found = findMenuItemById(submenu, id)
+      if (found !== null) {
+        return found
+      }
+    }
+  }
+
+  return null
 }
 
 describe('main-process menu', () => {
@@ -204,6 +226,17 @@ describe('main-process menu', () => {
           )}: ${JSON.stringify(duplicates)}`
         )
       }
+    })
+
+    it('localizes the favorites sidebar menu label', () => {
+      const template = buildDefaultMenuTemplate({
+        ...baseParams,
+        isFavoritesSidebarVisible: false,
+        currentLanguage: ApplicationLanguage.SimplifiedChinese,
+      })
+
+      const item = findMenuItemById(template, 'toggle-favorites-sidebar')
+      assert.equal(item?.label, '显示收藏侧栏')
     })
   })
 })

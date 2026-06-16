@@ -22,10 +22,15 @@ import {
   numberFormatToKey,
 } from '../../models/formatting-preferences'
 import { formatNumber } from '../../lib/format-number'
+import { ApplicationLanguage, t } from '../../lib/i18n'
 
 interface IAppearanceProps {
   readonly selectedTheme: ApplicationTheme
   readonly onSelectedThemeChanged: (theme: ApplicationTheme) => void
+  readonly selectedApplicationLanguage: ApplicationLanguage
+  readonly onSelectedApplicationLanguageChanged: (
+    language: ApplicationLanguage
+  ) => void
   readonly selectedTabSize: number
   readonly onSelectedTabSizeChanged: (tabSize: number) => void
   readonly selectedDateFormat: DateFormat
@@ -96,6 +101,19 @@ export class Appearance extends React.Component<
     event: React.FormEvent<HTMLSelectElement>
   ) => {
     this.props.onSelectedTabSizeChanged(parseInt(event.currentTarget.value))
+  }
+
+  private onSelectedApplicationLanguageChanged = (
+    event: React.FormEvent<HTMLSelectElement>
+  ) => {
+    const value = event.currentTarget.value
+    if (
+      value === ApplicationLanguage.System ||
+      value === ApplicationLanguage.English ||
+      value === ApplicationLanguage.SimplifiedChinese
+    ) {
+      this.props.onSelectedApplicationLanguageChanged(value)
+    }
   }
 
   private onDateFormatChanged = (event: React.FormEvent<HTMLSelectElement>) => {
@@ -261,6 +279,32 @@ export class Appearance extends React.Component<
     )
   }
 
+  private renderSelectedLanguage() {
+    return (
+      <div className="appearance-section">
+        <h2 id="language-heading">
+          {t('preferences.appearance.language.heading')}
+        </h2>
+
+        <Select
+          label={t('preferences.appearance.language.label')}
+          value={this.props.selectedApplicationLanguage}
+          onChange={this.onSelectedApplicationLanguageChanged}
+        >
+          <option value={ApplicationLanguage.System}>
+            {t('preferences.appearance.language.system')}
+          </option>
+          <option value={ApplicationLanguage.English}>
+            {t('preferences.appearance.language.english')}
+          </option>
+          <option value={ApplicationLanguage.SimplifiedChinese}>
+            {t('preferences.appearance.language.simplifiedChinese')}
+          </option>
+        </Select>
+      </div>
+    )
+  }
+
   private renderSelectedTabSize() {
     const availableTabSizes: number[] = [1, 2, 3, 4, 5, 6, 8, 10, 12]
 
@@ -287,6 +331,7 @@ export class Appearance extends React.Component<
     return (
       <DialogContent>
         {this.renderSelectedTheme()}
+        {this.renderSelectedLanguage()}
         {this.renderFormatting()}
         {this.renderSelectedTabSize()}
       </DialogContent>

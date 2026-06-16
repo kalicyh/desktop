@@ -9,6 +9,7 @@ import { Dispatcher } from '../dispatcher'
 import { Button } from '../lib/button'
 import { TooltippedContent } from '../lib/tooltipped-content'
 import { IMenuItem, showContextualMenu } from '../../lib/menu-item'
+import { t } from '../../lib/i18n'
 import { Octicon, iconForRepository } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { renderRepoIndicators } from '../repositories-list/repository-list-item'
@@ -55,21 +56,28 @@ export class FavoritesSidebar extends React.Component<
     const sections = this.getSections()
 
     return (
-      <aside className="favorites-sidebar" aria-label="Favorites">
+      <aside
+        className="favorites-sidebar"
+        aria-label={t('favoritesSidebar.ariaLabel')}
+      >
         <div className="favorites-sidebar-header">
           <Octicon symbol={octicons.starFill} />
-          <div className="favorites-sidebar-title">Favorites</div>
+          <div className="favorites-sidebar-title">
+            {t('favoritesSidebar.title')}
+          </div>
           <Button
             className="favorites-sidebar-add-group"
-            ariaLabel="New group"
-            tooltip="New group"
+            ariaLabel={t('favoritesSidebar.newGroup')}
+            tooltip={t('favoritesSidebar.newGroup')}
             onClick={this.onCreateGroup}
           >
             <Octicon symbol={octicons.plus} />
           </Button>
         </div>
         {sections.length === 0 ? (
-          <div className="favorites-sidebar-empty">No favorites</div>
+          <div className="favorites-sidebar-empty">
+            {t('favoritesSidebar.empty')}
+          </div>
         ) : (
           <div className="favorites-sidebar-list">{sections}</div>
         )}
@@ -127,7 +135,7 @@ export class FavoritesSidebar extends React.Component<
     if (ungrouped.length > 0) {
       sections.push({
         id: ungroupedFavoritesId,
-        name: 'Favorites',
+        name: t('favoritesSidebar.ungrouped'),
         group: null,
         repositories: this.sortRepositories(ungrouped),
         memberCount: ungrouped.length,
@@ -246,7 +254,7 @@ export class FavoritesSidebar extends React.Component<
 
     const items: ReadonlyArray<IMenuItem> = [
       {
-        label: __DARWIN__ ? 'Rename Group…' : 'Rename group…',
+        label: t('repositoryGroups.menu.rename'),
         action: () =>
           this.props.dispatcher.showPopup({
             type: PopupType.RepositoryGroupName,
@@ -256,7 +264,7 @@ export class FavoritesSidebar extends React.Component<
           }),
       },
       {
-        label: __DARWIN__ ? 'Delete Group…' : 'Delete group…',
+        label: t('repositoryGroups.menu.delete'),
         action: () =>
           this.props.dispatcher.showPopup({
             type: PopupType.ConfirmDeleteRepositoryGroup,
