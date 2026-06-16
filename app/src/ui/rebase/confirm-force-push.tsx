@@ -6,6 +6,7 @@ import { Dispatcher } from '../dispatcher'
 import { DialogFooter, DialogContent, Dialog } from '../dialog'
 import { Ref } from '../lib/ref'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { t } from '../../lib/i18n'
 
 interface IConfirmForcePushProps {
   readonly dispatcher: Dispatcher
@@ -36,7 +37,7 @@ export class ConfirmForcePush extends React.Component<
   public render() {
     return (
       <Dialog
-        title="Are you sure you want to force push?"
+        title={t('forcePush.confirm.title')}
         dismissDisabled={this.state.isLoading}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onForcePush}
@@ -44,14 +45,13 @@ export class ConfirmForcePush extends React.Component<
       >
         <DialogContent>
           <p>
-            A force push will rewrite history on{' '}
-            <Ref>{this.props.upstreamBranch}</Ref>. Any collaborators working on
-            this branch will need to reset their own local branch to match the
-            history of the remote.
+            {t('forcePush.confirm.messagePrefix')}{' '}
+            <Ref>{this.props.upstreamBranch}</Ref>
+            {t('forcePush.confirm.messageSuffix')}
           </p>
           <div>
             <Checkbox
-              label="Do not show this message again"
+              label={t('common.doNotShowAgain')}
               value={
                 this.state.askForConfirmationOnForcePush
                   ? CheckboxValue.Off
@@ -62,7 +62,10 @@ export class ConfirmForcePush extends React.Component<
           </div>
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup destructive={true} okButtonText="I'm sure" />
+          <OkCancelButtonGroup
+            destructive={true}
+            okButtonText={t('forcePush.confirm.confirmButton')}
+          />
         </DialogFooter>
       </Dialog>
     )

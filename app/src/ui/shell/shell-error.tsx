@@ -6,6 +6,7 @@ import {
   DialogFooter,
   OkCancelButtonGroup,
 } from '../dialog'
+import { t } from '../../lib/i18n'
 
 interface IShellErrorProps {
   /**
@@ -39,12 +40,11 @@ export class ShellError extends React.Component<IShellErrorProps, {}> {
   }
 
   public render() {
-    const title = __DARWIN__ ? 'Unable to Open Shell' : 'Unable to open shell'
     return (
       <Dialog
         id="shell-error"
         type="error"
-        title={title}
+        title={t('shellError.title')}
         onSubmit={this.props.onDismissed}
         onDismissed={this.props.onDismissed}
       >
@@ -53,8 +53,12 @@ export class ShellError extends React.Component<IShellErrorProps, {}> {
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Close"
-            cancelButtonText={__DARWIN__ ? 'Open Preferences' : 'Open options'}
+            okButtonText={t('common.close')}
+            cancelButtonText={
+              __DARWIN__
+                ? t('editorError.openPreferences')
+                : t('editorError.openOptions')
+            }
             onCancelButtonClick={this.onShowPreferencesDialog}
           />
         </DialogFooter>

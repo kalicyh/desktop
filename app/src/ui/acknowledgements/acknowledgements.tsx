@@ -5,6 +5,7 @@ import { getAppPath } from '../lib/app-proxy'
 import { Loading } from '../lib/loading'
 import { LinkButton } from '../lib/link-button'
 import { Dialog, DialogContent, DefaultDialogFooter } from '../dialog'
+import { t } from '../../lib/i18n'
 
 const WebsiteURL = 'https://desktop.github.com'
 const RepositoryURL = 'https://github.com/desktop/desktop'
@@ -84,9 +85,11 @@ export class Acknowledgements extends React.Component<
       if (license.sourceText) {
         licenseText = license.sourceText
       } else if (license.license) {
-        licenseText = `License: ${license.license}`
+        licenseText = `${t('acknowledgements.licensePrefix')} ${
+          license.license
+        }`
       } else {
-        licenseText = 'Unknown license'
+        licenseText = t('acknowledgements.unknownLicense')
       }
 
       const nameHeader = <h2 key={`${key}-header`}>{nameElement}</h2>
@@ -115,21 +118,20 @@ export class Acknowledgements extends React.Component<
     return (
       <Dialog
         id="acknowledgements"
-        title="License and Open Source Notices"
+        title={t('acknowledgements.title')}
         onSubmit={this.props.onDismissed}
         onDismissed={this.props.onDismissed}
       >
         <DialogContent>
           <p>
-            <LinkButton uri={WebsiteURL}>GitHub Desktop</LinkButton> is an open
-            source project published under the MIT License. You can view the
-            source code and contribute to this project on{' '}
+            <LinkButton uri={WebsiteURL}>GitHub Desktop</LinkButton>{' '}
+            {t('acknowledgements.descriptionMiddle')}{' '}
             <LinkButton uri={RepositoryURL}>GitHub</LinkButton>.
           </p>
 
           {desktopLicense}
 
-          <p>GitHub Desktop also distributes these libraries:</p>
+          <p>{t('acknowledgements.librariesIntro')}</p>
 
           {licenses ? this.renderLicenses(licenses) : <Loading />}
         </DialogContent>
