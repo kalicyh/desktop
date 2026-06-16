@@ -1039,6 +1039,7 @@
   "textBox.clear": "Clear",
   "textBox.inputCleared": "Input cleared",
   "resizable.resizeHandle": "Resize handle",
+  "octicons.preview.title": "Icon Preview",
   "acknowledgements.title": "License and Open Source Notices",
   "acknowledgements.licensePrefix": "License:",
   "acknowledgements.unknownLicense": "Unknown license",

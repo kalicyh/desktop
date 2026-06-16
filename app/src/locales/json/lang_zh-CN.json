@@ -1039,6 +1039,7 @@
   "textBox.clear": "清除",
   "textBox.inputCleared": "输入已清除",
   "resizable.resizeHandle": "调整大小手柄",
+  "octicons.preview.title": "图标预览",
   "acknowledgements.title": "许可证和开源声明",
   "acknowledgements.licensePrefix": "许可证：",
   "acknowledgements.unknownLicense": "未知许可证",
