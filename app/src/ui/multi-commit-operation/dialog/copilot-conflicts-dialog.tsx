@@ -13,6 +13,7 @@ import {
   isConflictWithMarkers,
 } from '../../../models/status'
 import { getUnmergedFiles, isConflictedFile } from '../../../lib/status'
+import { assertNever } from '../../../lib/fatal-error'
 import { ManualConflictResolution } from '../../../models/manual-conflict-resolution'
 import {
   IFileResolution,
@@ -36,6 +37,9 @@ import { CopilotConflictsResolutionSummary } from './copilot-conflicts-resolutio
 import { PopupType } from '../../../models/popup'
 import { PreferencesTab } from '../../../models/preferences'
 import { MultiCommitOperationKind } from '../../../models/multi-commit-operation'
+import { TabBar, TabBarType } from '../../tab-bar'
+import { CopilotConflictsChanges } from './copilot-conflicts-changes'
+import { enableCopilotConflictResolutionChangesTab } from '../../../lib/feature-flag'
 
 /**
  * The resolution choice for a file in the Copilot conflicts dialog.
@@ -62,8 +66,14 @@ interface ICopilotConflictsDialogProps {
   readonly emoji: Map<string, Emoji>
 }
 
+enum CopilotConflictsTab {
+  Summary,
+  Changes,
+}
+
 interface ICopilotConflictsDialogState {
   readonly isContinuing: boolean
+  readonly selectedTab: CopilotConflictsTab
 }
 
 const CopilotConflictsDialogTitleId = 'Dialog_Copilot_Conflicts'
@@ -84,7 +94,10 @@ export class CopilotConflictsDialog extends React.Component<
 
   public constructor(props: ICopilotConflictsDialogProps) {
     super(props)
-    this.state = { isContinuing: false }
+    this.state = {
+      isContinuing: false,
+      selectedTab: CopilotConflictsTab.Summary,
+    }
   }
 
   private onBackToManual = () => {
@@ -401,9 +414,51 @@ export class CopilotConflictsDialog extends React.Component<
     )
   }
 
+  private onTabSelected = (index: CopilotConflictsTab) => {
+    this.setState({ selectedTab: index })
+  }
+
+  private renderSummaryContent(
+    unmergedFiles: ReadonlyArray<WorkingDirectoryFileChange>
+  ): JSX.Element {
+    return (
+      <div className="copilot-conflicts-summary-content">
+        {this.renderResolutionSummary()}
+        {this.renderFileList(unmergedFiles)}
+      </div>
+    )
+  }
+
+  private renderTabContent(
+    unmergedFiles: ReadonlyArray<WorkingDirectoryFileChange>
+  ): JSX.Element {
+    switch (this.state.selectedTab) {
+      case CopilotConflictsTab.Changes: {
+        const conflictedFiles = unmergedFiles.filter(f =>
+          isConflictedFile(f.status)
+        )
+        return (
+          <CopilotConflictsChanges
+            repository={this.props.repository}
+            dispatcher={this.props.dispatcher}
+            conflictedFiles={conflictedFiles}
+            copilotResolutions={this.props.copilotResolutions}
+          />
+        )
+      }
+      case CopilotConflictsTab.Summary:
+        return this.renderSummaryContent(unmergedFiles)
+      default:
+        return assertNever(
+          this.state.selectedTab,
+          `Unknown tab: ${this.state.selectedTab}`
+        )
+    }
+  }
+
   public render() {
     const { operationKind, workingDirectory, model } = this.props
-    const { isContinuing } = this.state
+    const { isContinuing, selectedTab } = this.state
 
     const unmergedFiles = getUnmergedFiles(workingDirectory)
     const operation = __DARWIN__ ? operationKind : operationKind.toLowerCase()
@@ -412,6 +467,8 @@ export class CopilotConflictsDialog extends React.Component<
       model.reasoningEffort !== undefined
         ? `${model.modelName} · ${formatReasoningEffort(model.reasoningEffort)}`
         : model.modelName
+
+    const showChangesTab = enableCopilotConflictResolutionChangesTab()
 
     return (
       <Dialog
@@ -443,8 +500,19 @@ export class CopilotConflictsDialog extends React.Component<
           </div>
         </DialogHeader>
         <DialogContent>
-          {this.renderResolutionSummary()}
-          {this.renderFileList(unmergedFiles)}
+          {showChangesTab && (
+            <TabBar
+              selectedIndex={selectedTab}
+              onTabClicked={this.onTabSelected}
+              type={TabBarType.Tabs}
+            >
+              <span>Summary</span>
+              <span>Changes</span>
+            </TabBar>
+          )}
+          {showChangesTab
+            ? this.renderTabContent(unmergedFiles)
+            : this.renderSummaryContent(unmergedFiles)}
         </DialogContent>
         <DialogFooter>
           <div className="copilot-conflicts-footer">
