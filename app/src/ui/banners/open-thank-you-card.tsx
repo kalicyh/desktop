@@ -3,6 +3,7 @@ import { LinkButton } from '../lib/link-button'
 import { RichText } from '../lib/rich-text'
 import { Banner } from './banner'
 import { Emoji } from '../../lib/emoji'
+import { t } from '../../lib/i18n'
 
 interface IOpenThankYouCardProps {
   readonly emoji: Map<string, Emoji>
@@ -22,9 +23,9 @@ export class OpenThankYouCard extends React.Component<
     return (
       <Banner id="open-thank-you-card" onDismissed={this.props.onDismissed}>
         <form onSubmit={this.props.onOpenCard}>
-          The Desktop team would like to thank you for your contributions.{' '}
+          {t('banners.thankYou.message')}{' '}
           <LinkButton onClick={this.props.onOpenCard}>
-            Open Your Card
+            {t('banners.thankYou.openCard')}
           </LinkButton>{' '}
           <RichText
             className="thank-you-banner-emoji"
@@ -32,8 +33,10 @@ export class OpenThankYouCard extends React.Component<
             emoji={this.props.emoji}
             renderUrlsAsLinks={true}
           />
-          or{' '}
-          <LinkButton onClick={this.onThrowCardAway}>Throw It Away</LinkButton>{' '}
+          {t('banners.update.or')}{' '}
+          <LinkButton onClick={this.onThrowCardAway}>
+            {t('banners.thankYou.throwAway')}
+          </LinkButton>{' '}
           <RichText
             className="thank-you-banner-emoji"
             text={':sob:'}
