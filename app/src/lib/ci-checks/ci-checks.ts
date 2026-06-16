@@ -15,6 +15,7 @@ import {
   formatLongPreciseDuration,
   formatPreciseDuration,
 } from '../format-duration'
+import { t } from '../i18n'
 
 /**
  * A Desktop-specific model closely related to a GitHub API Check Run.
@@ -86,26 +87,26 @@ export function getCheckRunConclusionAdjective(
   conclusion: APICheckConclusion | null
 ): string {
   if (conclusion === null) {
-    return 'In progress'
+    return t('checkRuns.status.inProgress')
   }
 
   switch (conclusion) {
     case APICheckConclusion.ActionRequired:
-      return 'Action required'
+      return t('checkRuns.status.actionRequired')
     case APICheckConclusion.Canceled:
-      return 'Canceled'
+      return t('checkRuns.status.canceled')
     case APICheckConclusion.TimedOut:
-      return 'Timed out'
+      return t('checkRuns.status.timedOut')
     case APICheckConclusion.Failure:
-      return 'Failed'
+      return t('checkRuns.status.failed')
     case APICheckConclusion.Neutral:
-      return 'Neutral'
+      return t('checkRuns.status.neutral')
     case APICheckConclusion.Success:
-      return 'Successful'
+      return t('checkRuns.status.successful')
     case APICheckConclusion.Skipped:
-      return 'Skipped'
+      return t('checkRuns.status.skipped')
     case APICheckConclusion.Stale:
-      return 'Marked as stale'
+      return t('checkRuns.status.stale')
   }
 }
 
@@ -129,7 +130,7 @@ function getCheckRunShortDescription(
   durationMs?: number
 ): string {
   if (status !== APICheckStatus.Completed || conclusion === null) {
-    return 'In progress'
+    return t('checkRuns.status.inProgress')
   }
 
   const adjective = getCheckRunConclusionAdjective(conclusion)
@@ -146,10 +147,17 @@ function getCheckRunShortDescription(
     return adjective
   }
 
-  const preposition = conclusion === APICheckConclusion.Success ? 'in' : 'after'
-
   if (durationMs !== undefined && durationMs > 0) {
-    return `${adjective} ${preposition} ${formatPreciseDuration(durationMs)}`
+    const duration = formatPreciseDuration(durationMs)
+    return conclusion === APICheckConclusion.Success
+      ? t('checkRuns.status.completedIn', {
+          status: adjective,
+          duration,
+        })
+      : t('checkRuns.status.completedAfter', {
+          status: adjective,
+          duration,
+        })
   }
 
   return adjective

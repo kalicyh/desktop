@@ -34,7 +34,6 @@ import {
 import { getPullRequestCommitRef } from '../../models/pull-request'
 import { CICheckReRunButton } from './ci-check-re-run-button'
 import groupBy from 'lodash/groupBy'
-import { toSentence } from '../../lib/to_sentence'
 
 const BlankSlateImage = encodePathAsUrl(
   __dirname,
@@ -47,13 +46,59 @@ export function getCombinedStatusSummary(
 ): string {
   const conclusions = Object.values(groupBy(statusHolders, 'conclusion')).map(
     g =>
-      `${g.length} ${getCheckRunConclusionAdjective(
-        g[0].conclusion
-      ).toLocaleLowerCase()}`
+      t('checkRuns.summary.statusCount', {
+        count: g.length,
+        status: getCheckRunConclusionAdjective(
+          g[0].conclusion
+        ).toLocaleLowerCase(),
+      })
   )
 
-  const pluralize = statusHolders.length > 1 ? `${description}s` : description
-  return `${toSentence(conclusions)} ${pluralize}`
+  return t('checkRuns.summary.combinedStatus', {
+    statuses: getLocalizedStatusSentence(conclusions),
+    noun: getCheckRunSummaryNoun(description, statusHolders.length),
+  })
+}
+
+function getLocalizedStatusSentence(conclusions: ReadonlyArray<string>) {
+  switch (conclusions.length) {
+    case 0:
+      return ''
+    case 1:
+      return conclusions[0]
+    case 2:
+      return t('checkRuns.summary.twoStatuses', {
+        first: conclusions[0],
+        second: conclusions[1],
+      })
+    default: {
+      const allButLast = conclusions
+        .slice(0, -1)
+        .join(t('checkRuns.summary.statusSeparator'))
+      return t('checkRuns.summary.manyStatuses', {
+        allButLast,
+        last: conclusions[conclusions.length - 1],
+      })
+    }
+  }
+}
+
+function getCheckRunSummaryNoun(
+  description: 'check' | 'step' | undefined,
+  count: number
+) {
+  switch (description) {
+    case 'check':
+      return count === 1
+        ? t('checkRuns.summary.noun.check.one')
+        : t('checkRuns.summary.noun.check.other')
+    case 'step':
+      return count === 1
+        ? t('checkRuns.summary.noun.step.one')
+        : t('checkRuns.summary.noun.step.other')
+    default:
+      return ''
+  }
 }
 
 interface ICICheckRunPopoverProps {
