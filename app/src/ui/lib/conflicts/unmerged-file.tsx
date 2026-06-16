@@ -16,8 +16,8 @@ import * as octicons from '../../octicons/octicons.generated'
 import { PathText } from '../path-text'
 import { ManualConflictResolution } from '../../../models/manual-conflict-resolution'
 import {
-  OpenWithDefaultProgramLabel,
-  RevealInFileManagerLabel,
+  getOpenWithDefaultProgramLabel,
+  getRevealInFileManagerLabel,
 } from '../context-menu'
 import { openFile } from '../open-file'
 import { Button } from '../button'
@@ -413,11 +413,11 @@ const makeMarkerConflictDropdownClickHandler = (
     const absoluteFilePath = join(repository.path, relativeFilePath)
     const items: IMenuItem[] = [
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => openFile(absoluteFilePath, dispatcher),
       },
       {
-        label: RevealInFileManagerLabel,
+        label: getRevealInFileManagerLabel(),
         action: () => revealInFileManager(repository, relativeFilePath),
       },
       {

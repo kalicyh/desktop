@@ -6,7 +6,7 @@ import { WorkingDirectoryFileChange } from '../../models/status'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { PathText } from '../lib/path-text'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
-import { TrashNameLabel } from '../lib/context-menu'
+import { getTrashNameLabel } from '../lib/context-menu'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { t } from '../../lib/i18n'
 
@@ -89,7 +89,7 @@ export class DiscardChanges extends React.Component<
         <DialogContent>
           {this.renderFileList()}
           <p id="discard-changes-confirmation-message">
-            {t('discardChanges.restorablePrefix')} {TrashNameLabel}.
+            {t('discardChanges.restorablePrefix')} {getTrashNameLabel()}.
           </p>
           {this.renderConfirmDiscardChanges()}
         </DialogContent>

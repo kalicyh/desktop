@@ -28,8 +28,8 @@ import { Octicon, OcticonSymbol } from '../../octicons'
 import * as octicons from '../../octicons/octicons.generated'
 import { PathText } from '../../lib/path-text'
 import {
-  OpenWithDefaultProgramLabel,
-  RevealInFileManagerLabel,
+  getOpenWithDefaultProgramLabel,
+  getRevealInFileManagerLabel,
 } from '../../lib/context-menu'
 import { openFile } from '../../lib/open-file'
 import { revealInFileManager } from '../../../lib/app-shell'
@@ -256,11 +256,11 @@ export class CopilotConflictsDialog extends React.Component<
 
     items.push(
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => openFile(absolutePath, dispatcher),
       },
       {
-        label: RevealInFileManagerLabel,
+        label: getRevealInFileManagerLabel(),
         action: () => revealInFileManager(repository, path),
       }
     )

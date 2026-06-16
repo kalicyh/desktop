@@ -11,12 +11,12 @@ import { FileList } from '../history/file-list'
 import { IMenuItem, showContextualMenu } from '../../lib/menu-item'
 import { pathExists } from '../../lib/path-exists'
 import {
-  CopyFilePathLabel,
-  CopyRelativeFilePathLabel,
-  DefaultEditorLabel,
+  getCopyFilePathLabel,
+  getCopyRelativeFilePathLabel,
+  getDefaultEditorLabel,
   isSafeFileExtension,
-  OpenWithDefaultProgramLabel,
-  RevealInFileManagerLabel,
+  getOpenWithDefaultProgramLabel,
+  getRevealInFileManagerLabel,
 } from '../lib/context-menu'
 import { revealInFileManager } from '../../lib/app-shell'
 import { clipboard } from 'electron'
@@ -178,12 +178,12 @@ export class PullRequestFilesChanged extends React.Component<
     const isSafeExtension = isSafeFileExtension(extension)
     const openInExternalEditor =
       externalEditorLabel !== undefined
-        ? `Open in ${externalEditorLabel}`
-        : DefaultEditorLabel
+        ? t('menu.openInExternalEditor', { label: externalEditorLabel })
+        : getDefaultEditorLabel()
 
     const items: IMenuItem[] = [
       {
-        label: RevealInFileManagerLabel,
+        label: getRevealInFileManagerLabel(),
         action: () => revealInFileManager(repository, file.path),
         enabled: fileExistsOnDisk,
       },
@@ -193,17 +193,17 @@ export class PullRequestFilesChanged extends React.Component<
         enabled: fileExistsOnDisk,
       },
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => this.onOpenFile(file.path),
         enabled: isSafeExtension && fileExistsOnDisk,
       },
       { type: 'separator' },
       {
-        label: CopyFilePathLabel,
+        label: getCopyFilePathLabel(),
         action: () => clipboard.writeText(fullPath),
       },
       {
-        label: CopyRelativeFilePathLabel,
+        label: getCopyRelativeFilePathLabel(),
         action: () => clipboard.writeText(Path.normalize(file.path)),
       },
       { type: 'separator' },

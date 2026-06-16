@@ -110,6 +110,7 @@ import {
   ApplicationLanguage,
   getCurrentLanguage,
   setCurrentLanguage,
+  t,
 } from '../i18n'
 import {
   getAppMenu,
@@ -333,7 +334,7 @@ import { getDefaultDir } from '../../ui/lib/default-dir'
 import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
 import { isAttributableEmailFor } from '../email'
-import { TrashNameLabel } from '../../ui/lib/context-menu'
+import { getTrashNameLabel } from '../../ui/lib/context-menu'
 import { GitError as DugiteError } from 'dugite'
 import {
   ErrorWithMetadata,
@@ -4880,9 +4881,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return
     }
 
-    this.favoriteRepositoryListGroups = this.favoriteRepositoryListGroups.filter(
-      key => key !== groupKey
-    )
+    this.favoriteRepositoryListGroups =
+      this.favoriteRepositoryListGroups.filter(key => key !== groupKey)
     setStringArray(
       favoriteRepositoryListGroupsKey,
       this.favoriteRepositoryListGroups
@@ -7986,7 +7986,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
           this.emitError(
             new Error(
-              `Failed to move the repository directory to ${TrashNameLabel}.\n\nA common reason for this is that the directory or one of its files is open in another program.`
+              t('removeRepository.moveToTrashFailed', {
+                trashName: getTrashNameLabel(),
+              })
             )
           )
           return

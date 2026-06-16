@@ -23,13 +23,13 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { CommitOptions, IFileListFilterState } from '../../lib/app-state'
 import {
   isSafeFileExtension,
-  DefaultEditorLabel,
-  CopyFilePathLabel,
-  RevealInFileManagerLabel,
-  OpenWithDefaultProgramLabel,
-  CopyRelativeFilePathLabel,
-  CopySelectedPathsLabel,
-  CopySelectedRelativePathsLabel,
+  getDefaultEditorLabel,
+  getCopyFilePathLabel,
+  getRevealInFileManagerLabel,
+  getOpenWithDefaultProgramLabel,
+  getCopyRelativeFilePathLabel,
+  getCopySelectedPathsLabel,
+  getCopySelectedRelativePathsLabel,
 } from '../lib/context-menu'
 import { CommitMessage } from './commit-message'
 import { ChangedFile } from './changed-file'
@@ -578,7 +578,7 @@ export class FilterChangesList extends React.Component<
     file: WorkingDirectoryFileChange
   ): IMenuItem => {
     return {
-      label: CopyFilePathLabel,
+      label: getCopyFilePathLabel(),
       action: () => {
         const fullPath = Path.join(this.props.repository.path, file.path)
         clipboard.writeText(fullPath)
@@ -590,7 +590,7 @@ export class FilterChangesList extends React.Component<
     file: WorkingDirectoryFileChange
   ): IMenuItem => {
     return {
-      label: CopyRelativeFilePathLabel,
+      label: getCopyRelativeFilePathLabel(),
       action: () => clipboard.writeText(Path.normalize(file.path)),
     }
   }
@@ -599,7 +599,7 @@ export class FilterChangesList extends React.Component<
     files: WorkingDirectoryFileChange[]
   ): IMenuItem => {
     return {
-      label: CopySelectedPathsLabel,
+      label: getCopySelectedPathsLabel(),
       action: () => {
         const fullPaths = files.map(file =>
           Path.join(this.props.repository.path, file.path)
@@ -613,7 +613,7 @@ export class FilterChangesList extends React.Component<
     files: WorkingDirectoryFileChange[]
   ): IMenuItem => {
     return {
-      label: CopySelectedRelativePathsLabel,
+      label: getCopySelectedRelativePathsLabel(),
       action: () => {
         const paths = files.map(file => Path.normalize(file.path))
         clipboard.writeText(paths.join(EOL))
@@ -625,7 +625,7 @@ export class FilterChangesList extends React.Component<
     file: WorkingDirectoryFileChange
   ): IMenuItem => {
     return {
-      label: RevealInFileManagerLabel,
+      label: getRevealInFileManagerLabel(),
       action: () => revealInFileManager(this.props.repository, file.path),
       enabled: file.status.kind !== AppFileStatusKind.Deleted,
     }
@@ -639,7 +639,7 @@ export class FilterChangesList extends React.Component<
 
     const openInExternalEditor = externalEditorLabel
       ? t('menu.openInExternalEditor', { label: externalEditorLabel })
-      : DefaultEditorLabel
+      : getDefaultEditorLabel()
 
     return {
       label: openInExternalEditor,
@@ -779,7 +779,7 @@ export class FilterChangesList extends React.Component<
       this.getRevealInFileManagerMenuItem(file),
       this.getOpenInExternalEditorMenuItem(file, enabled),
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => this.props.onOpenItem(path),
         enabled: enabled && isSafeExtension,
       }
@@ -813,7 +813,7 @@ export class FilterChangesList extends React.Component<
       this.getRevealInFileManagerMenuItem(file),
       this.getOpenInExternalEditorMenuItem(file, enabled),
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => this.props.onOpenItem(path),
         enabled: enabled && isSafeExtension,
       }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { Dispatcher } from '../dispatcher'
-import { TrashNameLabel } from '../lib/context-menu'
+import { getTrashNameLabel } from '../lib/context-menu'
 import { RetryAction } from '../../models/retry-actions'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { t } from '../../lib/i18n'
@@ -43,21 +43,22 @@ export class DiscardChangesRetryDialog extends React.Component<
       >
         <DialogContent>
           <p>
-            {t('discardChanges.retry.failedPrefix')} {TrashNameLabel}.
+            {t('discardChanges.retry.failedPrefix')} {getTrashNameLabel()}.
           </p>
           <div>
             {t('discardChanges.retry.commonReasons')}
             <ul>
               <li>
                 {t('discardChanges.retry.deleteImmediatelyPrefix')}{' '}
-                {TrashNameLabel}{' '}
+                {getTrashNameLabel()}{' '}
                 {t('discardChanges.retry.deleteImmediatelySuffix')}
               </li>
               <li>{t('discardChanges.retry.restrictedAccess')}</li>
             </ul>
           </div>
           <p>
-            {t('discardChanges.retry.unrecoverablePrefix')} {TrashNameLabel}.
+            {t('discardChanges.retry.unrecoverablePrefix')}{' '}
+            {getTrashNameLabel()}.
           </p>
           {this.renderConfirmDiscardChanges()}
         </DialogContent>

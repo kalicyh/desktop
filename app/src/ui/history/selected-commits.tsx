@@ -13,11 +13,11 @@ import { revealInFileManager } from '../../lib/app-shell'
 import { openFile } from '../lib/open-file'
 import {
   isSafeFileExtension,
-  CopyFilePathLabel,
-  DefaultEditorLabel,
-  RevealInFileManagerLabel,
-  OpenWithDefaultProgramLabel,
-  CopyRelativeFilePathLabel,
+  getCopyFilePathLabel,
+  getDefaultEditorLabel,
+  getRevealInFileManagerLabel,
+  getOpenWithDefaultProgramLabel,
+  getCopyRelativeFilePathLabel,
 } from '../lib/context-menu'
 import { ThrottledScheduler } from '../lib/throttled-scheduler'
 
@@ -407,12 +407,12 @@ export class SelectedCommits extends React.Component<
 
     const isSafeExtension = isSafeFileExtension(extension)
     const openInExternalEditor = externalEditorLabel
-      ? `Open in ${externalEditorLabel}`
-      : DefaultEditorLabel
+      ? t('menu.openInExternalEditor', { label: externalEditorLabel })
+      : getDefaultEditorLabel()
 
     const items: IMenuItem[] = [
       {
-        label: RevealInFileManagerLabel,
+        label: getRevealInFileManagerLabel(),
         action: () => revealInFileManager(repository, file.path),
         enabled: fileExistsOnDisk,
       },
@@ -422,17 +422,17 @@ export class SelectedCommits extends React.Component<
         enabled: fileExistsOnDisk,
       },
       {
-        label: OpenWithDefaultProgramLabel,
+        label: getOpenWithDefaultProgramLabel(),
         action: () => this.onOpenItem(file.path),
         enabled: isSafeExtension && fileExistsOnDisk,
       },
       { type: 'separator' },
       {
-        label: CopyFilePathLabel,
+        label: getCopyFilePathLabel(),
         action: () => clipboard.writeText(fullPath),
       },
       {
-        label: CopyRelativeFilePathLabel,
+        label: getCopyRelativeFilePathLabel(),
         action: () => clipboard.writeText(Path.normalize(file.path)),
       },
       { type: 'separator' },

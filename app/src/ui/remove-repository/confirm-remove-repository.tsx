@@ -3,7 +3,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Ref } from '../lib/ref'
 import { Repository } from '../../models/repository'
-import { TrashNameLabel } from '../lib/context-menu'
+import { getTrashNameLabel } from '../lib/context-menu'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { t } from '../../lib/i18n'
 
@@ -81,7 +81,7 @@ export class ConfirmRemoveRepository extends React.Component<
             <Checkbox
               label={`${t(
                 'removeRepository.alsoMoveToTrashPrefix'
-              )} ${TrashNameLabel}`}
+              )} ${getTrashNameLabel()}`}
               value={
                 this.state.deleteRepoFromDisk
                   ? CheckboxValue.On
