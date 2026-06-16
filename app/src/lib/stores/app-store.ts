@@ -5963,7 +5963,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     if (kind !== 'regular' && kind !== 'unsafe') {
       throw new Error(
-        `The worktree path '${worktree.path}' does not appear to be a valid Git repository.`
+        t('appStore.error.invalidWorktreeRepository', { path: worktree.path })
       )
     }
 
@@ -8039,17 +8039,22 @@ export class AppStore extends TypedBaseStore<IAppState> {
     invalidPaths: ReadonlyArray<string>
   ): string {
     if (invalidPaths.length === 1) {
-      return `${invalidPaths} isn't a Git repository.`
+      return t('appStore.error.notAGitRepository', { path: invalidPaths[0] })
     }
 
-    return `The following paths aren't Git repositories:\n\n${invalidPaths
+    const pathList = invalidPaths
       .slice(0, MaxInvalidFoldersToDisplay)
       .map(path => `- ${path}`)
-      .join('\n')}${
-      invalidPaths.length > MaxInvalidFoldersToDisplay
-        ? `\n\n(and ${invalidPaths.length - MaxInvalidFoldersToDisplay} more)`
-        : ''
-    }`
+      .join('\n')
+
+    if (invalidPaths.length > MaxInvalidFoldersToDisplay) {
+      return t('appStore.error.pathsNotGitRepositoriesWithMore', {
+        paths: pathList,
+        count: invalidPaths.length - MaxInvalidFoldersToDisplay,
+      })
+    }
+
+    return t('appStore.error.pathsNotGitRepositories', { paths: pathList })
   }
 
   private async withRefreshedGitHubRepository<T>(
@@ -8422,7 +8427,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       } catch (e) {
         this.emitError(
           new Error(
-            `Couldn't find PR branch, adding remote failed: ${e.message}`
+            t('appStore.error.findPullRequestBranchAddRemoteFailed', {
+              message: e.message,
+            })
           )
         )
         return
@@ -8463,9 +8470,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (existingBranch === undefined) {
       this.emitError(
         new Error(
-          `Couldn't find branch '${headRefName}' in remote '${remote.name}'. ` +
-            `A common reason for this is that the PR author has deleted their ` +
-            `branch or their forked repository.`
+          t('appStore.error.findPullRequestBranchFailed', {
+            branch: headRefName,
+            remote: remote.name,
+          })
         )
       )
       return
@@ -8835,7 +8843,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
       } else {
         this.emitError(
           new Error(
-            `Failed creating the tutorial repository.\n\n${err.message}`
+            t('tutorial.repository.error.createFailed', {
+              message: err.message,
+            })
           )
         )
       }
