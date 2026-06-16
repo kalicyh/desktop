@@ -14,6 +14,7 @@ import { getStealthEmailForUser } from '../../lib/email'
 import { IAPIIdentity } from '../../lib/api'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { t } from '../../lib/i18n'
 
 interface IPullRequestCommentLikeProps {
   readonly id?: string
@@ -176,7 +177,7 @@ export abstract class PullRequestCommentLike extends React.Component<IPullReques
         onMarkdownLinkClicked={this.onMarkdownLinkClicked}
         markdownContext={'PullRequestComment'}
         underlineLinks={this.props.underlineLinks}
-        ariaLabel="Pull request markdown comment"
+        ariaLabel={t('notifications.pullRequestMarkdownComment')}
       />
     )
   }
