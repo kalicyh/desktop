@@ -23,6 +23,7 @@ interface IRepositoryGroupNameDialogProps {
 interface IRepositoryGroupNameDialogState {
   readonly name: string
   readonly error: string | null
+  readonly showValidationError: boolean
 }
 
 export class RepositoryGroupNameDialog extends React.Component<
@@ -35,6 +36,7 @@ export class RepositoryGroupNameDialog extends React.Component<
     this.state = {
       name: props.currentName ?? '',
       error: null,
+      showValidationError: false,
     }
   }
 
@@ -42,6 +44,9 @@ export class RepositoryGroupNameDialog extends React.Component<
     const { mode, repository } = this.props
     const trimmed = this.state.name.trim()
     const validationError = this.getValidationError(trimmed)
+    const visibleValidationError = this.state.showValidationError
+      ? validationError
+      : null
 
     return (
       <Dialog
@@ -70,8 +75,10 @@ export class RepositoryGroupNameDialog extends React.Component<
               onValueChanged={this.onNameChanged}
             />
           </p>
-          {(validationError !== null || this.state.error !== null) && (
-            <DialogError>{validationError ?? this.state.error}</DialogError>
+          {(visibleValidationError !== null || this.state.error !== null) && (
+            <DialogError>
+              {visibleValidationError ?? this.state.error}
+            </DialogError>
           )}
         </DialogContent>
 
@@ -90,7 +97,7 @@ export class RepositoryGroupNameDialog extends React.Component<
   }
 
   private onNameChanged = (name: string) => {
-    this.setState({ name, error: null })
+    this.setState({ name, error: null, showValidationError: true })
   }
 
   private getValidationError(trimmed: string): string | null {
@@ -112,7 +119,7 @@ export class RepositoryGroupNameDialog extends React.Component<
     const name = this.state.name.trim()
     const validationError = this.getValidationError(name)
     if (validationError !== null) {
-      this.setState({ error: validationError })
+      this.setState({ error: validationError, showValidationError: true })
       return
     }
 
