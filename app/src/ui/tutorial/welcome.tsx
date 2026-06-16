@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { encodePathAsUrl } from '../../lib/path'
+import { t } from '../../lib/i18n'
 
 const CodeImage = encodePathAsUrl(__dirname, 'static/code.svg')
 const TeamDiscussionImage = encodePathAsUrl(
@@ -17,34 +18,30 @@ export class TutorialWelcome extends React.Component {
     return (
       <div id="tutorial-welcome">
         <div className="header">
-          <h1>Welcome to GitHub Desktop</h1>
-          <p>
-            Use this tutorial to get comfortable with Git, GitHub, and GitHub
-            Desktop.
-          </p>
+          <h1>{t('tutorial.welcome.title')}</h1>
+          <p>{t('tutorial.welcome.description')}</p>
         </div>
         <ul className="definitions">
           <li>
-            <img src={CodeImage} alt="Html syntax icon" />
+            <img src={CodeImage} alt={t('tutorial.welcome.codeAlt')} />
             <p>
-              <strong>Git</strong> is the version control system.
+              <strong>Git</strong> {t('tutorial.welcome.gitDefinition')}
             </p>
           </li>
           <li>
             <img
               src={TeamDiscussionImage}
-              alt="People with discussion bubbles overhead"
+              alt={t('tutorial.welcome.teamAlt')}
             />
             <p>
-              <strong>GitHub</strong> is where you store your code and
-              collaborate with others.
+              <strong>GitHub</strong> {t('tutorial.welcome.githubDefinition')}
             </p>
           </li>
           <li>
-            <img src={CloudServerImage} alt="Server stack with cloud" />
+            <img src={CloudServerImage} alt={t('tutorial.welcome.cloudAlt')} />
             <p>
-              <strong>GitHub Desktop</strong> helps you work with GitHub
-              locally.
+              <strong>GitHub Desktop</strong>{' '}
+              {t('tutorial.welcome.desktopDefinition')}
             </p>
           </li>
         </ul>

@@ -8,6 +8,7 @@ import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { SuggestedAction } from '../suggested-actions'
 import { SuggestedActionGroup } from '../suggested-actions'
+import { t } from '../../lib/i18n'
 
 const ClappingHandsImage = encodePathAsUrl(
   __dirname,
@@ -60,41 +61,36 @@ export class TutorialDone extends React.Component<ITutorialDoneProps, {}> {
         <div className="content">
           <div className="header">
             <div className="text">
-              <h1 ref={this.header}>You're done!</h1>
-              <p>
-                You’ve learned the basics on how to use GitHub Desktop. Here are
-                some suggestions for what to do next.
-              </p>
+              <h1 ref={this.header}>{t('tutorial.done.title')}</h1>
+              <p>{t('tutorial.done.description')}</p>
             </div>
             <img
               src={ClappingHandsImage}
               className="image"
-              alt="Hands clapping"
+              alt={t('tutorial.done.clappingAlt')}
             />
           </div>
           <SuggestedActionGroup>
             <SuggestedAction
-              title="Explore projects on GitHub"
-              description="Contribute to a project that interests you"
-              buttonText={__DARWIN__ ? 'Open in Browser' : 'Open in browser'}
+              title={t('tutorial.done.explore.title')}
+              description={t('tutorial.done.explore.description')}
+              buttonText={t('notifications.openInBrowser')}
               onClick={this.openDotcomExplore}
               type="normal"
               image={TelescopeOcticon}
             />
             <SuggestedAction
-              title="Create a new repository"
-              description="Get started on a brand new project"
-              buttonText={
-                __DARWIN__ ? 'Create Repository' : 'Create repository'
-              }
+              title={t('tutorial.done.createRepository.title')}
+              description={t('tutorial.done.createRepository.description')}
+              buttonText={t('tutorial.done.createRepository.button')}
               onClick={this.onCreateNewRepository}
               type="normal"
               image={PlusOcticon}
             />
             <SuggestedAction
-              title="Add a local repository"
-              description="Work on an existing project in GitHub Desktop"
-              buttonText={__DARWIN__ ? 'Add Repository' : 'Add repository'}
+              title={t('tutorial.done.addRepository.title')}
+              description={t('tutorial.done.addRepository.description')}
+              buttonText={t('tutorial.done.addRepository.button')}
               onClick={this.onAddExistingRepository}
               type="normal"
               image={FileDirectoryOcticon}
