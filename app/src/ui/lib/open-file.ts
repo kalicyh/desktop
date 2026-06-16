@@ -1,4 +1,5 @@
 import { shell } from '../../lib/app-shell'
+import { t } from '../../lib/i18n'
 import { Dispatcher } from '../dispatcher'
 
 export async function openFile(
@@ -10,7 +11,7 @@ export async function openFile(
   if (!result) {
     const error = {
       name: 'no-external-program',
-      message: `Unable to open file ${fullPath} in an external program. Please check you have a program associated with this file extension`,
+      message: t('openFile.error.noExternalProgram', { path: fullPath }),
     }
     await dispatcher.postError(error)
   }
