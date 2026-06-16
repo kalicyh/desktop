@@ -12,6 +12,7 @@ import { Avatar } from './lib/avatar'
 import { lookupPreferredEmail } from '../lib/email'
 import { IAvatarUser } from '../models/avatar'
 import memoizeOne from 'memoize-one'
+import { t } from '../lib/i18n'
 
 interface IAccountPickerProps {
   readonly accounts: ReadonlyArray<Account>
@@ -145,7 +146,7 @@ export class AccountPicker extends React.Component<
     return (
       <PopoverDropdown
         className="account-picker"
-        contentTitle="Choose an account"
+        contentTitle={t('accountPicker.chooseAccount')}
         buttonContent={
           <div className="account">
             <span className="login">@{account.login}</span> -{' '}
@@ -154,7 +155,7 @@ export class AccountPicker extends React.Component<
             </span>
           </div>
         }
-        label="Account"
+        label={t('accountPicker.account')}
         ref={this.popoverRef}
         openButtonClassName={this.props.openButtonClassName}
       >
