@@ -2,6 +2,7 @@ import * as Path from 'path'
 
 import * as fsAdmin from 'fs-admin'
 import { mkdir, readlink, symlink, unlink } from 'fs/promises'
+import { t } from '../../lib/i18n'
 
 /** The path for the installed command line tool. */
 export const InstalledCLIPath = '/usr/local/bin/github'
@@ -42,7 +43,7 @@ function removeExistingSymlink(asAdmin: boolean) {
       if (error !== null) {
         reject(
           new Error(
-            `Failed to remove file at ${InstalledCLIPath}. Authorization of GitHub Desktop Helper is required.`
+            t('installCLI.error.removeExisting', { path: InstalledCLIPath })
           )
         )
         return
@@ -65,7 +66,7 @@ function createDirectories(asAdmin: boolean) {
       if (error !== null) {
         reject(
           new Error(
-            `Failed to create intermediate directories to ${InstalledCLIPath}`
+            t('installCLI.error.createDirectories', { path: InstalledCLIPath })
           )
         )
         return
@@ -85,7 +86,12 @@ function createNewSymlink(asAdmin: boolean) {
     fsAdmin.symlink(PackagedPath, InstalledCLIPath, error => {
       if (error !== null) {
         reject(
-          new Error(`Failed to symlink ${PackagedPath} to ${InstalledCLIPath}`)
+          new Error(
+            t('installCLI.error.createSymlink', {
+              source: PackagedPath,
+              destination: InstalledCLIPath,
+            })
+          )
         )
         return
       }

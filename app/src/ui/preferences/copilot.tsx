@@ -376,7 +376,7 @@ export class CopilotPreferences extends React.Component<
       // This should not happen because we check for this case earlier, but let's
       // make that assumption explicit and crash if it is violated rather than
       // returning null.
-      throw new Error('No models available')
+      throw new Error(t('copilot.error.noModelsAvailable'))
     }
 
     const preferredCopilotModel = copilotModels.find(
@@ -398,7 +398,7 @@ export class CopilotPreferences extends React.Component<
 
     if (firstProvider === undefined) {
       // This should not happen because we check for selectable models earlier.
-      throw new Error('No models available')
+      throw new Error(t('copilot.error.noModelsAvailable'))
     }
 
     const firstByokModel = firstProvider.models[0]

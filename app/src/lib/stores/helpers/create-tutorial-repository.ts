@@ -13,14 +13,17 @@ import { IRemote } from '../../../models/remote'
 import { getDefaultBranch } from '../../helpers/default-branch'
 import { envForRemoteOperation } from '../../git/environment'
 import { pathExists } from '../../path-exists'
+import { t } from '../../i18n'
 
 const nl = __WIN32__ ? '\r\n' : '\n'
-const InitialReadmeContents =
-  `# Welcome to GitHub Desktop!${nl}${nl}` +
-  `This is your README. READMEs are where you can communicate ` +
-  `what your project is and how to use it.${nl}${nl}` +
-  `Write your name on line 6, save it, and then head ` +
-  `back to GitHub Desktop.${nl}`
+
+function getInitialReadmeContents() {
+  return (
+    `# ${t('tutorial.repository.readme.title')}${nl}${nl}` +
+    `${t('tutorial.repository.readme.description')}${nl}${nl}` +
+    `${t('tutorial.repository.readme.nextStep')}${nl}`
+  )
+}
 
 async function createAPIRepository(account: Account, name: string) {
   const api = new API(account.endpoint, account.token)
@@ -46,9 +49,10 @@ async function createAPIRepository(account: Account, name: string) {
           )
         ) {
           throw new Error(
-            'You already have a repository named ' +
-              `"${name}" on your account at ${account.friendlyEndpoint}.\n\n` +
-              'Please delete the repository and try again.'
+            t('tutorial.repository.error.remoteAlreadyExists', {
+              name,
+              endpoint: account.friendlyEndpoint,
+            })
           )
         }
       }
@@ -102,18 +106,20 @@ export async function createTutorialRepository(
   path: string,
   progressCb: (title: string, value: number, description?: string) => void
 ) {
-  progressCb(`Creating repository on ${account.friendlyEndpoint}`, 0)
+  progressCb(
+    t('tutorial.repository.progress.creatingRemote', {
+      endpoint: account.friendlyEndpoint,
+    }),
+    0
+  )
 
   if (await pathExists(path)) {
-    throw new Error(
-      `The path '${path}' already exists. Please move it ` +
-        'out of the way, or remove it, and then try again.'
-    )
+    throw new Error(t('tutorial.repository.error.pathAlreadyExists', { path }))
   }
 
   const repo = await createAPIRepository(account, name)
   const branch = repo.default_branch ?? (await getDefaultBranch())
-  progressCb('Initializing local repository', 0.2)
+  progressCb(t('tutorial.repository.progress.initializingLocal'), 0.2)
 
   await mkdir(path, { recursive: true })
 
@@ -123,10 +129,14 @@ export async function createTutorialRepository(
     'tutorial:init'
   )
 
-  await writeFile(Path.join(path, 'README.md'), InitialReadmeContents)
+  await writeFile(Path.join(path, 'README.md'), getInitialReadmeContents())
 
   await git(['add', '--', 'README.md'], path, 'tutorial:add')
-  await git(['commit', '-m', 'Initial commit'], path, 'tutorial:commit')
+  await git(
+    ['commit', '-m', t('tutorial.repository.initialCommit')],
+    path,
+    'tutorial:commit'
+  )
 
   const remote: IRemote = { name: 'origin', url: repo.clone_url }
   await git(
@@ -139,7 +149,7 @@ export async function createTutorialRepository(
     progressCb(title, 0.3 + value * 0.6, description)
   })
 
-  progressCb('Finalizing tutorial repository', 0.9)
+  progressCb(t('tutorial.repository.progress.finalizing'), 0.9)
 
   return repo
 }

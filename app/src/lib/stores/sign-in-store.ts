@@ -354,7 +354,7 @@ export class SignInStore extends TypedBaseStore<SignInState | null> {
       this.state.oauthState.onAuthCompleted(account)
     } else {
       this.state.oauthState.onAuthError(
-        new Error('Failed retrieving authenticated user')
+        new Error(t('signIn.error.failedRetrievingAuthenticatedUser'))
       )
     }
   }

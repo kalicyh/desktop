@@ -31,6 +31,7 @@ import { WorkflowPreferences } from '../../models/workflow-preferences'
 import { clearTagsToPush } from './helpers/tags-to-push-storage'
 import { IMatchedGitHubRepository } from '../repository-matching'
 import { shallowEquals } from '../equality'
+import { t } from '../i18n'
 
 type AddRepositoryOptions = {
   missing?: boolean
@@ -950,7 +951,7 @@ function getKeyPrefix(dbID: number) {
 function normalizeGroupName(name: string): string {
   const trimmed = name.trim()
   if (trimmed.length === 0) {
-    throw new Error('Repository group name cannot be empty')
+    throw new Error(t('repositoryGroups.emptyNameError'))
   }
 
   return trimmed
