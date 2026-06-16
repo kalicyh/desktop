@@ -9,6 +9,7 @@ import {
 } from '../dialog'
 import { shell } from '../../lib/app-shell'
 import { suggestedExternalEditor } from '../../lib/editors/shared'
+import { t } from '../../lib/i18n'
 
 interface IEditorErrorProps {
   /**
@@ -62,8 +63,12 @@ export class EditorError extends React.Component<IEditorErrorProps, {}> {
       return (
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Close"
-            cancelButtonText={__DARWIN__ ? 'Open Preferences' : 'Open options'}
+            okButtonText={t('common.close')}
+            cancelButtonText={
+              __DARWIN__
+                ? t('editorError.openPreferences')
+                : t('editorError.openOptions')
+            }
             onCancelButtonClick={this.onShowPreferencesDialog}
           />
         </DialogFooter>
@@ -72,8 +77,10 @@ export class EditorError extends React.Component<IEditorErrorProps, {}> {
       return (
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Close"
-            cancelButtonText={`Download ${suggestedExternalEditor.name}`}
+            okButtonText={t('common.close')}
+            cancelButtonText={t('editorError.downloadEditor', {
+              editor: suggestedExternalEditor.name,
+            })}
             onCancelButtonClick={this.onExternalLink}
           />
         </DialogFooter>
@@ -84,15 +91,11 @@ export class EditorError extends React.Component<IEditorErrorProps, {}> {
   }
 
   public render() {
-    const title = __DARWIN__
-      ? 'Unable to Open External Editor'
-      : 'Unable to open external editor'
-
     return (
       <Dialog
         id="external-editor-error"
         type="error"
-        title={title}
+        title={t('editorError.title')}
         onSubmit={this.props.onDismissed}
         onDismissed={this.props.onDismissed}
       >
