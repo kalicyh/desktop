@@ -74,6 +74,13 @@
     white-space: nowrap;
   }
 
+  .repository-list-group-header-label {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .new-repository-button {
     flex-shrink: 0;
 

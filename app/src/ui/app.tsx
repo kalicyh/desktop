@@ -190,6 +190,7 @@ import { UnknownAuthors } from './unknown-authors/unknown-authors-dialog'
 import { UnsupportedOSBannerDismissedAtKey } from './banners/os-version-no-longer-supported-banner'
 import { offsetFromNow } from '../lib/offset-from'
 import { getNumber } from '../lib/local-storage'
+import { t } from '../lib/i18n'
 import { IconPreviewDialog } from './octicons/icon-preview-dialog'
 import { isCertificateErrorSuppressedFor } from '../lib/suppress-certificate-error'
 import { webUtils } from 'electron'
@@ -3251,7 +3252,9 @@ export class App extends React.Component<IAppProps, IAppState> {
     return (
       <FavoritesSidebar
         repositories={repositories}
+        recentRepositories={this.state.recentRepositories}
         repositoryGroups={this.state.repositoryGroups}
+        favoriteRepositoryListGroups={this.state.favoriteRepositoryListGroups}
         selectedRepository={selectedRepository}
         localRepositoryStateLookup={this.state.localRepositoryStateLookup}
         dispatcher={this.props.dispatcher}
@@ -3277,6 +3280,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         repositories={repositories}
         recentRepositories={this.state.recentRepositories}
         repositoryGroups={this.state.repositoryGroups}
+        favoriteRepositoryListGroups={this.state.favoriteRepositoryListGroups}
         localRepositoryStateLookup={this.state.localRepositoryStateLookup}
         askForConfirmationOnRemoveRepository={
           this.state.askForConfirmationOnRepositoryRemoval
@@ -3400,10 +3404,10 @@ export class App extends React.Component<IAppProps, IAppState> {
       title = alias ?? repository.name
     } else if (this.state.repositories.length > 0) {
       icon = octicons.repo
-      title = __DARWIN__ ? 'Select a Repository' : 'Select a repository'
+      title = t('toolbar.selectRepository')
     } else {
       icon = octicons.repo
-      title = __DARWIN__ ? 'No Repositories' : 'No repositories'
+      title = t('toolbar.noRepositories')
     }
 
     const isOpen =
@@ -3434,7 +3438,7 @@ export class App extends React.Component<IAppProps, IAppState> {
       <ToolbarDropdown
         icon={icon}
         title={title}
-        description={__DARWIN__ ? 'Current Repository' : 'Current repository'}
+        description={t('toolbar.currentRepository')}
         tooltip={tooltip}
         foldoutStyle={foldoutStyle}
         onContextMenu={this.onRepositoryToolbarButtonContextMenu}

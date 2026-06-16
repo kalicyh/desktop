@@ -31,6 +31,7 @@ import { PushPullButtonDropDown } from './push-pull-button-dropdown'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
 import { enableResizingToolbarButtons } from '../../lib/feature-flag'
 import { formatCompactNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
 
 export const DropdownItemClassName = 'push-pull-dropdown-item'
 
@@ -161,11 +162,11 @@ function renderLastFetched(lastFetched: Date | null): JSX.Element | string {
   if (lastFetched) {
     return (
       <span>
-        Last fetched <RelativeTime date={lastFetched} />
+        {t('toolbar.lastFetched')} <RelativeTime date={lastFetched} />
       </span>
     )
   } else {
-    return 'Never fetched'
+    return t('toolbar.neverFetched')
   }
 }
 
@@ -214,9 +215,9 @@ export class PushPullButton extends React.Component<
 
     if (progressComplete) {
       this.setState({
-        screenReaderStateMessage: `${
-          this.state.actionInProgress ?? 'Pull, push, or fetch'
-        } complete`,
+        screenReaderStateMessage: t('toolbar.actionComplete', {
+          action: this.state.actionInProgress ?? t('toolbar.pushPullOptions'),
+        }),
         actionInProgress: null,
       })
     }
@@ -234,7 +235,9 @@ export class PushPullButton extends React.Component<
     }
 
     const { description, title, kind } = progress
-    const screenReaderStateMessage = `${title} ${description ?? 'Hang on…'}`
+    const screenReaderStateMessage = `${title} ${
+      description ?? t('toolbar.hangOn')
+    }`
     const actionInProgress: ActionInProgress | null =
       this.state.actionInProgress === null && this.isPullPushFetchProgress(kind)
         ? kind
@@ -260,7 +263,7 @@ export class PushPullButton extends React.Component<
       buttonClassName: 'push-pull-button',
       style: ToolbarButtonStyle.Subtitle,
       dropdownStyle: ToolbarDropdownStyle.MultiOption,
-      ariaLabel: 'Push, pull, fetch options',
+      ariaLabel: t('toolbar.pushPullOptions'),
       dropdownState: this.props.isDropdownOpen ? 'open' : 'closed',
       enableFocusTrap: this.props.enableFocusTrap,
       onDropdownStateChanged: this.props.onDropdownStateChanged,
@@ -421,7 +424,7 @@ export class PushPullButton extends React.Component<
           onResize={this.onResize}
           maximumWidth={this.props.pushPullButtonWidth.max}
           minimumWidth={this.props.pushPullButtonWidth.min}
-          description="Push pull button"
+          description={t('toolbar.pushPullButtonDescription')}
         >
           {this.renderButton()}
           <span id="push-pull-button-state">
@@ -514,7 +517,7 @@ export class PushPullButton extends React.Component<
       <ToolbarButton
         {...this.defaultButtonProps()}
         title={progress.title}
-        description={progress.description || 'Hang on…'}
+        description={progress.description || t('toolbar.hangOn')}
         progressValue={progress.value}
         icon={syncClockwise}
         iconClassName={networkActionInProgress ? 'spin' : ''}
@@ -528,8 +531,8 @@ export class PushPullButton extends React.Component<
     return (
       <ToolbarButton
         {...this.defaultButtonProps()}
-        title="Publish repository"
-        description="Publish this repository to GitHub"
+        title={t('toolbar.publishRepository')}
+        description={t('toolbar.publishRepositoryDescription')}
         className="push-pull-button"
         icon={octicons.upload}
         style={ToolbarButtonStyle.Subtitle}
@@ -540,13 +543,13 @@ export class PushPullButton extends React.Component<
 
   private detachedHeadButton(rebaseInProgress: boolean) {
     const description = rebaseInProgress
-      ? 'Rebase in progress'
-      : 'Cannot publish detached HEAD'
+      ? t('toolbar.rebaseInProgress')
+      : t('toolbar.cannotPublishDetachedHead')
 
     return (
       <ToolbarButton
         {...this.defaultButtonProps()}
-        title="Publish branch"
+        title={t('toolbar.publishBranch')}
         description={description}
         icon={octicons.upload}
         disabled={true}
@@ -560,8 +563,8 @@ export class PushPullButton extends React.Component<
     shouldNudge: boolean
   ) {
     const description = isGitHub
-      ? 'Publish this branch to GitHub'
-      : 'Publish this branch to the remote'
+      ? t('toolbar.publishBranchToGitHub')
+      : t('toolbar.publishBranchToRemote')
 
     const className = classNames(
       this.defaultDropdownProps().className,
@@ -574,7 +577,7 @@ export class PushPullButton extends React.Component<
     return (
       <ToolbarDropdown
         {...this.defaultDropdownProps()}
-        title="Publish branch"
+        title={t('toolbar.publishBranch')}
         description={description}
         icon={octicons.upload}
         onClick={onClick}
@@ -591,7 +594,7 @@ export class PushPullButton extends React.Component<
     lastFetched: Date | null,
     onClick: () => void
   ) {
-    const title = `Fetch ${remoteName}`
+    const title = t('toolbar.fetch', { remote: remoteName })
     return (
       <ToolbarButton
         {...this.defaultButtonProps()}
@@ -613,8 +616,8 @@ export class PushPullButton extends React.Component<
     onClick: () => void
   ) {
     const title = pullWithRebase
-      ? `Pull ${remoteName} with rebase`
-      : `Pull ${remoteName}`
+      ? t('toolbar.pullWithRebase', { remote: remoteName })
+      : t('toolbar.pull', { remote: remoteName })
 
     const dropdownItemTypes = [DropdownItemType.Fetch]
 
@@ -650,7 +653,7 @@ export class PushPullButton extends React.Component<
     return (
       <ToolbarDropdown
         {...this.defaultDropdownProps()}
-        title={`Push ${remoteName}`}
+        title={t('toolbar.push', { remote: remoteName })}
         description={renderLastFetched(lastFetched)}
         icon={octicons.arrowUp}
         onClick={onClick}
@@ -673,7 +676,7 @@ export class PushPullButton extends React.Component<
     return (
       <ToolbarDropdown
         {...this.defaultDropdownProps()}
-        title={`Force push ${remoteName}`}
+        title={t('toolbar.forcePush', { remote: remoteName })}
         description={renderLastFetched(lastFetched)}
         icon={forcePushIcon}
         onClick={onClick}

@@ -7,6 +7,7 @@ import {
   Repositoryish,
   RepositoryListGroup,
   getGroupKey,
+  getRepositoryListGroupFavoriteKey,
 } from './group-repositories'
 import { IFilterListGroup } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
@@ -26,9 +27,9 @@ import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
 import { generateRepositoryListContextMenu } from '../repositories-list/repository-list-item-context-menu'
 import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { SectionFilterList } from '../lib/section-filter-list'
-import { assertNever } from '../../lib/fatal-error'
 import { IAheadBehind } from '../../models/branch'
 import { t } from '../../lib/i18n'
+import { getRepositoryListGroupLabel } from './repository-list-group-label'
 
 const BlankSlateImage = encodePathAsUrl(__dirname, 'static/empty-no-repo.svg')
 
@@ -37,6 +38,7 @@ interface IRepositoriesListProps {
   readonly repositories: ReadonlyArray<Repositoryish>
   readonly recentRepositories: ReadonlyArray<number>
   readonly repositoryGroups: ReadonlyArray<RepositoryGroup>
+  readonly favoriteRepositoryListGroups: ReadonlyArray<string>
 
   /** A cache of the latest repository state values, keyed by the repository id */
   readonly localRepositoryStateLookup: ReadonlyMap<
@@ -267,37 +269,206 @@ export class RepositoriesList extends React.Component<
     )
   }
 
-  private getGroupLabel(group: RepositoryListGroup) {
-    const { kind } = group
-    if (kind === 'enterprise') {
-      return group.host
-    } else if (kind === 'other') {
-      return t('repositories.group.other')
-    } else if (kind === 'dotcom') {
-      return group.owner.login
-    } else if (kind === 'recent') {
-      return t('repositories.group.recent')
-    } else if (kind === 'group') {
-      return group.group.name
-    } else {
-      assertNever(kind, `Unknown repository group kind ${kind}`)
+  private renderGroupHeader = (group: RepositoryListGroup) => {
+    const label = getRepositoryListGroupLabel(group)
+
+    return (
+      <div
+        key={getGroupKey(group)}
+        className="filter-list-group-header repository-list-group-header"
+        onClick={event => this.onGroupHeaderClick(group, event)}
+        onContextMenu={event => this.onGroupContextMenu(group, event)}
+      >
+        <TooltippedContent
+          className="repository-list-group-header-label"
+          tooltip={label}
+          onlyWhenOverflowed={true}
+        >
+          {label}
+        </TooltippedContent>
+      </div>
+    )
+  }
+
+  private getRepositoriesForGroup(group: RepositoryListGroup) {
+    const groupKey = getGroupKey(group)
+    const groups = this.getRepositoryGroups(
+      this.props.repositories,
+      this.props.repositoryGroups,
+      this.props.localRepositoryStateLookup,
+      this.props.recentRepositories
+    )
+    const match = groups.find(g => getGroupKey(g.identifier) === groupKey)
+
+    if (match === undefined) {
+      return []
+    }
+
+    return match.items
+      .map(item => item.repository)
+      .filter(
+        (repository): repository is Repository =>
+          repository instanceof Repository
+      )
+  }
+
+  private onGroupHeaderClick = (
+    group: RepositoryListGroup,
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
+    if (event.shiftKey) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.setRepositoryListGroupFavorite(group, true)
+    } else if (event.metaKey || event.ctrlKey) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.createRepositoryGroupFromListGroup(
+        group,
+        this.getRepositoriesForGroup(group)
+      )
     }
   }
 
-  private renderGroupHeader = (group: RepositoryListGroup) => {
-    const label = this.getGroupLabel(group)
+  private onGroupContextMenu = (
+    group: RepositoryListGroup,
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
 
-    return (
-      <TooltippedContent
-        key={getGroupKey(group)}
-        className="filter-list-group-header"
-        tooltip={label}
-        onlyWhenOverflowed={true}
-        tagName="div"
-      >
-        {label}
-      </TooltippedContent>
+    const repositories = this.getRepositoriesForGroup(group)
+    const favoriteKey = getRepositoryListGroupFavoriteKey(group)
+    const isFavorite =
+      this.props.favoriteRepositoryListGroups.includes(favoriteKey)
+
+    if (event.shiftKey) {
+      this.setRepositoryListGroupFavorite(group, true)
+      return
+    }
+
+    if (event.metaKey || event.ctrlKey) {
+      this.createRepositoryGroupFromListGroup(group, repositories)
+      return
+    }
+
+    const items: Array<IMenuItem> = [
+      {
+        label: isFavorite
+          ? t('repositoryGroups.menu.removeFromFavorites')
+          : t('repositoryGroups.menu.addToFavorites'),
+        action: () =>
+          this.props.dispatcher.setRepositoryListGroupFavorite(
+            favoriteKey,
+            !isFavorite
+          ),
+      },
+      {
+        label: t('repositoryGroups.menu.addRepositoriesToFavorites'),
+        enabled: repositories.length > 0,
+        action: () => this.addRepositoriesToFavorites(repositories),
+      },
+      {
+        label: t('repositoryGroups.menu.createGroupFromSection'),
+        enabled: repositories.length > 0,
+        action: () =>
+          this.createRepositoryGroupFromListGroup(group, repositories),
+      },
+    ]
+
+    if (group.kind === 'group') {
+      items.push(
+        { type: 'separator' },
+        {
+          label: t('repositoryGroups.menu.rename'),
+          action: () =>
+            this.props.dispatcher.showPopup({
+              type: PopupType.RepositoryGroupName,
+              mode: 'rename',
+              groupId: group.group.id,
+              currentName: group.group.name,
+            }),
+        },
+        {
+          label: t('repositoryGroups.menu.delete'),
+          action: () =>
+            this.props.dispatcher.showPopup({
+              type: PopupType.ConfirmDeleteRepositoryGroup,
+              groupId: group.group.id,
+              groupName: group.group.name,
+              memberCount: repositories.length,
+            }),
+        }
+      )
+    }
+
+    showContextualMenu(items)
+  }
+
+  private setRepositoryListGroupFavorite = (
+    group: RepositoryListGroup,
+    isFavorite: boolean
+  ) => {
+    this.props.dispatcher.setRepositoryListGroupFavorite(
+      getRepositoryListGroupFavoriteKey(group),
+      isFavorite
     )
+  }
+
+  private addRepositoriesToFavorites = async (
+    repositories: ReadonlyArray<Repository>
+  ) => {
+    try {
+      for (const repository of repositories) {
+        if (!repository.isFavorite) {
+          await this.props.dispatcher.setRepositoryFavorite(repository, true)
+        }
+      }
+    } catch (e) {
+      this.props.dispatcher.postError(e)
+    }
+  }
+
+  private createRepositoryGroupFromListGroup = async (
+    group: RepositoryListGroup,
+    repositories: ReadonlyArray<Repository>
+  ) => {
+    if (repositories.length === 0) {
+      return
+    }
+
+    try {
+      const name = this.getUniqueRepositoryGroupName(
+        getRepositoryListGroupLabel(group)
+      )
+      const newGroup = await this.props.dispatcher.addRepositoryGroup(name)
+
+      for (const repository of repositories) {
+        await this.props.dispatcher.changeRepositoryGroup(
+          repository,
+          newGroup.id
+        )
+      }
+    } catch (e) {
+      this.props.dispatcher.postError(e)
+    }
+  }
+
+  private getUniqueRepositoryGroupName(name: string) {
+    const existingNames = new Set(
+      this.props.repositoryGroups.map(group => group.name.toLocaleLowerCase())
+    )
+
+    if (!existingNames.has(name.toLocaleLowerCase())) {
+      return name
+    }
+
+    let suffix = 2
+    while (existingNames.has(`${name} ${suffix}`.toLocaleLowerCase())) {
+      suffix++
+    }
+
+    return `${name} ${suffix}`
   }
 
   private onItemClick = (item: IRepositoryListItem) => {
@@ -353,7 +524,7 @@ export class RepositoriesList extends React.Component<
       >
     ) =>
     (group: number) =>
-      this.getGroupLabel(groups[group].identifier)
+      getRepositoryListGroupLabel(groups[group].identifier)
 
   public render() {
     const groups = this.getRepositoryGroups(
@@ -385,6 +556,7 @@ export class RepositoriesList extends React.Component<
           onItemClick={this.onItemClick}
           renderPostFilter={this.renderPostFilter}
           renderNoItems={this.renderNoItems}
+          placeholderText={t('repositories.filterPlaceholder')}
           groups={groups}
           invalidationProps={{
             repositories: this.props.repositories,

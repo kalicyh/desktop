@@ -13,10 +13,17 @@ import { t } from '../../lib/i18n'
 import { Octicon, iconForRepository } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { renderRepoIndicators } from '../repositories-list/repository-list-item'
+import {
+  getRepositoryListGroupFavoriteKey,
+  groupRepositories,
+} from '../repositories-list/group-repositories'
+import { getRepositoryListGroupLabel } from '../repositories-list/repository-list-group-label'
 
 interface IFavoritesSidebarProps {
   readonly repositories: ReadonlyArray<Repository>
+  readonly recentRepositories: ReadonlyArray<number>
   readonly repositoryGroups: ReadonlyArray<RepositoryGroup>
+  readonly favoriteRepositoryListGroups: ReadonlyArray<string>
   readonly selectedRepository: Repository | null
   readonly localRepositoryStateLookup: ReadonlyMap<
     number,
@@ -34,6 +41,7 @@ interface IFavoriteGroupSection {
   readonly id: string
   readonly name: string
   readonly group: RepositoryGroup | null
+  readonly favoriteGroupKey: string | null
   readonly repositories: ReadonlyArray<Repository>
   readonly memberCount: number
 }
@@ -86,8 +94,14 @@ export class FavoritesSidebar extends React.Component<
   }
 
   private getSections() {
+    const favoriteListGroupSections = this.getFavoriteListGroupSections()
+    const repositoriesInFavoriteListGroups = new Set(
+      favoriteListGroupSections.flatMap(section =>
+        section.repositories.map(repository => repository.id)
+      )
+    )
     const favoriteRepositories = this.props.repositories.filter(
-      r => r.isFavorite
+      r => r.isFavorite && !repositoriesInFavoriteListGroups.has(r.id)
     )
     const byGroupId = new Map<number, Repository[]>()
     const ungrouped: Repository[] = []
@@ -115,7 +129,7 @@ export class FavoritesSidebar extends React.Component<
       )
     }
 
-    const sections: IFavoriteGroupSection[] = []
+    const sections: IFavoriteGroupSection[] = [...favoriteListGroupSections]
 
     for (const group of this.props.repositoryGroups) {
       const repositories = byGroupId.get(group.id)
@@ -127,6 +141,7 @@ export class FavoritesSidebar extends React.Component<
         id: group.id.toString(),
         name: group.name,
         group,
+        favoriteGroupKey: null,
         repositories: this.sortRepositories(repositories),
         memberCount: groupMemberCounts.get(group.id) ?? repositories.length,
       })
@@ -137,12 +152,62 @@ export class FavoritesSidebar extends React.Component<
         id: ungroupedFavoritesId,
         name: t('favoritesSidebar.ungrouped'),
         group: null,
+        favoriteGroupKey: null,
         repositories: this.sortRepositories(ungrouped),
         memberCount: ungrouped.length,
       })
     }
 
     return sections.map(this.renderSection)
+  }
+
+  private getFavoriteListGroupSections(): ReadonlyArray<IFavoriteGroupSection> {
+    const favoriteGroupKeys = new Set(this.props.favoriteRepositoryListGroups)
+
+    if (favoriteGroupKeys.size === 0) {
+      return []
+    }
+
+    const repositoryListGroups = groupRepositories(
+      this.props.repositories,
+      this.props.repositoryGroups,
+      this.props.localRepositoryStateLookup,
+      this.props.recentRepositories
+    )
+    const sections: IFavoriteGroupSection[] = []
+
+    for (const group of repositoryListGroups) {
+      const favoriteGroupKey = getRepositoryListGroupFavoriteKey(
+        group.identifier
+      )
+
+      if (!favoriteGroupKeys.has(favoriteGroupKey)) {
+        continue
+      }
+
+      const repositories = group.items
+        .map(item => item.repository)
+        .filter(
+          (repository): repository is Repository =>
+            repository instanceof Repository
+        )
+
+      if (repositories.length === 0) {
+        continue
+      }
+
+      sections.push({
+        id: `list-group:${favoriteGroupKey}`,
+        name: getRepositoryListGroupLabel(group.identifier),
+        group:
+          group.identifier.kind === 'group' ? group.identifier.group : null,
+        favoriteGroupKey,
+        repositories: this.sortRepositories(repositories),
+        memberCount: repositories.length,
+      })
+    }
+
+    return sections
   }
 
   private sortRepositories(repositories: ReadonlyArray<Repository>) {
@@ -246,13 +311,35 @@ export class FavoritesSidebar extends React.Component<
   ) {
     event.preventDefault()
 
+    const items: IMenuItem[] = []
+
+    const favoriteGroupKey = section.favoriteGroupKey
+
+    if (favoriteGroupKey !== null) {
+      items.push({
+        label: t('repositoryGroups.menu.removeFromFavorites'),
+        action: () =>
+          this.props.dispatcher.setRepositoryListGroupFavorite(
+            favoriteGroupKey,
+            false
+          ),
+      })
+    }
+
     if (section.group === null) {
+      if (items.length > 0) {
+        showContextualMenu(items)
+      }
       return
     }
 
     const { group } = section
 
-    const items: ReadonlyArray<IMenuItem> = [
+    if (items.length > 0) {
+      items.push({ type: 'separator' })
+    }
+
+    items.push(
       {
         label: t('repositoryGroups.menu.rename'),
         action: () =>
@@ -273,7 +360,7 @@ export class FavoritesSidebar extends React.Component<
             memberCount: section.memberCount,
           }),
       },
-    ]
+    )
 
     showContextualMenu(items)
   }

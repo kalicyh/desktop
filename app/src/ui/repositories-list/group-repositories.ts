@@ -54,6 +54,26 @@ export const getGroupKey = (group: RepositoryListGroup) => {
       assertNever(group, `Unknown repository group kind ${kind}`)
   }
 }
+
+export const getRepositoryListGroupFavoriteKey = (
+  group: RepositoryListGroup
+) => {
+  const { kind } = group
+  switch (kind) {
+    case 'recent':
+      return 'recent'
+    case 'group':
+      return `group:${group.group.id}`
+    case 'dotcom':
+      return `dotcom:${group.owner.login}`
+    case 'enterprise':
+      return `enterprise:${group.host}`
+    case 'other':
+      return 'other'
+    default:
+      assertNever(group, `Unknown repository group kind ${kind}`)
+  }
+}
 export type Repositoryish = Repository | CloningRepository
 
 export interface IRepositoryListItem extends IFilterListItem {

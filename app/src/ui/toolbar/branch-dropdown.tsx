@@ -30,6 +30,7 @@ import { generateBranchContextMenuItems } from '../branches/branch-list-item-con
 import { showContextualMenu } from '../../lib/menu-item'
 import { Emoji } from '../../lib/emoji'
 import { enableResizingToolbarButtons } from '../../lib/feature-flag'
+import { t } from '../../lib/i18n'
 
 interface IBranchDropdownProps {
   readonly dispatcher: Dispatcher
@@ -140,7 +141,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
     let icon: OcticonSymbol = octicons.gitBranch
     let iconClassName: string | undefined = undefined
     let title: string
-    let description = __DARWIN__ ? 'Current Branch' : 'Current branch'
+    let description = t('toolbar.currentBranch')
     let canOpen = true
     let disabled = false
     let tooltip: string
@@ -154,15 +155,15 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
       return null
     } else if (tip.kind === TipState.Unborn) {
       title = tip.ref
-      tooltip = `Current branch is ${tip.ref}`
+      tooltip = t('toolbar.currentBranchIs', { branch: tip.ref })
       canOpen = branchesState.allBranches.some(
         b => !b.isDesktopForkRemoteBranch
       )
     } else if (tip.kind === TipState.Detached) {
-      title = `On ${tip.currentSha.substring(0, 7)}`
-      tooltip = 'Currently on a detached HEAD'
+      title = t('toolbar.onCommit', { sha: tip.currentSha.substring(0, 7) })
+      tooltip = t('toolbar.currentlyOnDetachedHead')
       icon = octicons.gitCommit
-      description = 'Detached HEAD'
+      description = t('toolbar.detachedHead')
     } else if (tip.kind === TipState.Valid) {
       title = tooltip = tip.branch.name
     } else {
@@ -180,18 +181,18 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
         description = `${description} (${friendlyProgress}%)`
       }
 
-      tooltip = `Checking out ${checkoutProgress.target}`
+      tooltip = t('toolbar.checkingOut', { branch: checkoutProgress.target })
       progressValue = checkoutProgress.value
       icon = syncClockwise
       iconClassName = 'spin'
       canOpen = false
     } else if (conflictState !== null && isRebaseConflictState(conflictState)) {
       title = conflictState.targetBranch
-      description = 'Rebasing branch'
+      description = t('toolbar.rebasingBranch')
       icon = octicons.gitBranch
       canOpen = false
       disabled = true
-      tooltip = `Rebasing ${conflictState.targetBranch}`
+      tooltip = t('toolbar.rebasing', { branch: conflictState.targetBranch })
     }
 
     const isOpen = this.props.isOpen
@@ -247,7 +248,7 @@ export class BranchDropdown extends React.Component<IBranchDropdownProps> {
           onResize={this.onResize}
           maximumWidth={this.props.branchDropdownWidth.max}
           minimumWidth={this.props.branchDropdownWidth.min}
-          description="Current branch dropdown button"
+          description={t('toolbar.branchDropdownDescription')}
         >
           <ToolbarDropdown
             className="branch-button"

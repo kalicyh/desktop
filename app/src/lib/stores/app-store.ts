@@ -277,6 +277,8 @@ import {
   getObject,
   setObject,
   getFloatNumber,
+  getStringArray,
+  setStringArray,
 } from '../local-storage'
 import { ExternalEditorError, suggestedExternalEditor } from '../editors/shared'
 import { ApiRepositoriesStore } from './api-repositories-store'
@@ -553,6 +555,7 @@ const alwaysUseCopilotForConflictResolutionKey =
 export const showChangesFilterKey = 'show-changes-filter'
 export const showFavoritesSidebarKey = 'show-favorites-sidebar'
 export const showFavoritesSidebarDefault = false
+export const favoriteRepositoryListGroupsKey = 'favorite-repository-list-groups'
 
 const selectedCopilotModelsKey = 'selected-copilot-models'
 export const showChangesFilterDefault = true
@@ -725,6 +728,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   private showChangesFilter: boolean = false
   private showFavoritesSidebar: boolean = showFavoritesSidebarDefault
+  private favoriteRepositoryListGroups: ReadonlyArray<string> = []
   private repositoryGroups: ReadonlyArray<RepositoryGroup> = []
 
   private selectedCopilotModels: CopilotModelSelections = {}
@@ -1291,6 +1295,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         this.alwaysUseCopilotForConflictResolution,
       showChangesFilter: this.showChangesFilter,
       showFavoritesSidebar: this.showFavoritesSidebar,
+      favoriteRepositoryListGroups: this.favoriteRepositoryListGroups,
       repositoryGroups: this.repositoryGroups,
       selectedCopilotModels: this.selectedCopilotModels,
       copilotModels: this.copilotModels,
@@ -2595,6 +2600,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.showFavoritesSidebar = getBoolean(
       showFavoritesSidebarKey,
       showFavoritesSidebarDefault
+    )
+
+    this.favoriteRepositoryListGroups = getStringArray(
+      favoriteRepositoryListGroupsKey
     )
 
     this.selectedCopilotModels = this.loadCopilotModelSelections()
@@ -4818,6 +4827,34 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
+  public _setRepositoryListGroupFavorite(
+    groupKey: string,
+    isFavorite: boolean
+  ): void {
+    const favoriteGroupKeys = new Set(this.favoriteRepositoryListGroups)
+
+    if (isFavorite) {
+      favoriteGroupKeys.add(groupKey)
+    } else {
+      favoriteGroupKeys.delete(groupKey)
+    }
+
+    this.favoriteRepositoryListGroups = Array.from(favoriteGroupKeys)
+    setStringArray(
+      favoriteRepositoryListGroupsKey,
+      this.favoriteRepositoryListGroups
+    )
+
+    if (isFavorite && !this.showFavoritesSidebar) {
+      this.showFavoritesSidebar = true
+      setBoolean(showFavoritesSidebarKey, true)
+      this.updateMenuLabelsForSelectedRepository()
+    }
+
+    this.emitUpdate()
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
   public async _addRepositoryGroup(name: string): Promise<RepositoryGroup> {
     const group = await this.repositoriesStore.addRepositoryGroup(name)
     await this.refreshRepositoryGroups()
@@ -4833,7 +4870,22 @@ export class AppStore extends TypedBaseStore<IAppState> {
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _removeRepositoryGroup(id: number): Promise<void> {
     await this.repositoriesStore.removeRepositoryGroup(id)
+    this.removeFavoriteRepositoryListGroupKey(`group:${id}`)
     await this.refreshRepositoryGroups()
+  }
+
+  private removeFavoriteRepositoryListGroupKey(groupKey: string) {
+    if (!this.favoriteRepositoryListGroups.includes(groupKey)) {
+      return
+    }
+
+    this.favoriteRepositoryListGroups = this.favoriteRepositoryListGroups.filter(
+      key => key !== groupKey
+    )
+    setStringArray(
+      favoriteRepositoryListGroupsKey,
+      this.favoriteRepositoryListGroups
+    )
   }
 
   private async refreshRepositoryGroups() {

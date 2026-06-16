@@ -425,6 +425,9 @@ export interface IAppState {
   /** Whether the favorites sidebar is shown. */
   readonly showFavoritesSidebar: boolean
 
+  /** Repository list groups pinned to the favorites sidebar. */
+  readonly favoriteRepositoryListGroups: ReadonlyArray<string>
+
   /** User-defined groups used to organize the repository list. */
   readonly repositoryGroups: ReadonlyArray<RepositoryGroup>
 

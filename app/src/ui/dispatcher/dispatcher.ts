@@ -889,6 +889,14 @@ export class Dispatcher {
     return this.appStore._setRepositoryFavorite(repository, isFavorite)
   }
 
+  /** Marks a repository list group as favorite or removes it from favorites. */
+  public setRepositoryListGroupFavorite(
+    groupKey: string,
+    isFavorite: boolean
+  ): void {
+    this.appStore._setRepositoryListGroupFavorite(groupKey, isFavorite)
+  }
+
   /** Creates a repository group. */
   public addRepositoryGroup(name: string): Promise<RepositoryGroup> {
     return this.appStore._addRepositoryGroup(name)
