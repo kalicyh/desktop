@@ -4932,7 +4932,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
           // This is based on the branches ref. It should not be null for a
           // remote branch
           throw new Error(
-            `Could not determine remote name from: ${branch.ref}.`
+            t('appStore.error.couldNotDetermineRemoteName', {
+              ref: branch.ref,
+            })
           )
         }
 
@@ -4943,7 +4945,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
             .catch(e => log.debug(`Could not get remote URL`, e)))
 
         if (remote === undefined) {
-          throw new Error(`Could not determine remote url from: ${branch.ref}.`)
+          throw new Error(
+            t('appStore.error.couldNotDetermineRemoteUrl', { ref: branch.ref })
+          )
         }
 
         await gitStore.performFailableOperation(() =>
@@ -5007,7 +5011,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
           .catch(e => log.debug(`Could not get remote URL`, e)))
 
       if (!remote) {
-        throw new Error(`Could not determine remote url from: ${branch.ref}.`)
+        throw new Error(
+          t('appStore.error.couldNotDetermineRemoteUrl', { ref: branch.ref })
+        )
       }
 
       await deleteRemoteBranch(repository, remote, branch.upstreamWithoutRemote)
@@ -5035,9 +5041,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       branchesState.recentBranches.find(x => x.name !== branchToDelete.name)
 
     if (branchToCheckout === undefined) {
-      throw new Error(
-        `It's not possible to delete the only existing branch in a repository.`
-      )
+      throw new Error(t('appStore.error.cannotDeleteOnlyBranch'))
     }
 
     return branchToCheckout
@@ -5077,11 +5081,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
     const { tip } = state.branchesState
 
     if (tip.kind === TipState.Unborn) {
-      throw new Error('The current branch is unborn.')
+      throw new Error(t('appStore.error.currentBranchUnborn'))
     }
 
     if (tip.kind === TipState.Detached) {
-      throw new Error('The current repository is in a detached HEAD state.')
+      throw new Error(t('appStore.error.detachedHead'))
     }
 
     if (tip.kind === TipState.Valid) {
@@ -5363,18 +5367,18 @@ export class AppStore extends TypedBaseStore<IAppState> {
       const remote = gitStore.currentRemote
 
       if (!remote) {
-        throw new Error('The repository has no remotes.')
+        throw new Error(t('appStore.error.noRemotes'))
       }
 
       const state = this.repositoryStateCache.get(repository)
       const tip = state.branchesState.tip
 
       if (tip.kind === TipState.Unborn) {
-        throw new Error('The current branch is unborn.')
+        throw new Error(t('appStore.error.currentBranchUnborn'))
       }
 
       if (tip.kind === TipState.Detached) {
-        throw new Error('The current repository is in a detached HEAD state.')
+        throw new Error(t('appStore.error.detachedHead'))
       }
 
       if (tip.kind === TipState.Valid) {
@@ -6022,7 +6026,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
         worktrees.find(wt => wt.path === repository.path) ?? null
 
       if (main === undefined) {
-        throw new Error('Could not find main worktree')
+        throw new Error(t('appStore.error.mainWorktreeNotFound'))
       }
 
       await this._switchWorktree(repository, main)
@@ -6862,7 +6866,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       }
 
       if (result === null) {
-        throw new Error('Copilot conflict resolution returned no results')
+        throw new Error(t('appStore.error.copilotConflictNoResults'))
       }
 
       if (isConfirmAbortFromLoading) {
@@ -7863,7 +7867,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       )
       this.tutorialAssessor.onNewTutorialRepository()
     } else {
-      const error = new Error(`${path} isn't a git repository.`)
+      const error = new Error(t('appStore.error.notAGitRepository', { path }))
       this.emitError(error)
     }
   }
