@@ -8,6 +8,7 @@ import { OnionSkin } from './onion-skin'
 import { Swipe } from './swipe'
 import { assertNever } from '../../../lib/fatal-error'
 import { ISize, getMaxFitSize } from './sizing'
+import { t } from '../../../lib/i18n'
 
 interface IModifiedImageDiffProps {
   readonly previous: Image
@@ -153,10 +154,10 @@ export class ModifiedImageDiff extends React.Component<
           onTabClicked={this.props.onChangeDiffType}
           type={TabBarType.Switch}
         >
-          <span>2-up</span>
-          <span>Swipe</span>
-          <span>Onion Skin</span>
-          <span>Difference</span>
+          <span>{t('diff.image.twoUp')}</span>
+          <span>{t('diff.image.swipe')}</span>
+          <span>{t('diff.image.onionSkin')}</span>
+          <span>{t('diff.image.difference')}</span>
         </TabBar>
 
         {this.renderCurrentDiffType()}

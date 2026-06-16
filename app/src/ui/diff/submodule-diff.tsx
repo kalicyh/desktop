@@ -8,6 +8,7 @@ import { SuggestedAction } from '../suggested-actions'
 import { Ref } from '../lib/ref'
 import { CopyButton } from '../copy-button'
 import { shortenSHA } from '../../models/commit'
+import { t } from '../../lib/i18n'
 
 type SubmoduleItemIcon =
   | {
@@ -54,7 +55,7 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
         <div className="content">
           <div className="interstitial-header">
             <div className="text">
-              <h1>Submodule changes</h1>
+              <h1>{t('diff.submodule.title')}</h1>
             </div>
           </div>
           {this.renderSubmoduleInfo()}
@@ -84,7 +85,7 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
     return this.renderSubmoduleDiffItem(
       { octicon: octicons.info, className: 'info-icon' },
       <>
-        This is a submodule based on the repository{' '}
+        {t('diff.submodule.basedOnRepository')}{' '}
         <LinkButton
           uri={`https://${repoIdentifier.hostname}/${repoIdentifier.owner}/${repoIdentifier.name}`}
         >
@@ -100,25 +101,25 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
     const { diff, readOnly } = this.props
     const { oldSHA, newSHA } = diff
 
-    const verb = readOnly ? 'was' : 'has been'
-    const suffix = readOnly
-      ? ''
-      : ' This change can be committed to the parent repository.'
+    const suffix = readOnly ? '' : ` ${t('diff.submodule.parentCommitSuffix')}`
 
     if (oldSHA !== null && newSHA !== null) {
       return this.renderSubmoduleDiffItem(
         { octicon: octicons.diffModified, className: 'modified-icon' },
         <>
-          This submodule changed its commit from{' '}
-          {this.renderCommitSHA(oldSHA, 'previous')} to{' '}
-          {this.renderCommitSHA(newSHA, 'new')}.{suffix}
+          {t('diff.submodule.changedFrom')}{' '}
+          {this.renderCommitSHA(oldSHA, 'previous')}{' '}
+          {t('diff.submodule.changedTo')} {this.renderCommitSHA(newSHA, 'new')}.
+          {suffix}
         </>
       )
     } else if (oldSHA === null && newSHA !== null) {
       return this.renderSubmoduleDiffItem(
         { octicon: octicons.diffAdded, className: 'added-icon' },
         <>
-          This submodule {verb} added pointing at commit{' '}
+          {readOnly
+            ? t('diff.submodule.wasAddedAt')
+            : t('diff.submodule.hasBeenAddedAt')}{' '}
           {this.renderCommitSHA(newSHA)}.{suffix}
         </>
       )
@@ -126,7 +127,9 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
       return this.renderSubmoduleDiffItem(
         { octicon: octicons.diffRemoved, className: 'removed-icon' },
         <>
-          This submodule {verb} removed while it was pointing at commit{' '}
+          {readOnly
+            ? t('diff.submodule.wasRemovedAt')
+            : t('diff.submodule.hasBeenRemovedAt')}{' '}
           {this.renderCommitSHA(oldSHA)}.{suffix}
         </>
       )
@@ -136,15 +139,17 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
   }
 
   private renderCommitSHA(sha: string, which?: 'previous' | 'new') {
-    const whichInfix = which === undefined ? '' : ` ${which}`
+    const ariaLabel =
+      which === 'previous'
+        ? t('diff.submodule.copyPreviousSha')
+        : which === 'new'
+        ? t('diff.submodule.copyNewSha')
+        : t('diff.submodule.copySha')
 
     return (
       <>
         <Ref>{shortenSHA(sha)}</Ref>
-        <CopyButton
-          ariaLabel={`Copy the full${whichInfix} SHA`}
-          copyContent={sha}
-        />
+        <CopyButton ariaLabel={ariaLabel} copyContent={sha} />
       </>
     )
   }
@@ -158,17 +163,16 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
 
     const changes =
       diff.status.untrackedChanges && diff.status.modifiedChanges
-        ? 'modified and untracked'
+        ? t('diff.submodule.modifiedAndUntracked')
         : diff.status.untrackedChanges
-        ? 'untracked'
-        : 'modified'
+        ? t('diff.submodule.untracked')
+        : t('diff.submodule.modified')
 
     return this.renderSubmoduleDiffItem(
       { octicon: octicons.fileDiff, className: 'untracked-icon' },
       <>
-        This submodule has {changes} changes. Those changes must be committed
-        inside of the submodule before they can be part of the parent
-        repository.
+        {t('diff.submodule.hasChangesPrefix')} {changes}{' '}
+        {t('diff.submodule.hasChangesSuffix')}
       </>
     )
   }
@@ -196,9 +200,9 @@ export class SubmoduleDiff extends React.Component<ISubmoduleDiffProps> {
     return (
       <span>
         <SuggestedAction
-          title="Open this submodule on GitHub Desktop"
-          description="You can open this submodule on GitHub Desktop as a normal repository to manage and commit any changes in it."
-          buttonText={__DARWIN__ ? 'Open Repository' : 'Open repository'}
+          title={t('diff.submodule.openTitle')}
+          description={t('diff.submodule.openDescription')}
+          buttonText={t('diff.submodule.openRepository')}
           type="primary"
           onClick={this.onOpenSubmoduleClick}
         />
