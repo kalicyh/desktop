@@ -168,7 +168,7 @@ export class CompareSidebar extends React.Component<
       <div id="compare-view" role="tabpanel" aria-labelledby="history-tab">
         <div className="compare-form">
           <FancyTextBox
-            ariaLabel="Branch filter"
+            ariaLabel={t('history.branchFilterAriaLabel')}
             symbol={octicons.gitBranch}
             displayClearButton={true}
             placeholder={placeholderText}
@@ -221,19 +221,20 @@ export class CompareSidebar extends React.Component<
 
     let emptyListMessage: string | JSX.Element
     if (formState.kind === HistoryTabMode.History) {
-      emptyListMessage = 'No history'
+      emptyListMessage = t('history.noHistory')
     } else {
       const currentlyComparedBranchName = formState.comparisonBranch.name
 
       emptyListMessage =
         formState.comparisonMode === ComparisonMode.Ahead ? (
           <p>
-            The compared branch (<Ref>{currentlyComparedBranchName}</Ref>) is up
-            to date with your branch
+            {t('history.comparedBranchUpToDatePrefix')} (
+            <Ref>{currentlyComparedBranchName}</Ref>){' '}
+            {t('history.comparedBranchUpToDateSuffix')}
           </p>
         ) : (
           <p>
-            Your branch is up to date with the compared branch (
+            {t('history.yourBranchUpToDatePrefix')} (
             <Ref>{currentlyComparedBranchName}</Ref>)
           </p>
         )
@@ -421,10 +422,16 @@ export class CompareSidebar extends React.Component<
     return (
       <div className="compare-content">
         <TabBar selectedIndex={selectedTab} onTabClicked={this.onTabClicked}>
-          <span>{`Behind (${formatNumber(
-            formState.aheadBehind.behind
-          )})`}</span>
-          <span>{`Ahead (${formatNumber(formState.aheadBehind.ahead)})`}</span>
+          <span>
+            {t('history.behindCount', {
+              count: formatNumber(formState.aheadBehind.behind),
+            })}
+          </span>
+          <span>
+            {t('history.aheadCount', {
+              count: formatNumber(formState.aheadBehind.ahead),
+            })}
+          </span>
         </TabBar>
         {this.renderActiveTab(formState)}
       </div>
@@ -690,9 +697,7 @@ export class CompareSidebar extends React.Component<
       )
     ) {
       defaultErrorHandler(
-        new Error(
-          `Unable to squash. Squashing replays all commits up to the last one required for the squash. A merge commit cannot exist among those commits.`
-        ),
+        new Error(t('history.squashMergeCommitError')),
         this.props.dispatcher
       )
       return
@@ -710,8 +715,18 @@ export class CompareSidebar extends React.Component<
         description: squashedDescription,
         timestamp: Date.now(),
       },
-      dialogTitle: `Squash ${allCommitsInSquash.length} Commits`,
-      dialogButtonText: `Squash ${allCommitsInSquash.length} Commits`,
+      dialogTitle: t(
+        allCommitsInSquash.length === 1
+          ? 'history.squashCommitsTitle.one'
+          : 'history.squashCommitsTitle.other',
+        { count: allCommitsInSquash.length }
+      ),
+      dialogButtonText: t(
+        allCommitsInSquash.length === 1
+          ? 'history.squashCommitsTitle.one'
+          : 'history.squashCommitsTitle.other',
+        { count: allCommitsInSquash.length }
+      ),
       prepopulateCommitSummary: true,
       onSubmitCommitMessage: async (context: ICommitContext) => {
         this.props.dispatcher.closePopup(PopupType.CommitMessage)

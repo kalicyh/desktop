@@ -17,6 +17,25 @@ import {
   isIdMultiCommitOperation,
 } from '../../models/multi-commit-operation'
 import { RebasePreview } from '../../models/rebase'
+import { t } from '../../lib/i18n'
+
+function formatCommitCount(count: number): string {
+  return t(
+    count === 1 ? 'history.commitCount.one' : 'history.commitCount.other',
+    {
+      count,
+    }
+  )
+}
+
+function formatConflictedFileCount(count: number): string {
+  return t(
+    count === 1
+      ? 'history.conflictedFileCount.one'
+      : 'history.conflictedFileCount.other',
+    { count }
+  )
+}
 
 interface IMergeCallToActionWithConflictsProps {
   readonly repository: Repository
@@ -191,7 +210,7 @@ export class MergeCallToActionWithConflicts extends React.Component<
         <DropdownSelectButton
           checkedOption={this.state.selectedOperation}
           options={getMergeOptions()}
-          dropdownAriaLabel="Merge options"
+          dropdownAriaLabel={t('history.mergeOptionsAriaLabel')}
           disabled={disabled}
           onCheckedOptionChange={this.onOperationChange}
           onSubmit={this.onOperationInvoked}
@@ -260,15 +279,14 @@ export class MergeCallToActionWithConflicts extends React.Component<
       return null
     }
 
-    const pluralized = this.commitCount === 1 ? 'commit' : 'commits'
-
     if (this.state.selectedOperation === MultiCommitOperationKind.Rebase) {
       return (
         <div className="merge-message">
-          This will update <strong>{currentBranch.name}</strong>
-          {` by applying its `}
-          <strong>{`${this.commitCount} ${pluralized}`}</strong>
-          {` on top of `}
+          {t('history.rebaseMessagePrefix')}{' '}
+          <strong>{currentBranch.name}</strong>
+          {` ${t('history.rebaseMessageMiddle')} `}
+          <strong>{formatCommitCount(this.commitCount)}</strong>
+          {` ${t('history.rebaseMessageSuffix')} `}
           <strong>{branch.name}</strong>
         </div>
       )
@@ -276,11 +294,11 @@ export class MergeCallToActionWithConflicts extends React.Component<
 
     return (
       <div className="merge-message">
-        This will merge
-        <strong>{` ${this.commitCount} ${pluralized}`}</strong>
-        {` from `}
+        {t('history.mergeMessagePrefix')}{' '}
+        <strong>{formatCommitCount(this.commitCount)}</strong>
+        {` ${t('history.from')} `}
         <strong>{branch.name}</strong>
-        {` into `}
+        {` ${t('history.into')} `}
         <strong>{currentBranch.name}</strong>
       </div>
     )
@@ -289,15 +307,13 @@ export class MergeCallToActionWithConflicts extends React.Component<
   private renderInvalidMessage() {
     if (this.state.selectedOperation === MultiCommitOperationKind.Rebase) {
       return (
-        <div className="merge-message">
-          Unable to start rebase. Check you have chosen a valid branch.
-        </div>
+        <div className="merge-message">{t('history.unableToStartRebase')}</div>
       )
     }
 
     return (
       <div className="merge-message">
-        Unable to merge unrelated histories in this repository
+        {t('history.unableToMergeUnrelatedHistories')}
       </div>
     )
   }
@@ -307,15 +323,13 @@ export class MergeCallToActionWithConflicts extends React.Component<
     branch: Branch,
     count: number
   ) {
-    const pluralized = count === 1 ? 'file' : 'files'
     return (
       <div className="merge-message">
-        There will be
-        <strong>{` ${count} conflicted ${pluralized}`}</strong>
-        {` when merging `}
-        <strong>{branch.name}</strong>
-        {` into `}
+        {t('history.conflictedMergePrefix')} <strong>{branch.name}</strong>
+        {` ${t('history.into')} `}
         <strong>{currentBranch.name}</strong>
+        {` ${t('history.conflictedMergeMiddle')} `}
+        <strong>{formatConflictedFileCount(count)}</strong>
       </div>
     )
   }

@@ -27,6 +27,7 @@ import { Emoji } from '../../lib/emoji'
 import { enableAccessibleListToolTips } from '../../lib/feature-flag'
 import { TooltippedContent } from '../lib/tooltipped-content'
 import { formatDate } from '../../lib/format-date'
+import { t } from '../../lib/i18n'
 
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
@@ -126,7 +127,7 @@ export class CommitListItem extends React.PureComponent<
     const isDraggable = this.props.isDraggable || false
     const hasEmptySummary = commit.summary.length === 0
     const commitSummary = hasEmptySummary
-      ? 'Empty commit message'
+      ? t('history.emptyCommitMessage')
       : commit.summary
 
     const summaryClassNames = classNames('summary', {

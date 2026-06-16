@@ -220,24 +220,35 @@ export class CommitList extends React.Component<
         return
       }
 
-      const plural = keyboardReorderData.commits.length === 1 ? '' : 's'
-
       if (insertionIndexPath !== null) {
         const { row } = insertionIndexPath
 
         const insertionPoint =
           row < this.props.commitSHAs.length
-            ? `before commit ${row + 1}`
-            : `after commit ${row}`
+            ? t('history.reorderCommitsHint.beforeCommit', { index: row + 1 })
+            : t('history.reorderCommitsHint.afterCommit', { index: row })
 
         this.setState({
-          reorderingMessage: `Press Enter to insert the selected commit${plural} ${insertionPoint} or Escape to cancel.`,
+          reorderingMessage: t(
+            keyboardReorderData.commits.length === 1
+              ? 'history.reorderCommitsHint.insertAriaMessage.one'
+              : 'history.reorderCommitsHint.insertAriaMessage.other',
+            {
+              count: keyboardReorderData.commits.length,
+              insertionPoint,
+            }
+          ),
         })
         return
       }
 
       this.setState({
-        reorderingMessage: `Use the Up and Down arrow keys to choose a new location for the selected commit${plural}, then press Enter to confirm or Escape to cancel.`,
+        reorderingMessage: t(
+          keyboardReorderData.commits.length === 1
+            ? 'history.reorderCommitsHint.chooseAriaMessage.one'
+            : 'history.reorderCommitsHint.chooseAriaMessage.other',
+          { count: keyboardReorderData.commits.length }
+        ),
       })
     },
     500
@@ -355,13 +366,16 @@ export class CommitList extends React.Component<
     numUnpushedTags: number
   ) {
     if (isLocalCommit) {
-      return 'This commit has not been pushed to the remote repository'
+      return t('history.unpushedCommitTooltip')
     }
 
     if (numUnpushedTags > 0) {
-      return `This commit has ${numUnpushedTags} tag${
-        numUnpushedTags > 1 ? 's' : ''
-      } to push`
+      return t(
+        numUnpushedTags === 1
+          ? 'history.unpushedTagsTooltip.one'
+          : 'history.unpushedTagsTooltip.other',
+        { count: numUnpushedTags }
+      )
     }
 
     return undefined
@@ -471,7 +485,7 @@ export class CommitList extends React.Component<
 
   private renderExpandedAuthor(user: IAvatarUser): string | JSX.Element {
     if (!user) {
-      return 'Unknown user'
+      return t('history.unknownUser')
     }
 
     if (user.name) {
@@ -533,7 +547,7 @@ export class CommitList extends React.Component<
       <div className="commit-list-item-tooltip list-item-tooltip">
         {authorList}
         <div>
-          <div className="label">Date: </div>
+          <div className="label">{t('history.dateLabel')} </div>
           {absoluteDate}
         </div>
         {showUnpushedIndicator ? (
@@ -568,7 +582,7 @@ export class CommitList extends React.Component<
     if (commitSHAs.length === 0) {
       return (
         <div className="panel blankslate">
-          {emptyListMessage ?? 'No commits to list'}
+          {emptyListMessage ?? t('history.noCommitsToList')}
         </div>
       )
     }
@@ -586,7 +600,7 @@ export class CommitList extends React.Component<
       <div id="commit-list" className={classes} ref={this.containerRef}>
         {this.renderReorderCommitsHint()}
         <List
-          ariaLabel="Commits"
+          ariaLabel={t('history.commitsAriaLabel')}
           role={this.props.isInformationalView === true ? 'list' : 'listbox'}
           ref={this.listRef}
           rowCount={commitSHAs.length}
@@ -651,12 +665,15 @@ export class CommitList extends React.Component<
       >
         <h4>{reorderCommitsHintTitle}</h4>
         <p>
-          Use <KeyboardShortcut darwinKeys={['↑']} keys={['↑']} />
-          <KeyboardShortcut darwinKeys={['↓']} keys={['↓']} /> to choose a new
-          location.
+          {t('history.reorderCommitsHint.useKeysPrefix')}{' '}
+          <KeyboardShortcut darwinKeys={['↑']} keys={['↑']} />
+          <KeyboardShortcut darwinKeys={['↓']} keys={['↓']} />{' '}
+          {t('history.reorderCommitsHint.useKeysSuffix')}
         </p>
         <p>
-          Press <KeyboardShortcut darwinKeys={['⏎']} keys={['⏎']} /> to confirm.
+          {t('history.reorderCommitsHint.pressPrefix')}{' '}
+          <KeyboardShortcut darwinKeys={['⏎']} keys={['⏎']} />{' '}
+          {t('history.reorderCommitsHint.pressSuffix')}
         </p>
       </Popover>
     )
@@ -752,7 +769,7 @@ export class CommitList extends React.Component<
 
     if (canBeAmended) {
       items.push({
-        label: __DARWIN__ ? 'Amend Commit…' : 'Amend commit…',
+        label: t('history.context.amendCommit'),
         action: () => this.props.onAmendCommit?.(commit, isLocal),
       })
     }
@@ -898,7 +915,7 @@ export class CommitList extends React.Component<
       const tagName = commit.tags[0]
 
       return {
-        label: `Delete tag ${tagName}`,
+        label: t('history.context.deleteTagNamed', { tagName }),
         action: () => onDeleteTag(tagName),
         enabled: unpushedTags.includes(tagName),
       }
@@ -908,7 +925,7 @@ export class CommitList extends React.Component<
     const unpushedTagsSet = new Set(unpushedTags)
 
     return {
-      label: 'Delete tag…',
+      label: t('history.context.deleteTag'),
       submenu: commit.tags.map(tagName => {
         return {
           label: tagName,
@@ -924,23 +941,32 @@ export class CommitList extends React.Component<
 
     return [
       {
-        label: __DARWIN__
-          ? `Cherry-pick ${count} Commits…`
-          : `Cherry-pick ${count} commits…`,
+        label: t(
+          count === 1
+            ? 'history.context.cherryPickCommits.one'
+            : 'history.context.cherryPickCommits.other',
+          { count }
+        ),
         action: () => this.props.onCherryPick?.(this.selectedCommits),
         enabled: this.canCherryPick(),
       },
       {
-        label: __DARWIN__
-          ? `Squash ${count} Commits…`
-          : `Squash ${count} commits…`,
+        label: t(
+          count === 1
+            ? 'history.context.squashCommits.one'
+            : 'history.context.squashCommits.other',
+          { count }
+        ),
         action: () => this.onSquash(this.selectedCommits, commit, true),
         enabled: this.canSquash(),
       },
       {
-        label: __DARWIN__
-          ? `Reorder ${count} Commits…`
-          : `Reorder ${count} commits…`,
+        label: t(
+          count === 1
+            ? 'history.context.reorderCommits.one'
+            : 'history.context.reorderCommits.other',
+          { count }
+        ),
         action: () => this.props.onKeyboardReorder?.(this.selectedCommits),
         enabled: this.canReorder(),
       },

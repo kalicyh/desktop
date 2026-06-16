@@ -98,6 +98,15 @@ interface ISelectedCommitsState {
   readonly isExpanded: boolean
 }
 
+function formatChangedFileCount(count: number): string {
+  return t(
+    count === 1
+      ? 'history.selected.changedFileCount.one'
+      : 'history.selected.changedFileCount.other',
+    { count }
+  )
+}
+
 /** The History component. Contains the commit list, commit summary, and diff. */
 export class SelectedCommits extends React.Component<
   ISelectedCommitsProps,
@@ -147,7 +156,9 @@ export class SelectedCommits extends React.Component<
     if (file == null) {
       // don't show both 'empty' messages
       const message =
-        this.props.changesetData.files.length === 0 ? '' : 'No file selected'
+        this.props.changesetData.files.length === 0
+          ? ''
+          : t('history.selected.noFileSelected')
 
       return (
         <div className="panel blankslate" id="diff">
@@ -254,7 +265,11 @@ export class SelectedCommits extends React.Component<
   private renderFileList() {
     const files = this.props.changesetData.files
     if (files.length === 0) {
-      return <div className="fill-window">No files in commit</div>
+      return (
+        <div className="fill-window">
+          {t('history.selected.noFilesInCommit')}
+        </div>
+      )
     }
 
     // -1 for right hand side border
@@ -277,10 +292,9 @@ export class SelectedCommits extends React.Component<
 
   private renderFileHeader() {
     const fileCount = this.props.changesetData.files.length
-    const filesPlural = fileCount === 1 ? 'file' : 'files'
     return (
       <div className="file-list-header">
-        {fileCount} changed {filesPlural}
+        {formatChangedFileCount(fileCount)}
       </div>
     )
   }
@@ -319,7 +333,7 @@ export class SelectedCommits extends React.Component<
             maximumWidth={commitSummaryWidth.max}
             onResize={this.onCommitSummaryResize}
             onReset={this.onCommitSummaryReset}
-            description="Selected commit file list"
+            description={t('history.selected.fileListDescription')}
           >
             {this.renderFileList()}
           </Resizable>
@@ -349,18 +363,13 @@ export class SelectedCommits extends React.Component<
         <div className="panel blankslate">
           <img src={BlankSlateImage} className="blankslate-image" alt="" />
           <div>
-            <p>
-              Unable to display diff when multiple non-consecutive selected.
-            </p>
-            <div>You can:</div>
+            <p>{t('history.selected.nonConsecutiveDiffUnavailable')}</p>
+            <div>{t('history.selected.youCan')}</div>
             <ul>
-              <li>
-                Select a single commit or a range of consecutive commits to view
-                a diff.
-              </li>
-              <li>Drag the commits to the branch menu to cherry-pick them.</li>
-              <li>Drag the commits to squash or reorder them.</li>
-              <li>Right click on multiple commits to see options.</li>
+              <li>{t('history.selected.selectSingleOrRange')}</li>
+              <li>{t('history.selected.dragToCherryPick')}</li>
+              <li>{t('history.selected.dragToSquashOrReorder')}</li>
+              <li>{t('history.selected.rightClickOptions')}</li>
             </ul>
           </div>
         </div>
@@ -387,9 +396,7 @@ export class SelectedCommits extends React.Component<
     if (!fileExistsOnDisk) {
       showContextualMenu([
         {
-          label: __DARWIN__
-            ? 'File Does Not Exist on Disk'
-            : 'File does not exist on disk',
+          label: t('history.selected.fileDoesNotExist'),
           enabled: false,
         },
       ])

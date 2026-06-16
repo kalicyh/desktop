@@ -6,6 +6,16 @@ import { Branch } from '../../models/branch'
 import { Dispatcher } from '../dispatcher'
 import { Button } from '../lib/button'
 import { formatNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
+
+function formatCommitCount(count: number): string {
+  return t(
+    count === 1 ? 'history.commitCount.one' : 'history.commitCount.other',
+    {
+      count: formatNumber(count),
+    }
+  )
+}
 
 interface IMergeCallToActionProps {
   readonly repository: Repository
@@ -38,7 +48,8 @@ export class MergeCallToAction extends React.Component<
           disabled={count <= 0}
           onClick={this.onMergeClicked}
         >
-          Merge into <strong>{this.props.currentBranch.name}</strong>
+          {t('history.mergeInto')}{' '}
+          <strong>{this.props.currentBranch.name}</strong>
         </Button>
       </div>
     )
@@ -49,18 +60,13 @@ export class MergeCallToAction extends React.Component<
     const count = formState.aheadBehind.behind
 
     if (count > 0) {
-      const pluralized = count === 1 ? 'commit' : 'commits'
       return (
         <div className="merge-message merge-message-legacy">
-          This will merge
-          <strong>{` ${formatNumber(count)} ${pluralized}`}</strong>
-          {` `}
-          from
-          {` `}
+          {t('history.mergeMessagePrefix')}{' '}
+          <strong>{formatCommitCount(count)}</strong>
+          {` ${t('history.from')} `}
           <strong>{branch.name}</strong>
-          {` `}
-          into
-          {` `}
+          {` ${t('history.into')} `}
           <strong>{currentBranch.name}</strong>
         </div>
       )
