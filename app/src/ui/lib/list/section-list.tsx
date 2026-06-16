@@ -1390,7 +1390,10 @@ export class SectionList extends React.Component<
           )}
           scrollTop={relativeScrollTop}
           overscanRowCount={4}
-          style={{ ...params.style, width: '100%' }}
+          // The section grid mirrors the root grid's scroll position. Keep it
+          // from becoming a nested scroll target when a section is taller than
+          // the viewport.
+          style={{ ...params.style, width: '100%', overflowY: 'hidden' }}
           tabIndex={-1}
           aria-label={this.props.getSectionAriaLabel?.(section)}
         />
