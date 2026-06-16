@@ -36,6 +36,7 @@ import { PullRequestSuggestedNextAction } from '../models/pull-request'
 import { clamp } from '../lib/clamp'
 import { Emoji } from '../lib/emoji'
 import { PopupType } from '../models/popup'
+import { t } from '../lib/i18n'
 
 interface IRepositoryViewProps {
   readonly repository: Repository
@@ -223,12 +224,12 @@ export class RepositoryView extends React.Component<
     return (
       <TabBar selectedIndex={selectedTab} onTabClicked={this.onTabClicked}>
         <span className="with-indicator" id="changes-tab">
-          <span>Changes</span>
+          <span>{t('repository.tabs.changes')}</span>
           {this.renderChangesBadge()}
         </span>
 
         <div className="with-indicator" id="history-tab">
-          <span>History</span>
+          <span>{t('repository.tabs.history')}</span>
         </div>
       </TabBar>
     )
@@ -414,7 +415,7 @@ export class RepositoryView extends React.Component<
           minimumWidth={this.props.sidebarWidth.min}
           onReset={this.handleSidebarWidthReset}
           onResize={this.handleSidebarResize}
-          description="Repository sidebar"
+          description={t('repository.sidebar.description')}
         >
           {this.renderTabs()}
           {this.renderSidebarContents()}
