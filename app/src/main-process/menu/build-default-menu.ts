@@ -75,20 +75,20 @@ export function buildDefaultMenuTemplate({
       label: 'GitHub Desktop',
       submenu: [
         {
-          label: 'About GitHub Desktop',
+          label: translate('menu.aboutGitHubDesktop', currentLanguage),
           click: emit('show-about'),
           id: 'about',
         },
         separator,
         {
-          label: 'Settings…',
+          label: translate('menu.settings', currentLanguage),
           id: 'preferences',
           accelerator: 'CmdOrCtrl+,',
           click: emit('show-preferences'),
         },
         separator,
         {
-          label: 'Install Command Line Tool…',
+          label: translate('menu.installCommandLineTool', currentLanguage),
           id: 'install-cli',
           click: emit('install-darwin-cli'),
         },
@@ -557,7 +557,7 @@ export function buildDefaultMenuTemplate({
   }
 
   const showUserGuides: Electron.MenuItemConstructorOptions = {
-    label: 'Show User Guides',
+    label: translate('menu.showUserGuides', currentLanguage),
     click() {
       shell
         .openExternal('https://docs.github.com/en/desktop')
@@ -614,7 +614,7 @@ export function buildDefaultMenuTemplate({
         ...helpItems,
         separator,
         {
-          label: '&About GitHub Desktop',
+          label: translate('menu.aboutGitHubDesktop', currentLanguage),
           click: emit('show-about'),
           id: 'about',
         },
