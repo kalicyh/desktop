@@ -374,7 +374,7 @@ export class CreateRepository extends React.Component<
       const wd = status.workingDirectory
       const files = wd.files
       if (files.length > 0) {
-        await createCommit(repository, 'Initial commit', files)
+        await createCommit(repository, t('addRepository.initialCommit'), files)
       }
     } catch (e) {
       log.error(`createRepository: initial commit failed at ${fullPath}`, e)
