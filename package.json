@@ -42,6 +42,7 @@
     "eslint-check": "eslint --print-config .eslintrc.* | eslint-config-prettier-check",
     "validate-electron-version": "ts-node -P script/tsconfig.json script/validate-electron-version.ts",
     "validate-macos-version": "ts-node -P script/tsconfig.json script/validate-macos-version.ts",
+    "validate:i18n": "ts-node -P script/tsconfig.json script/validate-i18n.ts",
     "clean-slate": "rimraf out node_modules app/node_modules && yarn",
     "rebuild-hard:dev": "yarn clean-slate && yarn build:dev",
     "rebuild-hard:prod": "yarn clean-slate && yarn build:prod",

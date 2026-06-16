@@ -76,6 +76,7 @@ import { trampolineServer } from '../lib/trampoline/trampoline-server'
 import { TrampolineCommandIdentifier } from '../lib/trampoline/trampoline-command'
 import { createAskpassTrampolineHandler } from '../lib/trampoline/trampoline-askpass-handler'
 import { createCredentialHelperTrampolineHandler } from '../lib/trampoline/trampoline-credential-helper'
+import { installUIStringLocalization } from '../lib/ui-string-localization'
 
 if (__DEV__) {
   installDevGlobals()
@@ -351,6 +352,8 @@ dispatcher.registerErrorHandler(discardChangesHandler)
 dispatcher.registerErrorHandler(secretScanningPushProtectionErrorHandler)
 
 document.body.classList.add(`platform-${process.platform}`)
+
+installUIStringLocalization()
 
 dispatcher.initializeAppFocusState()
 
