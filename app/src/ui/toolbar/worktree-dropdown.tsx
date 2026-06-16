@@ -103,7 +103,7 @@ export class WorktreeDropdown extends React.Component<
     })
 
     const newWorktreeItem: IMenuItem = {
-      label: __DARWIN__ ? 'New Worktree…' : 'New worktree…',
+      label: t('worktree.newWithEllipsis'),
       action: this.onCreateNewWorktree,
     }
 
@@ -151,15 +151,15 @@ export class WorktreeDropdown extends React.Component<
     const title = currentWorktree
       ? Path.basename(currentWorktree.path)
       : this.props.repository.name
-    const description = __DARWIN__ ? 'Current Worktree' : 'Current worktree'
+    const tooltip = t('worktree.currentTooltip', { title })
 
     const toolbarDropdown = (
       <ToolbarDropdown
         className="worktree-button"
         icon={octicons.fileDirectory}
         title={title}
-        description={description}
-        tooltip={isOpen ? undefined : `Current worktree is ${title}`}
+        description={t('worktree.current')}
+        tooltip={isOpen ? undefined : tooltip}
         onDropdownStateChanged={this.props.onDropDownStateChanged}
         onContextMenu={this.onContextMenu}
         dropdownContentRenderer={this.renderWorktreeFoldout}

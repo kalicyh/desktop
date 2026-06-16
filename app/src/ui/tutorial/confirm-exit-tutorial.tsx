@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import { DialogFooter, DialogContent, Dialog } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { t } from '../../lib/i18n'
 
 interface IConfirmExitTutorialProps {
   readonly onDismissed: () => void
@@ -15,21 +16,16 @@ export class ConfirmExitTutorial extends React.Component<
   public render() {
     return (
       <Dialog
-        title={__DARWIN__ ? 'Exit Tutorial' : 'Exit tutorial'}
+        title={t('tutorial.exit.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onContinue}
         type="normal"
       >
         <DialogContent>
-          <p>
-            Are you sure you want to leave the tutorial? This will bring you
-            back to the home screen.
-          </p>
+          <p>{t('tutorial.exit.confirmMessage')}</p>
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Exit Tutorial' : 'Exit tutorial'}
-          />
+          <OkCancelButtonGroup okButtonText={t('tutorial.exit.button')} />
         </DialogFooter>
       </Dialog>
     )

@@ -11,6 +11,7 @@ import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import { Dispatcher } from '../dispatcher'
 import { PathText } from '../lib/path-text'
 import { assertNever } from '../../lib/fatal-error'
+import { t } from '../../lib/i18n'
 
 interface ILocalChangesOverwrittenDialogProps {
   readonly repository: Repository
@@ -50,12 +51,12 @@ export class LocalChangesOverwrittenDialog extends React.Component<
   public render() {
     const overwrittenText =
       this.props.files.length > 0
-        ? ' The following files would be overwritten:'
+        ? t('localChangesOverwritten.filesWouldBeOverwritten')
         : null
 
     return (
       <Dialog
-        title="Error"
+        title={t('localChangesOverwritten.title')}
         id="local-changes-overwritten"
         loading={this.state.stashing}
         disabled={this.state.stashing}
@@ -68,8 +69,10 @@ export class LocalChangesOverwrittenDialog extends React.Component<
         <DialogContent>
           <div id="local-changes-error-description">
             <p>
-              Unable to {this.getRetryActionName()} when changes are present on
-              your branch.{overwrittenText}
+              {t('localChangesOverwritten.message', {
+                action: this.getRetryActionName(),
+                overwrittenText: overwrittenText ?? '',
+              })}
             </p>
             {this.renderFiles()}
             {this.renderStashText()}
@@ -112,7 +115,7 @@ export class LocalChangesOverwrittenDialog extends React.Component<
       return null
     }
 
-    return <p>You can stash your changes now and recover them afterwards.</p>
+    return <p>{t('localChangesOverwritten.stashNow')}</p>
   }
 
   private renderFooter() {
@@ -123,13 +126,9 @@ export class LocalChangesOverwrittenDialog extends React.Component<
     return (
       <DialogFooter>
         <OkCancelButtonGroup
-          okButtonText={
-            __DARWIN__
-              ? 'Stash Changes and Continue'
-              : 'Stash changes and continue'
-          }
-          okButtonTitle="This will create a stash with your current changes. You can recover them by restoring the stash afterwards."
-          cancelButtonText="Close"
+          okButtonText={t('localChangesOverwritten.stashChangesAndContinue')}
+          okButtonTitle={t('localChangesOverwritten.stashButtonTitle')}
+          cancelButtonText={t('common.close')}
         />
       </DialogFooter>
     )
@@ -169,30 +168,30 @@ export class LocalChangesOverwrittenDialog extends React.Component<
   private getRetryActionName() {
     switch (this.props.retryAction.type) {
       case RetryActionType.Checkout:
-        return 'checkout'
+        return t('localChangesOverwritten.action.checkout')
       case RetryActionType.Pull:
-        return 'pull'
+        return t('localChangesOverwritten.action.pull')
       case RetryActionType.Merge:
-        return 'merge'
+        return t('localChangesOverwritten.action.merge')
       case RetryActionType.Rebase:
-        return 'rebase'
+        return t('localChangesOverwritten.action.rebase')
       case RetryActionType.Clone:
-        return 'clone'
+        return t('localChangesOverwritten.action.clone')
       case RetryActionType.Fetch:
-        return 'fetch'
+        return t('localChangesOverwritten.action.fetch')
       case RetryActionType.Push:
-        return 'push'
+        return t('localChangesOverwritten.action.push')
       case RetryActionType.CherryPick:
       case RetryActionType.CreateBranchForCherryPick:
-        return 'cherry-pick'
+        return t('localChangesOverwritten.action.cherryPick')
       case RetryActionType.Squash:
-        return 'squash'
+        return t('localChangesOverwritten.action.squash')
       case RetryActionType.Reorder:
-        return 'reorder'
+        return t('localChangesOverwritten.action.reorder')
       case RetryActionType.DiscardChanges:
-        return 'discard changes'
+        return t('localChangesOverwritten.action.discardChanges')
       case RetryActionType.PopStash:
-        return 'restore stashed changes'
+        return t('localChangesOverwritten.action.popStash')
       default:
         assertNever(
           this.props.retryAction,
