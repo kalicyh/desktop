@@ -19,6 +19,7 @@ import { getFileFromExceedsError } from '../lib/helpers/regex'
 import { CopilotError, getCopilotErrorDisplayInfo } from '../lib/copilot-error'
 import { Terminal } from './terminal'
 import { coerceToString } from '../lib/git/coerce-to-string'
+import { t } from '../lib/i18n'
 
 interface IAppErrorProps {
   /** The error to be displayed  */
@@ -110,7 +111,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
           <p>{error.message}</p>
           {files.length > 0 && (
             <>
-              <p>Files that exceed the limit</p>
+              <p>{t('appError.fileSizeLimit.filesExceedingLimit')}</p>
               <ul>
                 {files.map(file => (
                   <li key={file}>{file}</li>
@@ -119,9 +120,9 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
             </>
           )}
           <p>
-            See{' '}
+            {t('appError.fileSizeLimit.see')}{' '}
             <LinkButton uri="https://gh.io/lfs">https://gh.io/lfs</LinkButton>{' '}
-            for more information on managing large files on GitHub
+            {t('appError.fileSizeLimit.moreInformation')}
           </p>
         </>
       )
@@ -164,27 +165,27 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
 
     switch (getDugiteError(error)) {
       case DugiteError.PushWithFileSizeExceedingLimit:
-        return 'File size limit exceeded'
+        return t('appError.fileSizeLimit.title')
     }
 
     switch (getRetryActionType(error)) {
       case RetryActionType.Clone:
-        return 'Clone failed'
+        return t('appError.cloneFailed')
       case RetryActionType.Push:
-        return 'Failed to push'
+        return t('appError.pushFailed')
     }
 
     if (isErrorWithMetaData(error)) {
       const { gitContext } = error.metadata
       switch (gitContext?.kind) {
         case 'create-repository':
-          return `Failed creating repository`
+          return t('appError.createRepositoryFailed')
         case 'commit':
-          return `Commit failed`
+          return t('appError.commitFailed')
       }
     }
 
-    return 'Error'
+    return t('appError.genericTitle')
   }
 
   private renderContentAfterErrorMessage(error: Error) {
@@ -197,7 +198,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
     if (retryAction && retryAction.type === RetryActionType.Clone) {
       return (
         <p>
-          Would you like to retry cloning <Ref>{retryAction.name}</Ref>?
+          {t('appError.retryClonePromptPrefix')} <Ref>{retryAction.name}</Ref>?
         </p>
       )
     }
@@ -260,7 +261,7 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
     return (
       <DialogFooter>
         <OkCancelButtonGroup
-          okButtonText={__DARWIN__ ? 'Retry Clone' : 'Retry clone'}
+          okButtonText={t('appError.retryClone')}
           onOkButtonClick={this.onRetryAction}
           onCancelButtonClick={this.onCloseButtonClick}
         />
@@ -272,9 +273,13 @@ export class AppError extends React.Component<IAppErrorProps, IAppErrorState> {
     return (
       <DialogFooter>
         <OkCancelButtonGroup
-          okButtonText="Close"
+          okButtonText={t('common.close')}
           onOkButtonClick={this.onCloseButtonClick}
-          cancelButtonText={__DARWIN__ ? 'Open Preferences' : 'Open options'}
+          cancelButtonText={
+            __DARWIN__
+              ? t('editorError.openPreferences')
+              : t('editorError.openOptions')
+          }
           onCancelButtonClick={this.showPreferencesDialog}
         />
       </DialogFooter>
