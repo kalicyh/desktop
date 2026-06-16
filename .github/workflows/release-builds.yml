@@ -1,0 +1,166 @@
+name: Release Builds
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-builds-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 24.15.0
+  RELEASE_CHANNEL: ${{ vars.DESKTOP_RELEASE_CHANNEL || 'development' }}
+
+jobs:
+  validate-tag:
+    name: Validate tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Validate release tag
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF_TYPE" != "tag" ]]; then
+            echo "::error::Release builds must run from a tag like v1.0.0."
+            exit 1
+          fi
+
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag must match vMAJOR.MINOR.PATCH, for example v1.0.0."
+            exit 1
+          fi
+
+          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG_NAME#v}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.friendlyName }} ${{ matrix.arch }}
+    needs: validate-tag
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14-xlarge
+            friendlyName: macOS
+            arch: x64
+            artifactName: macOS-x64
+            artifactPath: dist/GitHub Desktop-x64.zip
+          - os: macos-14-xlarge
+            friendlyName: macOS
+            arch: arm64
+            artifactName: macOS-arm64
+            artifactPath: dist/GitHub Desktop-arm64.zip
+          - os: windows-2022
+            friendlyName: Windows
+            arch: x64
+            artifactName: Windows-x64
+            artifactPath: |
+              dist/GitHubDesktopSetup-x64.exe
+              dist/GitHubDesktopSetup-x64.msi
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: ./.github/actions/setup-ci-environment
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          arch: ${{ matrix.arch }}
+
+      - name: Set app version from tag
+        shell: bash
+        env:
+          APP_VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs')
+          const path = 'app/package.json'
+          const pkg = JSON.parse(fs.readFileSync(path, 'utf8'))
+
+          pkg.version = process.env.APP_VERSION
+          fs.writeFileSync(path, `${JSON.stringify(pkg, null, 2)}\n`)
+          NODE
+
+      - name: Build production app
+        run: yarn build:prod
+        env:
+          DESKTOP_OAUTH_CLIENT_ID: ${{ secrets.DESKTOP_OAUTH_CLIENT_ID }}
+          DESKTOP_OAUTH_CLIENT_SECRET:
+            ${{ secrets.DESKTOP_OAUTH_CLIENT_SECRET }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APPLICATION_CERT: ${{ secrets.APPLE_APPLICATION_CERT }}
+          KEY_PASSWORD: ${{ secrets.APPLE_APPLICATION_CERT_PASSWORD }}
+          npm_config_arch: ${{ matrix.arch }}
+          TARGET_ARCH: ${{ matrix.arch }}
+
+      - if: runner.os == 'Windows' && env.RELEASE_CHANNEL != 'development'
+        uses: ./.github/actions/setup-windows-signing
+        with:
+          enabled: true
+          azure-client-id: ${{ secrets.AZURE_CODE_SIGNING_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_CODE_SIGNING_TENANT_ID }}
+
+      - name: Package release app
+        run: yarn package
+        env:
+          NODE_ENV: production
+          npm_config_arch: ${{ matrix.arch }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_CODE_SIGNING_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CODE_SIGNING_CLIENT_ID }}
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifactName }}
+          path: ${{ matrix.artifactPath }}
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub release
+    needs:
+      - validate-tag
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ needs.validate-tag.outputs.tag }}
+        run: |
+          mapfile -d '' ASSETS < <(find release-assets -type f \( -name '*.zip' -o -name '*.exe' -o -name '*.msi' \) -print0 | sort -z)
+
+          if [[ "${#ASSETS[@]}" -ne 4 ]]; then
+            echo "::error::Expected exactly 4 release assets, found ${#ASSETS[@]}."
+            printf '%s\n' "${ASSETS[@]}"
+            exit 1
+          fi
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG_NAME" "${ASSETS[@]}" \
+              --title "$TAG_NAME" \
+              --notes "Automated release builds for $TAG_NAME."
+          fi
