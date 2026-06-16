@@ -455,9 +455,9 @@ export class FilterChangesList extends React.Component<
       isCommitting || rebaseConflictState !== null || isUncommittableSubmodule
 
     const checkboxTooltip = isUncommittableSubmodule
-      ? 'This submodule change cannot be added to a commit in this repository because it contains changes that have not been committed.'
+      ? t('changes.submodule.uncommittableTooltip')
       : isPartiallyCommittableSubmodule
-      ? 'Only changes that have been committed within the submodule will be added to this repository. You need to commit any other modified or untracked changes in the submodule before including them in this repository.'
+      ? t('changes.submodule.partiallyCommittableTooltip')
       : undefined
 
     return (
@@ -523,12 +523,10 @@ export class FilterChangesList extends React.Component<
   private getDiscardChangesMenuItemLabel = (files: ReadonlyArray<string>) => {
     const label =
       files.length === 1
-        ? __DARWIN__
-          ? `Discard Changes`
-          : `Discard changes`
-        : __DARWIN__
-        ? `Discard ${files.length} Selected Changes`
-        : `Discard ${files.length} selected changes`
+        ? t('changes.context.discardChanges')
+        : t('changes.context.discardSelectedChanges', {
+            count: files.length,
+          })
 
     return this.props.askForConfirmationOnDiscardChanges ? `${label}…` : label
   }
@@ -547,16 +545,14 @@ export class FilterChangesList extends React.Component<
       this.props.conflictState !== null ||
       hasConflictedFiles(this.props.workingDirectory)
 
-    const stashAllChangesLabel = __DARWIN__
-      ? 'Stash All Changes'
-      : 'Stash all changes'
-    const confirmStashAllChangesLabel = __DARWIN__
-      ? 'Stash All Changes…'
-      : 'Stash all changes…'
+    const stashAllChangesLabel = t('changes.context.stashAllChanges')
+    const confirmStashAllChangesLabel = t(
+      'changes.context.stashAllChangesWithConfirmation'
+    )
 
     const items: IMenuItem[] = [
       {
-        label: __DARWIN__ ? 'Discard All Changes…' : 'Discard all changes…',
+        label: t('changes.context.discardAllChanges'),
         action: this.onDiscardAllChanges,
         enabled: hasLocalChanges,
       },
@@ -643,7 +639,7 @@ export class FilterChangesList extends React.Component<
     const { externalEditorLabel } = this.props
 
     const openInExternalEditor = externalEditorLabel
-      ? `Open in ${externalEditorLabel}`
+      ? t('menu.openInExternalEditor', { label: externalEditorLabel })
       : DefaultEditorLabel
 
     return {
@@ -699,9 +695,7 @@ export class FilterChangesList extends React.Component<
     if (paths.length === 1) {
       const enabled = Path.basename(path) !== GitIgnoreFileName
       items.push({
-        label: __DARWIN__
-          ? 'Ignore File (Add to .gitignore)'
-          : 'Ignore file (add to .gitignore)',
+        label: t('changes.context.ignoreFile'),
         action: () => this.props.onIgnoreFile(path),
         enabled,
       })
@@ -721,18 +715,16 @@ export class FilterChangesList extends React.Component<
         })
 
         items.push({
-          label: __DARWIN__
-            ? 'Ignore Folder (Add to .gitignore)'
-            : 'Ignore folder (add to .gitignore)',
+          label: t('changes.context.ignoreFolder'),
           submenu,
           enabled,
         })
       }
     } else if (paths.length > 1) {
       items.push({
-        label: __DARWIN__
-          ? `Ignore ${paths.length} Selected Files (Add to .gitignore)`
-          : `Ignore ${paths.length} selected files (add to .gitignore)`,
+        label: t('changes.context.ignoreSelectedFiles', {
+          count: paths.length,
+        }),
         action: () => {
           // Filter out any .gitignores that happens to be selected, ignoring
           // those doesn't make sense.
@@ -750,9 +742,7 @@ export class FilterChangesList extends React.Component<
       .slice(0, 5)
       .forEach(extension => {
         items.push({
-          label: __DARWIN__
-            ? `Ignore All ${extension} Files (Add to .gitignore)`
-            : `Ignore all ${extension} files (add to .gitignore)`,
+          label: t('changes.context.ignoreAllExtensionFiles', { extension }),
           action: () => this.props.onIgnorePattern(`*${extension}`),
         })
       })
@@ -761,17 +751,13 @@ export class FilterChangesList extends React.Component<
       items.push(
         { type: 'separator' },
         {
-          label: __DARWIN__
-            ? 'Include Selected Files'
-            : 'Include selected files',
+          label: t('changes.context.includeSelectedFiles'),
           action: () => {
             selectedFiles.map(file => this.props.onIncludeChanged(file, true))
           },
         },
         {
-          label: __DARWIN__
-            ? 'Exclude Selected Files'
-            : 'Exclude selected files',
+          label: t('changes.context.excludeSelectedFiles'),
           action: () => {
             selectedFiles.map(file => this.props.onIncludeChanged(file, false))
           },
@@ -1119,7 +1105,7 @@ export class FilterChangesList extends React.Component<
         }
       >
         <Octicon className="stack-icon" symbol={StashIcon} />
-        <div className="text">Stashed Changes</div>
+        <div className="text">{t('changes.stashedChanges')}</div>
         <Octicon symbol={octicons.chevronRight} />
       </button>
     )
@@ -1407,11 +1393,12 @@ export class FilterChangesList extends React.Component<
     return (
       <div className="hidden-changes-warning" id="hidden-changes-warning">
         <Octicon symbol={octicons.alert} />
-        <span className="sr-only">Warning:</span>
-        <span>Hidden changes will be committed. </span>
+        <span className="sr-only">{t('common.warning')}</span>
+        <span>{t('changes.hiddenChangesWarning')} </span>
         <LinkButton onClick={this.showFilesToBeCommitted}>
-          Adjust the filters to see all {formatNumber(filesSelected.length)}{' '}
-          changes
+          {t('changes.adjustFiltersToSeeAll', {
+            count: formatNumber(filesSelected.length),
+          })}
         </LinkButton>
       </div>
     )
@@ -1434,7 +1421,7 @@ export class FilterChangesList extends React.Component<
       <div className="no-changes-filtered">
         <img src={BlankSlateImage} className="blankslate-image" alt="" />
 
-        <div className="title">No files match your current filters</div>
+        <div className="title">{t('changes.noFilesMatchFilters')}</div>
 
         <div className="subtitle">
           {getNoResultsMessage(this.props.fileListFilter)}
@@ -1445,7 +1432,7 @@ export class FilterChangesList extends React.Component<
             className="clear-filters-button"
             onClick={this.onClearAllFilters}
           >
-            Clear filters
+            {t('changes.filterOptions.clearFilters')}
           </Button>
         )}
       </div>
