@@ -185,8 +185,10 @@ export class RepositoryPath extends React.Component<
         <Row>
           <TextBox
             value={this.state.name}
-            label={this.props.nameLabel ?? 'Name'}
-            placeholder={this.props.namePlaceholder ?? 'name'}
+            label={this.props.nameLabel ?? t('repositoryPath.nameLabel')}
+            placeholder={
+              this.props.namePlaceholder ?? t('repositoryPath.namePlaceholder')
+            }
             onValueChanged={this.onNameChanged}
             ariaDescribedBy={this.props.nameAriaDescribedBy}
           />
@@ -197,16 +199,16 @@ export class RepositoryPath extends React.Component<
         <Row>
           <TextBox
             value={this.state.path ?? ''}
-            label={
-              this.props.pathLabel ?? (__DARWIN__ ? 'Local Path' : 'Local path')
+            label={this.props.pathLabel ?? t('repositoryPath.localPathLabel')}
+            placeholder={
+              this.props.pathPlaceholder ?? t('repositoryPath.pathPlaceholder')
             }
-            placeholder={this.props.pathPlaceholder ?? 'path'}
             onValueChanged={this.onPathChanged}
             disabled={loadingPath}
             ariaDescribedBy={this.props.pathAriaDescribedBy}
           />
           <Button onClick={this.showFilePicker} disabled={loadingPath}>
-            Choose…
+            {t('repositoryPath.choose')}
           </Button>
         </Row>
       </>

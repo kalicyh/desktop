@@ -20,6 +20,7 @@ import { offsetFrom } from '../../lib/offset-from'
 import { ExpiringOperationCache } from './expiring-operation-cache'
 import { forceUnwrap } from '../../lib/fatal-error'
 import { IKnownBot, knownDotComBots } from '../../models/dot-com-bots'
+import { t } from '../../lib/i18n'
 
 const avatarTokenCache = new ExpiringOperationCache<
   { endpoint: string; accounts: ReadonlyArray<Account> },
@@ -352,7 +353,7 @@ export class Avatar extends React.Component<IAvatarProps, IAvatarState> {
       )
     }
 
-    return user?.email ?? 'Unknown user'
+    return user?.email ?? t('history.unknownUser')
   }
 
   private onImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {

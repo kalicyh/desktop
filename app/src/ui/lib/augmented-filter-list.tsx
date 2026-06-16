@@ -23,6 +23,7 @@ import {
 } from './filter-list'
 import * as octicons from '../octicons/octicons.generated'
 import xor from 'lodash/xor'
+import { t } from '../../lib/i18n'
 
 interface IFlattenedGroup {
   readonly kind: 'group'
@@ -338,7 +339,7 @@ export class AugmentedSectionFilterList<
         displayClearButton={true}
         prefixedIcon={octicons.search}
         autoFocus={true}
-        placeholder={this.props.placeholderText || 'Filter'}
+        placeholder={this.props.placeholderText || t('filterList.placeholder')}
         className="filter-list-filter-field"
         onValueChanged={this.onFilterValueChanged}
         onEnterPressed={this.onEnterPressed}
