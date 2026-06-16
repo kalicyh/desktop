@@ -13,6 +13,7 @@ import { Row } from '../lib/row'
 
 import { match, IMatch, IMatches } from '../../lib/fuzzy-find'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
+import { t } from '../../lib/i18n'
 
 /** An item in the filter list. */
 export interface IFilterListItem {
@@ -278,7 +279,7 @@ export class FilterList<
         ref={this.onTextBoxRef}
         displayClearButton={true}
         autoFocus={true}
-        placeholder={this.props.placeholderText || 'Filter'}
+        placeholder={this.props.placeholderText || t('filterList.placeholder')}
         className="filter-list-filter-field"
         onValueChanged={this.onFilterValueChanged}
         onEnterPressed={this.onEnterPressed}

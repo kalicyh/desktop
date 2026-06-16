@@ -188,7 +188,9 @@ export class PullRequestQuickView extends React.Component<
             isDraft ? octicons.gitPullRequestDraft : octicons.gitPullRequest
           }
         />
-        <span className="state">{isDraft ? 'Draft' : 'Open'}</span>
+        <span className="state">
+          {isDraft ? t('pullRequestQuickView.draft') : t('common.open')}
+        </span>
       </div>
     )
   }
@@ -199,7 +201,7 @@ export class PullRequestQuickView extends React.Component<
     const displayBody =
       body !== undefined && body !== null && body.trim() !== ''
         ? body
-        : '_No description provided._'
+        : t('pullRequestQuickView.noDescriptionMarkdown')
 
     return (
       <div className="pull-request">
@@ -221,7 +223,7 @@ export class PullRequestQuickView extends React.Component<
           onMarkdownLinkClicked={this.onMarkdownLinkClicked}
           onMarkdownParsed={this.onMarkdownParsed}
           underlineLinks={this.props.underlineLinks}
-          ariaLabel="Pull request markdown body"
+          ariaLabel={t('pullRequestQuickView.markdownBodyAriaLabel')}
         />
       </div>
     )

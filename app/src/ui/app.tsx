@@ -1527,7 +1527,7 @@ export class App extends React.Component<IAppProps, IAppState> {
   ) => {
     showCertificateTrustDialog(
       certificate,
-      'Could not securely connect to the server, because its certificate is not trusted. Attackers might be trying to steal your information.\n\nTo connect unsafely, which may put your data at risk, you can “Always trust” the certificate and try again.'
+      t('untrustedCertificate.connectionWarning')
     )
   }
 

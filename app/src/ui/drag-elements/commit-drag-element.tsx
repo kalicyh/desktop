@@ -11,6 +11,7 @@ import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { t } from '../../lib/i18n'
 
 interface ICommitDragElementProps {
   readonly commit: Commit
@@ -99,7 +100,11 @@ export class CommitDragElement extends React.Component<
         const commitsBeingSquashedCount = this.props.selectedCommits.length + 1
         toolTipContents = (
           <>
-            <span>Squash {commitsBeingSquashedCount} commits</span>
+            <span>
+              {t('drag.commit.squashCommits', {
+                count: commitsBeingSquashedCount,
+              })}
+            </span>
           </>
         )
         break
@@ -107,17 +112,19 @@ export class CommitDragElement extends React.Component<
         if (currentDropTarget.data.type !== DragType.Commit) {
           toolTipContents = (
             <>
-              <span>'Insert here'</span>
+              <span>{t('drag.commit.insertHere')}</span>
             </>
           )
           break
         }
 
-        const pluralized =
-          currentDropTarget.data.commits.length === 1 ? 'commit' : 'commits'
+        const moveHereKey =
+          currentDropTarget.data.commits.length === 1
+            ? 'drag.commit.moveHere.commit'
+            : 'drag.commit.moveHere.commits'
         toolTipContents = (
           <>
-            <span>{`Move ${pluralized} here`}</span>
+            <span>{t(moveHereKey)}</span>
           </>
         )
         break
