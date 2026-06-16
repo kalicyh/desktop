@@ -40,6 +40,7 @@ import { BaseStore } from './base-store'
 import { IRepoRulesMetadataRule } from '../../models/repo-rules'
 import { pathExists } from '../path-exists'
 import { enableCopilotSdkCommitMessageGeneration } from '../feature-flag'
+import { t } from '../i18n'
 import type {
   Model,
   ModelBillingTokenPrices,
@@ -633,7 +634,7 @@ export async function runConflictResolutionTurn(
         session.on('assistant.message', event => {
           const content = event.data.content
           if (!content) {
-            finish(() => reject(new Error('No response from Copilot')))
+            finish(() => reject(new Error(t('copilot.error.noResponse'))))
           } else {
             finish(() => resolve(content))
           }
@@ -720,7 +721,7 @@ export class CopilotStore extends BaseStore {
     repositoryPath?: string
   ): Promise<CopilotClient> {
     if (!account.token) {
-      throw new Error('Cannot create Copilot client: Account has no token')
+      throw new Error(t('copilot.error.accountHasNoToken'))
     }
 
     // This relies on the fact that Copilot CLI is bundled with the app, but not
@@ -738,7 +739,7 @@ export class CopilotStore extends BaseStore {
     // filesystem path here, before converting it to a file:// URL on Windows,
     // because `fs.access` doesn't accept URL-form strings.
     if (!(await pathExists(indexPath))) {
-      throw new Error('Cannot create Copilot client: CLI entry point not found')
+      throw new Error(t('copilot.error.cliEntryPointNotFound'))
     }
 
     // On Windows, `import` requires a valid file:// URL rather than a bare
@@ -1027,7 +1028,7 @@ export class CopilotStore extends BaseStore {
       throwIfCancelled()
 
       if (!response || !response.data.content) {
-        throw new Error('No response from Copilot')
+        throw new Error(t('copilot.error.noResponse'))
       }
 
       return parseCopilotCommitMessage(response.data.content)

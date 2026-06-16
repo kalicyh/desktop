@@ -6,6 +6,7 @@ import { fatalError } from '../fatal-error'
 import { TypedBaseStore } from './base-store'
 import { isGHE } from '../endpoint-capabilities'
 import { compare, compareDescending } from '../compare'
+import { t } from '../i18n'
 
 // Ensure that GitHub.com accounts appear first followed by Enterprise
 // accounts, sorted by the order in which they were added.
@@ -102,11 +103,7 @@ export class AccountsStore extends TypedBaseStore<ReadonlyArray<Account>> {
       log.error(`Error adding account '${account.login}'`, e)
 
       if (__DARWIN__ && isKeyChainError(e)) {
-        this.emitError(
-          new Error(
-            `GitHub Desktop was unable to store the account token in the keychain. Please check you have unlocked access to the 'login' keychain.`
-          )
-        )
+        this.emitError(new Error(t('accounts.error.storeTokenFailed')))
       } else {
         this.emitError(e)
       }
