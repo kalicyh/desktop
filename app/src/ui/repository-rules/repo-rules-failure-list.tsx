@@ -6,6 +6,7 @@ import {
 } from '../../models/repo-rules'
 import { RepoRulesetsForBranchLink } from './repo-rulesets-for-branch-link'
 import { RepoRulesetLink } from './repo-ruleset-link'
+import { t } from '../../lib/i18n'
 
 interface IRepoRulesMetadataFailureListProps {
   readonly repository: GitHubRepository
@@ -30,9 +31,11 @@ export class RepoRulesMetadataFailureList extends React.Component<IRepoRulesMeta
     const totalFails = failures.failed.length + failures.bypassed.length
     let endText: string
     if (failures.status === 'bypass') {
-      endText = `, but you can bypass ${
-        totalFails === 1 ? 'it' : 'them'
-      }. Proceed with caution!`
+      endText = t(
+        totalFails === 1
+          ? 'repositoryRules.bypassEnd.one'
+          : 'repositoryRules.bypassEnd.other'
+      )
     } else {
       endText = '.'
     }
@@ -40,14 +43,20 @@ export class RepoRulesMetadataFailureList extends React.Component<IRepoRulesMeta
     return (
       <div className="repo-rules-failure-list-component">
         <p>
-          {leadingText} fails {totalFails} rule{totalFails > 1 ? 's' : ''}
+          {leadingText}{' '}
+          {t(
+            totalFails === 1
+              ? 'repositoryRules.failsRule.one'
+              : 'repositoryRules.failsRule.other',
+            { count: totalFails }
+          )}
           {endText}{' '}
           <RepoRulesetsForBranchLink repository={repository} branch={branch}>
-            View all rulesets for this branch.
+            {t('repositoryRules.viewAllRulesets')}
           </RepoRulesetsForBranchLink>
         </p>
-        {this.renderRuleFailureList(failures.failed, 'Failed')}
-        {this.renderRuleFailureList(failures.bypassed, 'Bypassed')}
+        {this.renderRuleFailureList(failures.failed, 'failed')}
+        {this.renderRuleFailureList(failures.bypassed, 'bypassed')}
       </div>
     )
   }
@@ -59,12 +68,14 @@ export class RepoRulesMetadataFailureList extends React.Component<IRepoRulesMeta
     if (failures.length === 0) {
       return null
     }
-    const rulesText = __DARWIN__ ? 'Rules' : 'rules'
     const labelId = `repo-rule-list-label-${label.toLowerCase()}`
     return (
       <div className="repo-rule-list">
         <label id={labelId}>
-          {label} {rulesText}:
+          {label === 'failed'
+            ? t('repositoryRules.failedRules')
+            : t('repositoryRules.bypassedRules')}
+          :
         </label>
         <ul aria-labelledby={labelId}>
           {failures.map(f => (

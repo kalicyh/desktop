@@ -12,6 +12,7 @@ import { generateWorktreeContextMenuItems } from '../worktrees/worktree-list-ite
 import { PopupType } from '../../models/popup'
 import { Resizable } from '../resizable'
 import { enableResizingToolbarButtons } from '../../lib/feature-flag'
+import { t } from '../../lib/i18n'
 
 interface IWorktreeDropdownProps {
   readonly dispatcher: Dispatcher
@@ -188,7 +189,7 @@ export class WorktreeDropdown extends React.Component<
         onResize={this.onResize}
         maximumWidth={this.props.worktreeDropdownWidth.max}
         minimumWidth={this.props.worktreeDropdownWidth.min}
-        description="Current worktree dropdown button"
+        description={t('worktree.dropdown.description')}
       >
         {toolbarDropdown}
       </Resizable>

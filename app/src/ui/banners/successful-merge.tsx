@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { SuccessBanner } from './success-banner'
+import { t } from '../../lib/i18n'
 
 export function SuccessfulMerge({
   ourBranch,
@@ -13,15 +14,12 @@ export function SuccessfulMerge({
   const message =
     theirBranch !== undefined ? (
       <span>
-        {'Successfully merged '}
-        <strong>{theirBranch}</strong>
-        {' into '}
-        <strong>{ourBranch}</strong>
+        {t('banners.successfulMerge.merged')} <strong>{theirBranch}</strong>{' '}
+        {t('banners.successfulMerge.into')} <strong>{ourBranch}</strong>
       </span>
     ) : (
       <span>
-        {'Successfully merged into '}
-        <strong>{ourBranch}</strong>
+        {t('banners.successfulMerge.mergedInto')} <strong>{ourBranch}</strong>
       </span>
     )
 
