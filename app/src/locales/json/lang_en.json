@@ -106,6 +106,7 @@
   "preferences.appearance.formatting.timeFormat": "Time Format",
   "preferences.appearance.formatting.numberFormat": "Number Format",
   "preferences.appearance.formatting.preferAbsoluteDates": "Prefer absolute dates over relative",
+  "formatDate.invalidDate": "Invalid date",
   "preferences.appearance.diff.heading": "Diff",
   "preferences.appearance.diff.tabSize": "Tab Size",
   "preferences.appearance.diff.tabSizeDefault": "{size} (default)",

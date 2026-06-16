@@ -4,6 +4,7 @@ import {
   getTimeFormatPreference,
 } from '../models/formatting-preferences'
 import { enableFormattingPreferences } from './feature-flag'
+import { t } from './i18n'
 import mem from 'mem'
 import QuickLRU from 'quick-lru'
 
@@ -52,7 +53,7 @@ export function formatDate(
   { date = true, time = true, dateStyle, timeStyle }: IFormatDateOptions = {}
 ): string {
   if (isNaN(value.valueOf())) {
-    return 'Invalid date'
+    return t('formatDate.invalidDate')
   }
 
   if (!enableFormattingPreferences()) {

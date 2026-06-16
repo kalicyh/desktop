@@ -106,6 +106,7 @@
   "preferences.appearance.formatting.timeFormat": "时间格式",
   "preferences.appearance.formatting.numberFormat": "数字格式",
   "preferences.appearance.formatting.preferAbsoluteDates": "优先使用绝对日期而不是相对日期",
+  "formatDate.invalidDate": "无效日期",
   "preferences.appearance.diff.heading": "差异",
   "preferences.appearance.diff.tabSize": "制表符宽度",
   "preferences.appearance.diff.tabSizeDefault": "{size}（默认）",
