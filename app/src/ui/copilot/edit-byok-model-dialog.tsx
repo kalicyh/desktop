@@ -10,6 +10,7 @@ import {
   ReasoningEffort,
   ReasoningEffortOrder,
 } from '../../lib/stores/copilot-store'
+import { t } from '../../lib/i18n'
 
 const NoReasoningEffort = '__none__'
 
@@ -54,12 +55,8 @@ export class EditCopilotBYOKModelDialog extends React.Component<
   public render() {
     const isEditing = this.props.model !== null
     const title = isEditing
-      ? __DARWIN__
-        ? 'Edit Model'
-        : 'Edit model'
-      : __DARWIN__
-      ? 'Add Model'
-      : 'Add model'
+      ? t('copilot.byok.model.editTitle')
+      : t('copilot.byok.model.addTitle')
 
     return (
       <Dialog
@@ -74,37 +71,38 @@ export class EditCopilotBYOKModelDialog extends React.Component<
         <DialogContent>
           <Row className="copilot-byok-field">
             <TextBox
-              label={__DARWIN__ ? 'Display Name' : 'Display name'}
+              label={t('copilot.byok.model.displayName')}
               value={this.state.name}
               onValueChanged={this.onNameChanged}
               placeholder="GPT-4o"
               autoFocus={true}
             />
             <p className="copilot-byok-field-hint">
-              The friendly name shown in the Copilot model picker.
+              {t('copilot.byok.model.displayNameHint')}
             </p>
           </Row>
           <Row className="copilot-byok-field">
             <TextBox
-              label={__DARWIN__ ? 'Model Identifier' : 'Model identifier'}
+              label={t('copilot.byok.model.identifier')}
               value={this.state.id}
               onValueChanged={this.onIdChanged}
               placeholder="gpt-4o"
               required={true}
             />
             <p className="copilot-byok-field-hint">
-              The exact name your provider expects (e.g. <code>gpt-4o</code>,{' '}
-              <code>llama3</code>).
+              {t('copilot.byok.model.identifierHintPrefix')} <code>gpt-4o</code>
+              , <code>llama3</code>
+              {t('copilot.byok.model.identifierHintSuffix')}
             </p>
           </Row>
           <Row className="copilot-byok-field">
             <Select
-              label={__DARWIN__ ? 'Reasoning Effort' : 'Reasoning effort'}
+              label={t('copilot.byok.model.reasoningEffort')}
               value={this.state.reasoningEffort}
               onChange={this.onReasoningEffortChanged}
             >
               <option value={NoReasoningEffort}>
-                Default (provider's choice)
+                {t('copilot.byok.model.defaultReasoningEffort')}
               </option>
               {ReasoningEffortOrder.map(effort => (
                 <option key={effort} value={effort}>
@@ -113,15 +111,16 @@ export class EditCopilotBYOKModelDialog extends React.Component<
               ))}
             </Select>
             <p className="copilot-byok-field-hint">
-              Reasoning models (o1, o3, GPT-5 reasoning variants, etc.) think
-              before responding. Higher levels are slower but produce better
-              answers on complex tasks. Leave on <em>Default</em> for
-              non-reasoning models or to let the provider pick.
+              {t('copilot.byok.model.reasoningHintPrefix')}{' '}
+              <em>{t('copilot.byok.model.default')}</em>{' '}
+              {t('copilot.byok.model.reasoningHintSuffix')}
             </p>
           </Row>
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup okButtonText={isEditing ? 'Save' : 'Add'} />
+          <OkCancelButtonGroup
+            okButtonText={isEditing ? t('dialog.save') : t('copilot.byok.add')}
+          />
         </DialogFooter>
       </Dialog>
     )
@@ -167,10 +166,10 @@ export class EditCopilotBYOKModelDialog extends React.Component<
   private validate(): string | null {
     const id = this.state.id.trim()
     if (id === '') {
-      return 'Please enter a model identifier.'
+      return t('copilot.byok.model.validation.identifierRequired')
     }
     if (this.props.otherModelIds.includes(id)) {
-      return `Another model with the identifier '${id}' already exists.`
+      return t('copilot.byok.model.validation.duplicateIdentifier', { id })
     }
     return null
   }

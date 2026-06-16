@@ -19,6 +19,7 @@ import {
 import { formatReasoningEffort } from '../../lib/stores/copilot-store'
 import { Dispatcher } from '../dispatcher'
 import { PopupType } from '../../models/popup'
+import { t } from '../../lib/i18n'
 
 interface IEditCopilotBYOKProviderDialogProps {
   readonly dispatcher: Dispatcher
@@ -71,10 +72,12 @@ class ModelRow extends React.Component<IModelRowProps> {
         ? model.name
         : model.id !== ''
         ? model.id
-        : 'Untitled model'
+        : t('copilot.byok.provider.untitledModel')
     const reasoningLabel =
       model.reasoningEffort !== undefined
-        ? `Reasoning: ${formatReasoningEffort(model.reasoningEffort)}`
+        ? t('copilot.byok.provider.reasoningLabel', {
+            effort: formatReasoningEffort(model.reasoningEffort),
+          })
         : null
     return (
       <li className="copilot-byok-entry">
@@ -88,10 +91,20 @@ class ModelRow extends React.Component<IModelRowProps> {
           </span>
         </div>
         <div className="copilot-byok-entry-actions">
-          <Button onClick={this.onEdit} ariaLabel={`Edit ${heading}`}>
+          <Button
+            onClick={this.onEdit}
+            ariaLabel={t('copilot.byok.provider.editModelAriaLabel', {
+              name: heading,
+            })}
+          >
             <Octicon symbol={octicons.pencil} />
           </Button>
-          <Button onClick={this.onRemove} ariaLabel={`Remove ${heading}`}>
+          <Button
+            onClick={this.onRemove}
+            ariaLabel={t('copilot.byok.provider.removeModelAriaLabel', {
+              name: heading,
+            })}
+          >
             <Octicon symbol={octicons.trash} />
           </Button>
         </div>
@@ -146,12 +159,8 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
   public render() {
     const isEditing = this.props.provider !== null
     const title = isEditing
-      ? __DARWIN__
-        ? 'Edit Custom Provider'
-        : 'Edit custom provider'
-      : __DARWIN__
-      ? 'Add Custom Provider'
-      : 'Add custom provider'
+      ? t('copilot.byok.provider.editTitle')
+      : t('copilot.byok.provider.addTitle')
 
     return (
       <Dialog
@@ -169,7 +178,9 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
           {this.renderModelsSection()}
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup okButtonText={isEditing ? 'Save' : 'Add'} />
+          <OkCancelButtonGroup
+            okButtonText={isEditing ? t('dialog.save') : t('copilot.byok.add')}
+          />
         </DialogFooter>
       </Dialog>
     )
@@ -178,10 +189,10 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
   private renderProviderSection() {
     return (
       <fieldset className="copilot-byok-fieldset">
-        <legend>Provider</legend>
+        <legend>{t('copilot.byok.provider.sectionProvider')}</legend>
         <Row>
           <TextBox
-            label="Name"
+            label={t('copilot.byok.provider.name')}
             value={this.state.name}
             onValueChanged={this.onNameChanged}
             placeholder="My provider"
@@ -191,7 +202,7 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
         </Row>
         <Row>
           <Select
-            label="Type"
+            label={t('copilot.byok.provider.type')}
             value={this.state.type}
             onChange={this.onTypeChanged}
           >
@@ -202,7 +213,7 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
         </Row>
         <Row>
           <TextBox
-            label={__DARWIN__ ? 'Base URL' : 'Base URL'}
+            label={t('copilot.byok.provider.baseUrl')}
             value={this.state.baseUrl}
             onValueChanged={this.onBaseUrlChanged}
             placeholder={getBaseUrlPlaceholder(this.state.type)}
@@ -212,19 +223,23 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
         {this.state.type === 'openai' && (
           <Row>
             <Select
-              label={__DARWIN__ ? 'API Format' : 'API format'}
+              label={t('copilot.byok.provider.apiFormat')}
               value={this.state.wireApi}
               onChange={this.onWireApiChanged}
             >
-              <option value="completions">Chat completions (default)</option>
-              <option value="responses">Responses (GPT-5 series)</option>
+              <option value="completions">
+                {t('copilot.byok.provider.chatCompletions')}
+              </option>
+              <option value="responses">
+                {t('copilot.byok.provider.responses')}
+              </option>
             </Select>
           </Row>
         )}
         {this.state.type === 'azure' && (
           <Row>
             <TextBox
-              label={__DARWIN__ ? 'Azure API Version' : 'Azure API version'}
+              label={t('copilot.byok.provider.azureApiVersion')}
               value={this.state.azureApiVersion}
               onValueChanged={this.onAzureApiVersionChanged}
               placeholder="2024-10-21"
@@ -233,11 +248,7 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
         )}
         <Row>
           <TextBox
-            label={
-              __DARWIN__
-                ? 'Request Timeout (seconds)'
-                : 'Request timeout (seconds)'
-            }
+            label={t('copilot.byok.provider.requestTimeout')}
             value={this.state.requestTimeoutSeconds}
             onValueChanged={this.onRequestTimeoutChanged}
             placeholder="60"
@@ -252,31 +263,37 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
       <fieldset className="copilot-byok-fieldset">
         <Row>
           <Select
-            label="Authentication"
+            label={t('copilot.byok.provider.authentication')}
             value={this.state.authKind}
             onChange={this.onAuthKindChanged}
           >
-            <option value="apiKey">API key</option>
-            <option value="bearer">Bearer token</option>
-            <option value="none">None</option>
+            <option value="apiKey">{t('copilot.byok.provider.apiKey')}</option>
+            <option value="bearer">
+              {t('copilot.byok.provider.bearerToken')}
+            </option>
+            <option value="none">{t('copilot.byok.provider.none')}</option>
           </Select>
         </Row>
         {this.state.authKind !== 'none' && (
           <Row>
             <TextBox
               label={
-                this.state.authKind === 'bearer' ? 'Bearer token' : 'API key'
+                this.state.authKind === 'bearer'
+                  ? t('copilot.byok.provider.bearerToken')
+                  : t('copilot.byok.provider.apiKey')
               }
               type="password"
               value={this.state.secret}
               onValueChanged={this.onSecretChanged}
-              placeholder={isEditing ? '(unchanged)' : ''}
+              placeholder={
+                isEditing ? t('copilot.byok.provider.unchanged') : ''
+              }
             />
           </Row>
         )}
         {this.state.authKind === 'none' && (
           <p className="copilot-byok-section-hint">
-            No credentials will be sent with requests to this provider.
+            {t('copilot.byok.provider.noCredentialsHint')}
           </p>
         )}
       </fieldset>
@@ -286,14 +303,13 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
   private renderModelsSection() {
     return (
       <fieldset className="copilot-byok-fieldset copilot-byok-models">
-        <legend>Models</legend>
+        <legend>{t('copilot.byok.provider.models')}</legend>
         <p className="copilot-byok-section-hint">
-          Tell Desktop which models this provider offers. Each one will appear
-          in the model picker for Copilot features.
+          {t('copilot.byok.provider.modelsHint')}
         </p>
         {this.state.models.length === 0 ? (
           <p className="copilot-byok-empty">
-            No models yet. Add at least one to use this provider.
+            {t('copilot.byok.provider.noModels')}
           </p>
         ) : (
           <ul className="copilot-byok-entry-list">
@@ -309,7 +325,7 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
           </ul>
         )}
         <Button onClick={this.onAddModel}>
-          {__DARWIN__ ? 'Add Model…' : 'Add model…'}
+          {t('copilot.byok.provider.addModel')}
         </Button>
       </fieldset>
     )
@@ -433,27 +449,27 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
 
   private validate(): string | null {
     if (this.state.name.trim() === '') {
-      return 'Please enter a name.'
+      return t('copilot.byok.provider.validation.nameRequired')
     }
 
     const trimmedUrl = this.state.baseUrl.trim()
     if (trimmedUrl === '') {
-      return 'Please enter a base URL.'
+      return t('copilot.byok.provider.validation.baseUrlRequired')
     }
     if (!isValidBYOKBaseUrl(trimmedUrl)) {
-      return 'Base URL must be an https URL, or an http URL pointing at the local machine.'
+      return t('copilot.byok.provider.validation.invalidBaseUrl')
     }
 
     const trimmedModels = this.state.models.filter(m => m.id.trim() !== '')
     if (trimmedModels.length === 0) {
-      return 'Please add at least one model.'
+      return t('copilot.byok.provider.validation.modelRequired')
     }
 
     const ids = new Set<string>()
     for (const model of trimmedModels) {
       const id = model.id.trim()
       if (ids.has(id)) {
-        return `Duplicate model ID '${id}'.`
+        return t('copilot.byok.provider.validation.duplicateModelId', { id })
       }
       ids.add(id)
     }
@@ -464,15 +480,15 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
       requiresNewBYOKSecret(this.state.authKind, existing)
     ) {
       return this.state.authKind === 'bearer'
-        ? 'Please enter a bearer token.'
-        : 'Please enter an API key.'
+        ? t('copilot.byok.provider.validation.bearerTokenRequired')
+        : t('copilot.byok.provider.validation.apiKeyRequired')
     }
 
     const trimmedTimeout = this.state.requestTimeoutSeconds.trim()
     if (trimmedTimeout !== '') {
       const timeout = Number(trimmedTimeout)
       if (!Number.isFinite(timeout) || timeout <= 0) {
-        return 'Request timeout must be a positive number of seconds.'
+        return t('copilot.byok.provider.validation.invalidTimeout')
       }
     }
 
