@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { ISecretScanResult } from './push-protection-error-dialog'
 import { VerticalSegmentedControl } from '../lib/vertical-segmented-control'
+import { t } from '../../lib/i18n'
 
 export enum BypassReason {
   FalsePositive = 'false_positive',
@@ -48,34 +49,34 @@ export class BypassPushProtectionDialog extends React.Component<
   public render() {
     const items = [
       {
-        title: "It's used in tests",
-        description:
-          'The secret poses no risk. If anyone finds it, they cannot do any damage or gain access to sensitive information.',
+        title: t('secretScanning.bypass.usedInTests.title'),
+        description: t('secretScanning.bypass.usedInTests.description'),
         key: BypassReason.UsedInTests,
       },
       {
-        title: "It's a false positive",
-        description: 'The detected string is not a secret',
+        title: t('secretScanning.bypass.falsePositive.title'),
+        description: t('secretScanning.bypass.falsePositive.description'),
         key: BypassReason.FalsePositive,
       },
       {
-        title: "I'll fix it later",
-        description:
-          'The secret is real, I understand the risk, and I will need to revoke it. This will open a security alert and notify admins of this repository.',
+        title: t('secretScanning.bypass.willFixLater.title'),
+        description: t('secretScanning.bypass.willFixLater.description'),
         key: BypassReason.WillFixLater,
       },
     ]
 
     return (
       <Dialog
-        title={__DARWIN__ ? 'Bypass Push Detection' : 'Bypass push detection'}
+        title={t('secretScanning.bypass.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.bypassPushProtection}
         className="bypass-push-protection-dialog"
       >
         <DialogContent>
           <VerticalSegmentedControl
-            label={`Why are you bypassing this ${this.props.secret.description}?`}
+            label={t('secretScanning.bypass.reasonLabel', {
+              description: this.props.secret.description,
+            })}
             items={items}
             selectedKey={this.state.reason}
             onSelectionChanged={this.onSelectionChanged}
@@ -83,7 +84,7 @@ export class BypassPushProtectionDialog extends React.Component<
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Allow me to expose this secret"
+            okButtonText={t('secretScanning.bypass.allowExpose')}
             destructive={true}
           />
         </DialogFooter>
