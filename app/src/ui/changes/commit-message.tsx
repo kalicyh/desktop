@@ -72,6 +72,7 @@ import { AriaLiveContainer } from '../accessibility/aria-live-container'
 import { HookProgress } from '../../lib/git'
 import { assertNever } from '../../lib/fatal-error'
 import { t } from '../../lib/i18n'
+import { formatNumber } from '../../lib/format-number'
 
 const addAuthorIcon: OcticonSymbolVariant = {
   w: 18,
@@ -1548,12 +1549,12 @@ export class CommitMessage extends React.Component<
       return ''
     }
 
-    const pluralizedFile =
-      filesToBeCommittedCount > 1
-        ? t('commitMessage.button.files')
-        : t('commitMessage.button.file')
-
-    return `${filesToBeCommittedCount} ${pluralizedFile} `
+    return t(
+      filesToBeCommittedCount === 1
+        ? 'commitMessage.button.fileCount.one'
+        : 'commitMessage.button.fileCount.other',
+      { count: formatNumber(filesToBeCommittedCount) }
+    )
   }
 
   private getCommittingButtonTitle() {

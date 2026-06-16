@@ -1,5 +1,7 @@
 import * as React from 'react'
 import { SuccessBanner } from './success-banner'
+import { formatNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
 
 interface ISuccessfulCherryPickBannerProps {
   readonly targetBranchName: string
@@ -16,13 +18,17 @@ export class SuccessfulCherryPick extends React.Component<
     const { countCherryPicked, onDismissed, onUndo, targetBranchName } =
       this.props
 
-    const pluralized = countCherryPicked === 1 ? 'commit' : 'commits'
-
     return (
       <SuccessBanner timeout={15000} onDismissed={onDismissed} onUndo={onUndo}>
         <span>
-          Successfully copied {countCherryPicked} {pluralized} to{' '}
-          <strong>{targetBranchName}</strong>.
+          {t(
+            countCherryPicked === 1
+              ? 'banners.successfulCherryPick.prefix.one'
+              : 'banners.successfulCherryPick.prefix.other',
+            { count: formatNumber(countCherryPicked) }
+          )}{' '}
+          <strong>{targetBranchName}</strong>
+          {t('banners.successfulCherryPick.suffix')}
         </span>
       </SuccessBanner>
     )

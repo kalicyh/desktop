@@ -19,6 +19,8 @@ import { SuccessfulSquash } from './successful-squash'
 import { SuccessBanner } from './success-banner'
 import { ConflictsFoundBanner } from './conflicts-found-banner'
 import { OSVersionNoLongerSupportedBanner } from './os-version-no-longer-supported-banner'
+import { formatNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
 
 export function renderBanner(
   banner: Banner,
@@ -121,20 +123,22 @@ export function renderBanner(
         />
       )
     case BannerType.SquashUndone: {
-      const pluralized = banner.commitsCount === 1 ? 'commit' : 'commits'
       return (
         <SuccessBanner
           key="squash-undone"
           timeout={5000}
           onDismissed={onDismissed}
         >
-          Squash of {banner.commitsCount} {pluralized} undone.
+          {t(
+            banner.commitsCount === 1
+              ? 'banners.squashUndone.one'
+              : 'banners.squashUndone.other',
+            { count: formatNumber(banner.commitsCount) }
+          )}
         </SuccessBanner>
       )
     }
     case BannerType.SuccessfulReorder: {
-      const pluralized = banner.count === 1 ? 'commit' : 'commits'
-
       return (
         <SuccessBanner
           key="successful-reorder"
@@ -143,20 +147,29 @@ export function renderBanner(
           onUndo={banner.onUndo}
         >
           <span>
-            Successfully reordered {banner.count} {pluralized}.
+            {t(
+              banner.count === 1
+                ? 'banners.successfulReorder.one'
+                : 'banners.successfulReorder.other',
+              { count: formatNumber(banner.count) }
+            )}
           </span>
         </SuccessBanner>
       )
     }
     case BannerType.ReorderUndone: {
-      const pluralized = banner.commitsCount === 1 ? 'commit' : 'commits'
       return (
         <SuccessBanner
           key="reorder-undone"
           timeout={5000}
           onDismissed={onDismissed}
         >
-          Reorder of {banner.commitsCount} {pluralized} undone.
+          {t(
+            banner.commitsCount === 1
+              ? 'banners.reorderUndone.one'
+              : 'banners.reorderUndone.other',
+            { count: formatNumber(banner.commitsCount) }
+          )}
         </SuccessBanner>
       )
     }
