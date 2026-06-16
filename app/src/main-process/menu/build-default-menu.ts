@@ -11,21 +11,7 @@ import * as ipcWebContents from '../ipc-webcontents'
 import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
 
-const createPullRequestLabel = __DARWIN__
-  ? 'Create Pull Request'
-  : 'Create &pull request'
-const showPullRequestLabel = __DARWIN__
-  ? 'View Pull Request on GitHub'
-  : 'View &pull request on GitHub'
 const defaultBranchNameValue = __DARWIN__ ? 'Default Branch' : 'default branch'
-const confirmRepositoryRemovalLabel = __DARWIN__ ? 'Remove…' : '&Remove…'
-const repositoryRemovalLabel = __DARWIN__ ? 'Remove' : '&Remove'
-const confirmStashAllChangesLabel = __DARWIN__
-  ? 'Stash All Changes…'
-  : '&Stash all changes…'
-const stashAllChangesLabel = __DARWIN__
-  ? 'Stash All Changes'
-  : '&Stash all changes'
 
 enum ZoomDirection {
   Reset,
@@ -55,18 +41,25 @@ export function buildDefaultMenuTemplate({
   isFavoritesSidebarVisible = false,
   currentLanguage = ApplicationLanguage.English,
 }: MenuLabelsEvent): Electron.MenuItemConstructorOptions[] {
+  if (contributionTargetDefaultBranch === defaultBranchNameValue) {
+    contributionTargetDefaultBranch = translate(
+      'menu.defaultBranch',
+      currentLanguage
+    )
+  }
+
   contributionTargetDefaultBranch = truncateWithEllipsis(
     contributionTargetDefaultBranch,
     25
   )
 
   const removeRepoLabel = askForConfirmationOnRepositoryRemoval
-    ? confirmRepositoryRemovalLabel
-    : repositoryRemovalLabel
+    ? translate('menu.removeRepositoryWithConfirmation', currentLanguage)
+    : translate('menu.removeRepository', currentLanguage)
 
   const pullRequestLabel = hasCurrentPullRequest
-    ? showPullRequestLabel
-    : createPullRequestLabel
+    ? translate('menu.viewPullRequestOnGitHub', currentLanguage)
+    : translate('menu.createPullRequest', currentLanguage)
 
   const template = new Array<Electron.MenuItemConstructorOptions>()
 
@@ -108,23 +101,23 @@ export function buildDefaultMenuTemplate({
   }
 
   const fileMenu: Electron.MenuItemConstructorOptions = {
-    label: __DARWIN__ ? 'File' : '&File',
+    label: translate('menu.file', currentLanguage),
     submenu: [
       {
-        label: __DARWIN__ ? 'New Repository…' : 'New &repository…',
+        label: translate('menu.newRepository', currentLanguage),
         id: 'new-repository',
         click: emit('create-repository'),
         accelerator: 'CmdOrCtrl+N',
       },
       separator,
       {
-        label: __DARWIN__ ? 'Add Local Repository…' : 'Add &local repository…',
+        label: translate('menu.addLocalRepository', currentLanguage),
         id: 'add-local-repository',
         accelerator: 'CmdOrCtrl+O',
         click: emit('add-local-repository'),
       },
       {
-        label: __DARWIN__ ? 'Clone Repository…' : 'Clo&ne repository…',
+        label: translate('menu.cloneRepository', currentLanguage),
         id: 'clone-repository',
         accelerator: 'CmdOrCtrl+Shift+O',
         click: emit('clone-repository'),
@@ -139,7 +132,7 @@ export function buildDefaultMenuTemplate({
     fileItems.push(
       separator,
       {
-        label: '&Options…',
+        label: translate('menu.options', currentLanguage),
         id: 'preferences',
         accelerator: 'CmdOrCtrl+,',
         click: emit('show-preferences'),
@@ -147,7 +140,7 @@ export function buildDefaultMenuTemplate({
       separator,
       {
         role: 'quit',
-        label: 'E&xit',
+        label: translate('menu.exit', currentLanguage),
         accelerator: exitAccelerator,
       }
     )
@@ -156,23 +149,23 @@ export function buildDefaultMenuTemplate({
   template.push(fileMenu)
 
   template.push({
-    label: __DARWIN__ ? 'Edit' : '&Edit',
+    label: translate('menu.edit', currentLanguage),
     submenu: [
-      { role: 'undo', label: __DARWIN__ ? 'Undo' : '&Undo' },
-      { role: 'redo', label: __DARWIN__ ? 'Redo' : '&Redo' },
+      { role: 'undo', label: translate('menu.undo', currentLanguage) },
+      { role: 'redo', label: translate('menu.redo', currentLanguage) },
       separator,
-      { role: 'cut', label: __DARWIN__ ? 'Cut' : 'Cu&t' },
-      { role: 'copy', label: __DARWIN__ ? 'Copy' : '&Copy' },
-      { role: 'paste', label: __DARWIN__ ? 'Paste' : '&Paste' },
+      { role: 'cut', label: translate('menu.cut', currentLanguage) },
+      { role: 'copy', label: translate('menu.copy', currentLanguage) },
+      { role: 'paste', label: translate('menu.paste', currentLanguage) },
       {
-        label: __DARWIN__ ? 'Select All' : 'Select &all',
+        label: translate('menu.selectAll', currentLanguage),
         accelerator: 'CmdOrCtrl+A',
         click: emit('select-all'),
       },
       separator,
       {
         id: 'find',
-        label: __DARWIN__ ? 'Find' : '&Find',
+        label: translate('menu.find', currentLanguage),
         accelerator: 'CmdOrCtrl+F',
         click: emit('find-text'),
       },
@@ -180,22 +173,22 @@ export function buildDefaultMenuTemplate({
   })
 
   template.push({
-    label: __DARWIN__ ? 'View' : '&View',
+    label: translate('menu.view', currentLanguage),
     submenu: [
       {
-        label: __DARWIN__ ? 'Show Changes' : '&Changes',
+        label: translate('menu.showChanges', currentLanguage),
         id: 'show-changes',
         accelerator: 'CmdOrCtrl+1',
         click: emit('show-changes'),
       },
       {
-        label: __DARWIN__ ? 'Show History' : '&History',
+        label: translate('menu.showHistory', currentLanguage),
         id: 'show-history',
         accelerator: 'CmdOrCtrl+2',
         click: emit('show-history'),
       },
       {
-        label: __DARWIN__ ? 'Show Repository List' : 'Repository &list',
+        label: translate('menu.showRepositoryList', currentLanguage),
         id: 'show-repository-list',
         accelerator: 'CmdOrCtrl+T',
         click: emit('choose-repository'),
@@ -211,13 +204,13 @@ export function buildDefaultMenuTemplate({
         click: emit('toggle-favorites-sidebar'),
       },
       {
-        label: __DARWIN__ ? 'Show Branches List' : '&Branches list',
+        label: translate('menu.showBranchesList', currentLanguage),
         id: 'show-branches-list',
         accelerator: 'CmdOrCtrl+B',
         click: emit('show-branches'),
       },
       {
-        label: __DARWIN__ ? 'Show Worktrees List' : 'Wor&ktrees list',
+        label: translate('menu.showWorktreesList', currentLanguage),
         id: 'show-worktrees-list',
         accelerator: 'CmdOrCtrl+Alt+W',
         click: emit('show-worktrees'),
@@ -225,13 +218,13 @@ export function buildDefaultMenuTemplate({
       },
       separator,
       {
-        label: __DARWIN__ ? 'Go to Summary' : 'Go to &Summary',
+        label: translate('menu.goToSummary', currentLanguage),
         id: 'go-to-commit-message',
         accelerator: 'CmdOrCtrl+G',
         click: emit('go-to-commit-message'),
       },
       {
-        label: getStashedChangesLabel(isStashedChangesVisible),
+        label: getStashedChangesLabel(isStashedChangesVisible, currentLanguage),
         id: 'toggle-stashed-changes',
         accelerator: 'Ctrl+H',
         click: isStashedChangesVisible
@@ -239,47 +232,44 @@ export function buildDefaultMenuTemplate({
           : emit('show-stashed-changes'),
       },
       {
-        label: __DARWIN__
-          ? `${isChangesFilterVisible ? 'Hide' : 'Show'} Changes Filter`
-          : `${
-              isChangesFilterVisible ? 'Hide' : 'Show'
-            } Toggle Chan&ges Filter`,
+        label: translate(
+          isChangesFilterVisible
+            ? 'menu.hideChangesFilter'
+            : 'menu.showChangesFilter',
+          currentLanguage
+        ),
         id: 'toggle-changes-filter',
         accelerator: 'CmdOrCtrl+L',
         click: emit('toggle-changes-filter'),
       },
       {
-        label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
+        label: translate('menu.toggleFullScreen', currentLanguage),
         role: 'togglefullscreen',
       },
       separator,
       {
-        label: __DARWIN__ ? 'Reset Zoom' : 'Reset zoom',
+        label: translate('menu.resetZoom', currentLanguage),
         accelerator: 'CmdOrCtrl+0',
         click: zoom(ZoomDirection.Reset),
       },
       {
-        label: __DARWIN__ ? 'Zoom In' : 'Zoom in',
+        label: translate('menu.zoomIn', currentLanguage),
         accelerator: 'CmdOrCtrl+=',
         click: zoom(ZoomDirection.In),
       },
       {
-        label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
+        label: translate('menu.zoomOut', currentLanguage),
         accelerator: 'CmdOrCtrl+-',
         click: zoom(ZoomDirection.Out),
       },
       {
-        label: __DARWIN__
-          ? 'Expand Active Resizable'
-          : 'Expand active resizable',
+        label: translate('menu.expandActiveResizable', currentLanguage),
         id: 'increase-active-resizable-width',
         accelerator: 'CmdOrCtrl+9',
         click: emit('increase-active-resizable-width'),
       },
       {
-        label: __DARWIN__
-          ? 'Contract Active Resizable'
-          : 'Contract active resizable',
+        label: translate('menu.contractActiveResizable', currentLanguage),
         id: 'decrease-active-resizable-width',
         accelerator: 'CmdOrCtrl+8',
         click: emit('decrease-active-resizable-width'),
@@ -319,13 +309,14 @@ export function buildDefaultMenuTemplate({
 
   const pushLabel = getPushLabel(
     isForcePushForCurrentRepository,
-    askForConfirmationOnForcePush
+    askForConfirmationOnForcePush,
+    currentLanguage
   )
 
   const pushEventType = isForcePushForCurrentRepository ? 'force-push' : 'push'
 
   template.push({
-    label: __DARWIN__ ? 'Repository' : '&Repository',
+    label: translate('menu.repository', currentLanguage),
     id: 'repository',
     submenu: [
       {
@@ -336,13 +327,13 @@ export function buildDefaultMenuTemplate({
       },
       {
         id: 'pull',
-        label: __DARWIN__ ? 'Pull' : 'Pu&ll',
+        label: translate('menu.pull', currentLanguage),
         accelerator: 'CmdOrCtrl+Shift+P',
         click: emit('pull'),
       },
       {
         id: 'fetch',
-        label: __DARWIN__ ? 'Fetch' : '&Fetch',
+        label: translate('menu.fetch', currentLanguage),
         accelerator: 'CmdOrCtrl+Shift+T',
         click: emit('fetch'),
       },
@@ -394,23 +385,21 @@ export function buildDefaultMenuTemplate({
       separator,
       {
         id: 'create-issue-in-repository-on-github',
-        label: __DARWIN__
-          ? 'Create Issue on GitHub'
-          : 'Create &issue on GitHub',
+        label: translate('menu.createIssueOnGitHub', currentLanguage),
         accelerator: 'CmdOrCtrl+I',
         click: emit('create-issue-in-repository-on-github'),
       },
       separator,
       {
         id: 'create-worktree',
-        label: __DARWIN__ ? 'New Worktree…' : 'New work&tree…',
+        label: translate('menu.newWorktree', currentLanguage),
         click: emit('create-worktree'),
         accelerator: 'CmdOrCtrl+Shift+W',
         visible: enableWorktreeSupport(),
       },
       ...(enableWorktreeSupport() ? [separator] : []),
       {
-        label: __DARWIN__ ? 'Repository Settings…' : 'Repository &settings…',
+        label: translate('menu.repositorySettings', currentLanguage),
         id: 'show-repository-settings',
         click: emit('show-repository-settings'),
       },
@@ -419,84 +408,80 @@ export function buildDefaultMenuTemplate({
 
   const branchSubmenu = [
     {
-      label: __DARWIN__ ? 'New Branch…' : 'New &branch…',
+      label: translate('menu.newBranch', currentLanguage),
       id: 'create-branch',
       accelerator: 'CmdOrCtrl+Shift+N',
       click: emit('create-branch'),
     },
     {
-      label: __DARWIN__ ? 'Rename…' : '&Rename…',
+      label: translate('menu.rename', currentLanguage),
       id: 'rename-branch',
       accelerator: 'CmdOrCtrl+Shift+R',
       click: emit('rename-branch'),
     },
     {
-      label: __DARWIN__ ? 'Delete…' : '&Delete…',
+      label: translate('menu.delete', currentLanguage),
       id: 'delete-branch',
       accelerator: 'CmdOrCtrl+Shift+D',
       click: emit('delete-branch'),
     },
     separator,
     {
-      label: __DARWIN__ ? 'Discard All Changes…' : 'Discard all changes…',
+      label: translate('menu.discardAllChanges', currentLanguage),
       id: 'discard-all-changes',
       accelerator: 'CmdOrCtrl+Shift+Backspace',
       click: emit('discard-all-changes'),
     },
     {
       label: askForConfirmationWhenStashingAllChanges
-        ? confirmStashAllChangesLabel
-        : stashAllChangesLabel,
+        ? translate('menu.stashAllChangesWithConfirmation', currentLanguage)
+        : translate('menu.stashAllChanges', currentLanguage),
       id: 'stash-all-changes',
       accelerator: 'CmdOrCtrl+Shift+S',
       click: emit('stash-all-changes'),
     },
     separator,
     {
-      label: __DARWIN__
-        ? `Update from ${contributionTargetDefaultBranch}`
-        : `&Update from ${contributionTargetDefaultBranch}`,
+      label: translate('menu.updateFrom', currentLanguage, {
+        branch: contributionTargetDefaultBranch,
+      }),
       id: 'update-branch-with-contribution-target-branch',
       accelerator: 'CmdOrCtrl+Shift+U',
       click: emit('update-branch-with-contribution-target-branch'),
     },
     {
-      label: __DARWIN__ ? 'Compare to Branch' : '&Compare to branch',
+      label: translate('menu.compareToBranch', currentLanguage),
       id: 'compare-to-branch',
       accelerator: 'CmdOrCtrl+Shift+B',
       click: emit('compare-to-branch'),
     },
     {
-      label: __DARWIN__
-        ? 'Merge into Current Branch…'
-        : '&Merge into current branch…',
+      label: translate('menu.mergeIntoCurrentBranch', currentLanguage),
       id: 'merge-branch',
       accelerator: 'CmdOrCtrl+Shift+M',
       click: emit('merge-branch'),
     },
     {
-      label: __DARWIN__
-        ? 'Squash and Merge into Current Branch…'
-        : 'Squas&h and merge into current branch…',
+      label: translate('menu.squashAndMergeIntoCurrentBranch', currentLanguage),
       id: 'squash-and-merge-branch',
       accelerator: 'CmdOrCtrl+Shift+H',
       click: emit('squash-and-merge-branch'),
     },
     {
-      label: __DARWIN__ ? 'Rebase Current Branch…' : 'R&ebase current branch…',
+      label: translate('menu.rebaseCurrentBranch', currentLanguage),
       id: 'rebase-branch',
       accelerator: 'CmdOrCtrl+Shift+E',
       click: emit('rebase-branch'),
     },
     separator,
     {
-      label: __DARWIN__ ? 'Compare on GitHub' : 'Compare on &GitHub',
+      label: translate('menu.compareOnGitHub', currentLanguage),
       id: 'compare-on-github',
       accelerator: 'CmdOrCtrl+Shift+C',
       click: emit('compare-on-github'),
     },
     {
-      label: __DARWIN__ ? 'View Branch on GitHub' : 'View branch on GitHub',
+      label: translate('menu.viewBranchOnGitHub', currentLanguage),
       id: 'branch-on-github',
       accelerator: 'CmdOrCtrl+Alt+B',
       click: emit('branch-on-github'),
@@ -504,7 +489,7 @@ export function buildDefaultMenuTemplate({
   ]
 
   branchSubmenu.push({
-    label: __DARWIN__ ? 'Preview Pull Request' : 'Preview pull request',
+    label: translate('menu.previewPullRequest', currentLanguage),
     id: 'preview-pull-request',
     accelerator: 'CmdOrCtrl+Alt+P',
     click: emit('preview-pull-request'),
@@ -518,7 +503,7 @@ export function buildDefaultMenuTemplate({
   })
 
   template.push({
-    label: __DARWIN__ ? 'Branch' : '&Branch',
+    label: translate('menu.branch', currentLanguage),
     id: 'branch',
     submenu: branchSubmenu,
   })
@@ -537,7 +522,7 @@ export function buildDefaultMenuTemplate({
   }
 
   const submitIssueItem: Electron.MenuItemConstructorOptions = {
-    label: __DARWIN__ ? 'Report Issue…' : 'Report issue…',
+    label: translate('menu.reportIssue', currentLanguage),
     click() {
       shell
         .openExternal('https://github.com/desktop/desktop/issues/new/choose')
@@ -546,7 +531,7 @@ export function buildDefaultMenuTemplate({
   }
 
   const contactSupportItem: Electron.MenuItemConstructorOptions = {
-    label: __DARWIN__ ? 'Contact GitHub Support…' : '&Contact GitHub support…',
+    label: translate('menu.contactGitHubSupport', currentLanguage),
     click() {
       shell
         .openExternal(
@@ -566,7 +551,7 @@ export function buildDefaultMenuTemplate({
   }
 
   const showKeyboardShortcuts: Electron.MenuItemConstructorOptions = {
-    label: __DARWIN__ ? 'Show Keyboard Shortcuts' : 'Show keyboard shortcuts',
+    label: translate('menu.showKeyboardShortcuts', currentLanguage),
     click() {
       shell
         .openExternal(
@@ -577,10 +562,10 @@ export function buildDefaultMenuTemplate({
   }
 
   const showLogsLabel = __DARWIN__
-    ? 'Show Logs in Finder'
+    ? translate('menu.showLogsInFinder', currentLanguage)
     : __WIN32__
-    ? 'S&how logs in Explorer'
-    : 'S&how logs in your File Manager'
+    ? translate('menu.showLogsInExplorer', currentLanguage)
+    : translate('menu.showLogsInFileManager', currentLanguage)
 
   const showLogsItem: Electron.MenuItemConstructorOptions = {
     label: showLogsLabel,
@@ -609,7 +594,7 @@ export function buildDefaultMenuTemplate({
     })
   } else {
     template.push({
-      label: '&Help',
+      label: translate('menu.help', currentLanguage),
       submenu: [
         ...helpItems,
         separator,
@@ -629,25 +614,29 @@ export function buildDefaultMenuTemplate({
 
 function getPushLabel(
   isForcePushForCurrentRepository: boolean,
-  askForConfirmationOnForcePush: boolean
+  askForConfirmationOnForcePush: boolean,
+  currentLanguage: ApplicationLanguage
 ): string {
   if (!isForcePushForCurrentRepository) {
-    return __DARWIN__ ? 'Push' : 'P&ush'
+    return translate('menu.push', currentLanguage)
   }
 
   if (askForConfirmationOnForcePush) {
-    return __DARWIN__ ? 'Force Push…' : 'Force P&ush…'
+    return translate('menu.forcePushWithConfirmation', currentLanguage)
   }
 
-  return __DARWIN__ ? 'Force Push' : 'Force P&ush'
+  return translate('menu.forcePush', currentLanguage)
 }
 
-function getStashedChangesLabel(isStashedChangesVisible: boolean): string {
+function getStashedChangesLabel(
+  isStashedChangesVisible: boolean,
+  currentLanguage: ApplicationLanguage
+): string {
   if (isStashedChangesVisible) {
-    return __DARWIN__ ? 'Hide Stashed Changes' : 'H&ide stashed changes'
+    return translate('menu.hideStashedChanges', currentLanguage)
   }
 
-  return __DARWIN__ ? 'Show Stashed Changes' : 'Sho&w stashed changes'
+  return translate('menu.showStashedChanges', currentLanguage)
 }
 
 type ClickHandler = (
