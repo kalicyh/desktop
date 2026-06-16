@@ -5,6 +5,7 @@ import { Dispatcher } from '../dispatcher'
 import { TrashNameLabel } from '../lib/context-menu'
 import { RetryAction } from '../../models/retry-actions'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
+import { t } from '../../lib/i18n'
 
 interface IDiscardChangesRetryDialogProps {
   readonly dispatcher: Dispatcher
@@ -32,11 +33,7 @@ export class DiscardChangesRetryDialog extends React.Component<
 
     return (
       <Dialog
-        title={
-          __DARWIN__
-            ? 'Discarded Changes Will Be Unrecoverable'
-            : 'Discarded changes will be unrecoverable'
-        }
+        title={t('discardChanges.retry.title')}
         id="discard-changes-retry"
         loading={retrying}
         disabled={retrying}
@@ -45,17 +42,23 @@ export class DiscardChangesRetryDialog extends React.Component<
         type="error"
       >
         <DialogContent>
-          <p>Failed to discard changes to {TrashNameLabel}.</p>
+          <p>
+            {t('discardChanges.retry.failedPrefix')} {TrashNameLabel}.
+          </p>
           <div>
-            Common reasons are:
+            {t('discardChanges.retry.commonReasons')}
             <ul>
               <li>
-                The {TrashNameLabel} is configured to delete items immediately.
+                {t('discardChanges.retry.deleteImmediatelyPrefix')}{' '}
+                {TrashNameLabel}{' '}
+                {t('discardChanges.retry.deleteImmediatelySuffix')}
               </li>
-              <li>Restricted access to move the file(s).</li>
+              <li>{t('discardChanges.retry.restrictedAccess')}</li>
             </ul>
           </div>
-          <p>These changes will be unrecoverable from the {TrashNameLabel}.</p>
+          <p>
+            {t('discardChanges.retry.unrecoverablePrefix')} {TrashNameLabel}.
+          </p>
           {this.renderConfirmDiscardChanges()}
         </DialogContent>
         {this.renderFooter()}
@@ -66,7 +69,7 @@ export class DiscardChangesRetryDialog extends React.Component<
   private renderConfirmDiscardChanges() {
     return (
       <Checkbox
-        label="Do not show this message again"
+        label={t('discardChanges.doNotShowAgain')}
         value={
           this.state.confirmDiscardChanges
             ? CheckboxValue.Off
@@ -81,13 +84,9 @@ export class DiscardChangesRetryDialog extends React.Component<
     return (
       <DialogFooter>
         <OkCancelButtonGroup
-          okButtonText={
-            __DARWIN__
-              ? 'Permanently Discard Changes'
-              : 'Permanently discard changes'
-          }
-          okButtonTitle={`This will discard changes and they will be unrecoverable.`}
-          cancelButtonText="Cancel"
+          okButtonText={t('discardChanges.retry.permanentlyDiscard')}
+          okButtonTitle={t('discardChanges.retry.permanentlyDiscardTitle')}
+          cancelButtonText={t('dialog.cancel')}
           destructive={true}
         />
       </DialogFooter>
