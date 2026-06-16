@@ -16,6 +16,7 @@ import { showOpenDialog } from '../main-process-proxy'
 import { Ref } from '../lib/ref'
 import { InputError } from '../lib/input-description/input-error'
 import { IAccessibleMessage } from '../../models/accessible-message'
+import { t } from '../../lib/i18n'
 
 interface IAddExistingRepositoryProps {
   readonly dispatcher: Dispatcher
@@ -120,8 +121,7 @@ export class AddExistingRepository extends React.Component<
       return null
     }
 
-    const msg =
-      'This directory appears to be a bare repository. Bare repositories are not currently supported.'
+    const msg = t('addRepository.error.bareRepository')
 
     return { screenReaderMessage: msg, displayedMessage: msg }
   }
@@ -145,30 +145,27 @@ export class AddExistingRepository extends React.Component<
     const displayedMessage = (
       <>
         <p>
-          The Git repository
+          {t('addRepository.error.unsafeRepositoryPrefix')}
           {repositoryUnsafePath !== convertedPath && (
             <>
               {' at '}
               <Ref>{repositoryUnsafePath}</Ref>
             </>
           )}{' '}
-          appears to be owned by another user on your machine. Adding untrusted
-          repositories may automatically execute files in the repository.
+          {t('addRepository.error.unsafeRepositorySuffix')}
         </p>
         <p>
-          If you trust the owner of the directory you can
+          {t('addRepository.error.unsafeRepositoryTrustPrefix')}
           <LinkButton onClick={this.onTrustDirectory}>
             {' '}
-            add an exception for this directory
+            {t('addRepository.error.addSafeDirectoryException')}
           </LinkButton>{' '}
-          in order to continue.
+          {t('addRepository.error.unsafeRepositoryTrustSuffix')}
         </p>
       </>
     )
 
-    const screenReaderMessage = `The Git repository appears to be owned by another user on your machine.
-      Adding untrusted repositories may automatically execute files in the repository.
-      If you trust the owner of the directory you can add an exception for this directory in order to continue.`
+    const screenReaderMessage = t('addRepository.error.unsafeRepositoryAria')
 
     return { screenReaderMessage, displayedMessage }
   }
@@ -180,19 +177,18 @@ export class AddExistingRepository extends React.Component<
 
     const displayedMessage = (
       <>
-        <p>This directory does not appear to be a Git repository.</p>
+        <p>{t('addRepository.error.notGitRepository')}</p>
         <p>
-          Would you like to{' '}
+          {t('addRepository.error.createHerePrefix')}{' '}
           <LinkButton onClick={this.onCreateRepositoryClicked}>
-            create a repository
+            {t('addRepository.error.createRepositoryLink')}
           </LinkButton>{' '}
-          here instead?
+          {t('addRepository.error.createHereSuffix')}
         </p>
       </>
     )
 
-    const screenReaderMessage =
-      'This directory does not appear to be a Git repository. Would you like to create a repository here instead?'
+    const screenReaderMessage = t('addRepository.error.notGitRepositoryAria')
 
     return { screenReaderMessage, displayedMessage }
   }
@@ -223,7 +219,7 @@ export class AddExistingRepository extends React.Component<
     return (
       <Dialog
         id="add-existing-repository"
-        title={__DARWIN__ ? 'Add Local Repository' : 'Add local repository'}
+        title={t('addRepository.addLocalTitle')}
         onSubmit={this.addRepository}
         onDismissed={this.props.onDismissed}
         loading={this.state.isTrustingRepository}
@@ -233,19 +229,19 @@ export class AddExistingRepository extends React.Component<
             <TextBox
               ref={this.pathTextBoxRef}
               value={this.state.path}
-              label={__DARWIN__ ? 'Local Path' : 'Local path'}
-              placeholder="repository path"
+              label={t('clone.localPath')}
+              placeholder={t('clone.repositoryPathPlaceholder')}
               onValueChanged={this.onPathChanged}
               ariaDescribedBy="add-existing-repository-path-error"
             />
-            <Button onClick={this.showFilePicker}>Choose…</Button>
+            <Button onClick={this.showFilePicker}>{t('clone.choose')}</Button>
           </Row>
           {this.renderErrors()}
         </DialogContent>
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? 'Add Repository' : 'Add repository'}
+            okButtonText={t('addRepository.addRepositoryButton')}
           />
         </DialogFooter>
       </Dialog>
