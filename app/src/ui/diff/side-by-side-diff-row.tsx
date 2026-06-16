@@ -19,6 +19,7 @@ import { WhitespaceHintPopover } from './whitespace-hint-popover'
 import { TooltipDirection } from '../lib/tooltip'
 import { Button } from '../lib/button'
 import { diffCheck, diffDash } from '../octicons/diff'
+import { t } from '../../lib/i18n'
 
 // This is a custom version of the no-newline octicon that's exactly as
 // tall as it needs to be (8px) which helps with aligning it on the line.
@@ -455,7 +456,7 @@ export class SideBySideDiffRow extends React.Component<
           {data.noNewLineIndicator && (
             <span className="no-newline-indicator">
               <Octicon symbol={narrowNoNewlineSymbol} />
-              <span> No newline at end of file</span>
+              <span> {t('diff.noNewlineAtEndOfFile')}</span>
             </span>
           )}
         </div>
@@ -785,11 +786,15 @@ export class SideBySideDiffRow extends React.Component<
           {this.renderLineNumberCheck(isSelected)}
           {lineNumbers.map((lineNumber, index) => (
             <span key={index}>
-              {lineNumber && <span className="sr-only">Line </span>}
+              {lineNumber && (
+                <span className="sr-only">{t('diff.aria.line')} </span>
+              )}
               {lineNumber}
               {lineNumber && isSelected !== undefined && (
                 <span className="sr-only">
-                  {column === DiffColumn.After ? ' added' : ' deleted'}
+                  {column === DiffColumn.After
+                    ? ` ${t('diff.aria.added')}`
+                    : ` ${t('diff.aria.deleted')}`}
                 </span>
               )}
             </span>
