@@ -28,6 +28,7 @@ import {
 import { HttpStatusCode } from './http-status-code'
 import { CopilotError, parseCopilotPaymentRequiredError } from './copilot-error'
 import { BypassReasonType } from '../ui/secret-scanning/bypass-push-protection-dialog'
+import { t } from './i18n'
 
 const envEndpoint = process.env['DESKTOP_GITHUB_DOTCOM_API_ENDPOINT']
 const envHTMLURL = process.env['DESKTOP_GITHUB_DOTCOM_HTML_URL']
@@ -1122,16 +1123,16 @@ export class API {
       if (e instanceof APIError) {
         if (org !== null) {
           throw new Error(
-            `Unable to create repository for organization '${org.login}'. Verify that the repository does not already exist and that you have permission to create a repository there.`
+            t('publishRepository.error.organizationCreateFailed', {
+              organization: org.login,
+            })
           )
         }
         throw e
       }
 
       log.error(`createRepository: failed with endpoint ${this.endpoint}`, e)
-      throw new Error(
-        `Unable to publish repository. Please check if you have an internet connection and try again.`
-      )
+      throw new Error(t('publishRepository.error.publishFailed'))
     }
   }
 
@@ -2188,13 +2189,12 @@ export class API {
         response
       )
     } catch (e) {
-      const msg = `Unable to create push protection bypass.
-
-    Repository: ${owner}/${name}
-    Reason: ${reason}
-    Placeholder Id: ${placeholderId}.
-
-    Try again at: ${bypassURL}`
+      const msg = t('secretScanning.bypass.error.createFailed', {
+        repository: `${owner}/${name}`,
+        reason,
+        placeholderId,
+        bypassURL,
+      })
 
       log.error(msg, e)
       throw new Error(msg)
