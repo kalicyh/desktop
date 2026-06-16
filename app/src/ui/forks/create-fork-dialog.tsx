@@ -16,6 +16,7 @@ import { Account } from '../../models/account'
 import { API } from '../../lib/api'
 import { LinkButton } from '../lib/link-button'
 import { PopupType } from '../../models/popup'
+import { t } from '../../lib/i18n'
 
 interface ICreateForkDialogProps {
   readonly dispatcher: Dispatcher
@@ -77,7 +78,7 @@ export class CreateForkDialog extends React.Component<
   public render() {
     return (
       <Dialog
-        title="Do you want to fork this repository?"
+        title={t('fork.create.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.state.error ? undefined : this.onSubmit}
         dismissDisabled={this.state.loading}
@@ -112,24 +113,22 @@ function renderCreateForkDialogContent(
     <>
       <DialogContent>
         <p>
-          {`It looks like you don’t have write access to `}
+          {t('fork.create.noWriteAccessPrefix')}{' '}
           <strong>{repository.gitHubRepository.fullName}</strong>
-          {`. If you should, please check with a repository administrator.`}
+          {t('fork.create.noWriteAccessSuffix')}
         </p>
         <p>
-          {` Do you want to create a fork of this repository at `}
+          {t('fork.create.createAtPrefix')}{' '}
           <strong>
             {`${account.login}/${repository.gitHubRepository.name}`}
           </strong>
-          {` to continue?`}
+          {t('fork.create.createAtSuffix')}
         </p>
       </DialogContent>
       <DialogFooter>
         <OkCancelButtonGroup
           destructive={true}
-          okButtonText={
-            __DARWIN__ ? 'Fork This Repository' : 'Fork this repository'
-          }
+          okButtonText={t('fork.create.button')}
           okButtonDisabled={loading}
           cancelButtonDisabled={loading}
         />
@@ -147,9 +146,9 @@ function renderCreateForkDialogError(
   const suggestion =
     repository.gitHubRepository.htmlURL !== null ? (
       <>
-        {`You can try `}
+        {t('fork.create.errorSuggestionPrefix')}{' '}
         <LinkButton uri={repository.gitHubRepository.htmlURL}>
-          creating the fork manually on GitHub
+          {t('fork.create.errorSuggestionLink')}
         </LinkButton>
         .
       </>
@@ -158,15 +157,14 @@ function renderCreateForkDialogError(
     <>
       <DialogContent>
         <div>
-          {`Creating your fork `}
+          {t('fork.create.errorPrefix')}{' '}
           <strong>
             {`${account.login}/${repository.gitHubRepository.name}`}
           </strong>
-          {` failed. `}
-          {suggestion}
+          {t('fork.create.errorSuffix')} {suggestion}
         </div>
         <details>
-          <summary>Error details</summary>
+          <summary>{t('common.errorDetails')}</summary>
           <pre className="error">{error.message}</pre>
         </details>
       </DialogContent>

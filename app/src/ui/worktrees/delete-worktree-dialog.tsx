@@ -6,6 +6,7 @@ import { Ref } from '../lib/ref'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { Repository } from '../../models/repository'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
+import { t } from '../../lib/i18n'
 
 interface IDeleteWorktreeDialogProps {
   readonly repository: Repository
@@ -54,10 +55,11 @@ export class DeleteWorktreeDialog extends React.Component<
       >
         <DialogContent>
           <p id="delete-worktree-confirmation">
-            Are you sure you want to delete the worktree <Ref>{name}</Ref>?
+            {t('worktree.delete.confirmPrefix')} <Ref>{name}</Ref>
+            {t('worktree.delete.confirmSuffix')}
           </p>
           <Checkbox
-            label="Do not show this message again"
+            label={t('common.doNotShowAgain')}
             value={
               this.state.confirmWorktreeRemoval
                 ? CheckboxValue.Off
@@ -67,7 +69,10 @@ export class DeleteWorktreeDialog extends React.Component<
           />
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup destructive={true} okButtonText="Delete" />
+          <OkCancelButtonGroup
+            destructive={true}
+            okButtonText={t('worktree.delete.button')}
+          />
         </DialogFooter>
       </Dialog>
     )

@@ -8,6 +8,7 @@ import { Repository } from '../../models/repository'
 import { getUnderlyingError, isRawGitError } from '../app-error'
 import { Terminal } from '../terminal'
 import { WorktreeEntry } from '../../models/worktree'
+import { t } from '../../lib/i18n'
 
 interface IDeleteWorktreeFailedDialogProps {
   readonly repository: Repository
@@ -60,19 +61,20 @@ export class DeleteWorktreeFailedDialog extends React.Component<
         <DialogContent>
           <div id="delete-worktree-failed-message">
             <p>
-              Deleting the worktree <Ref>{name}</Ref> failed.
+              {t('worktree.deleteFailed.messagePrefix')} <Ref>{name}</Ref>
+              {t('worktree.deleteFailed.messageSuffix')}
             </p>
             {this.renderErrorMessage()}
             <p>
-              Would you like to forcefully delete the worktree <Ref>{name}</Ref>
-              ?
+              {t('worktree.deleteFailed.forcePromptPrefix')} <Ref>{name}</Ref>
+              {t('worktree.deleteFailed.forcePromptSuffix')}
             </p>
           </div>
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
             destructive={true}
-            okButtonText="Forcefully delete"
+            okButtonText={t('worktree.deleteFailed.forceButton')}
           />
         </DialogFooter>
       </Dialog>

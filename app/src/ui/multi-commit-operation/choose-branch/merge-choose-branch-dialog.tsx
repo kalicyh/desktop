@@ -14,6 +14,7 @@ import {
 } from './base-choose-branch-dialog'
 import { truncateWithEllipsis } from '../../../lib/truncate-with-ellipsis'
 import { formatNumber } from '../../../lib/format-number'
+import { t } from '../../../lib/i18n'
 
 interface IMergeChooseBranchDialogState {
   readonly commitCount: number
@@ -172,7 +173,7 @@ export class MergeChooseBranchDialog extends React.Component<
   }
 
   private renderLoadingMergeMessage() {
-    return <>Checking for ability to merge automatically...</>
+    return <>{t('merge.chooseBranch.checking')}</>
   }
 
   private renderCleanMergeMessage(

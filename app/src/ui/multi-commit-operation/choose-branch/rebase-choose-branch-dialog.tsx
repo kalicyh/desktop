@@ -10,6 +10,7 @@ import {
   canStartOperation,
 } from './base-choose-branch-dialog'
 import { truncateWithEllipsis } from '../../../lib/truncate-with-ellipsis'
+import { t } from '../../../lib/i18n'
 
 interface IRebaseChooseBranchDialogState {
   readonly rebasePreview: RebasePreview | null
@@ -148,11 +149,11 @@ export class RebaseChooseBranchDialog extends React.Component<
   }
 
   private renderLoadingRebaseMessage() {
-    return <>Checking for ability to rebase automatically…</>
+    return <>{t('rebase.chooseBranch.checking')}</>
   }
 
   private renderInvalidRebaseMessage() {
-    return <>Unable to start rebase. Check you have chosen a valid branch.</>
+    return <>{t('rebase.chooseBranch.invalidBranch')}</>
   }
 
   private renderCleanRebaseMessage(
