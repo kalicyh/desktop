@@ -8,6 +8,7 @@ import {
 import { ChooseTargetBranchDialog } from './choose-branch/choose-target-branch'
 import { CreateBranch } from '../create-branch'
 import { BaseMultiCommitOperation } from './base-multi-commit-operation'
+import { t } from '../../lib/i18n'
 
 export abstract class CherryPick extends BaseMultiCommitOperation {
   protected onContinueAfterConflicts = async (): Promise<void> => {
@@ -116,14 +117,6 @@ export abstract class CherryPick extends BaseMultiCommitOperation {
       targetBranchName,
     } = step
 
-    const okButtonText = __DARWIN__
-      ? 'Create Branch and Cherry-pick'
-      : 'Create branch and cherry-pick'
-
-    const headerText = __DARWIN__
-      ? 'Cherry-pick to New Branch'
-      : 'Cherry-pick to new branch'
-
     return (
       <CreateBranch
         key="create-branch"
@@ -139,8 +132,8 @@ export abstract class CherryPick extends BaseMultiCommitOperation {
         dispatcher={dispatcher}
         initialName={targetBranchName}
         createBranch={this.onCreateBranchAndCherryPick}
-        okButtonText={okButtonText}
-        headerText={headerText}
+        okButtonText={t('multiCommit.cherryPick.createBranchAndCherryPick')}
+        headerText={t('multiCommit.cherryPick.toNewBranch')}
       />
     )
   }

@@ -15,6 +15,7 @@ import {
 import { ClickSource } from '../../lib/list'
 import { getDefaultAriaLabelForBranch } from '../../branches/branch-renderer'
 import { Repository } from '../../../models/repository'
+import { t } from '../../../lib/i18n'
 
 interface IChooseTargetBranchDialogProps {
   readonly repository: Repository
@@ -150,18 +151,23 @@ export class ChooseTargetBranchDialog extends React.Component<
     const { selectedBranch, isCreateBranchState } = this.state
 
     if (isCreateBranchState) {
-      return __DARWIN__
-        ? 'Cherry-pick to New Branch'
-        : 'Cherry-pick to new branch'
+      return t('multiCommit.cherryPick.toNewBranch')
     }
 
-    const pluralize = this.props.commitCount > 1 ? 'commits' : 'commit'
-    const okButtonText = `Cherry-pick ${this.props.commitCount} ${pluralize}`
+    const okButtonText =
+      this.props.commitCount === 1
+        ? t('multiCommit.cherryPick.button.one', {
+            count: this.props.commitCount,
+          })
+        : t('multiCommit.cherryPick.button.other', {
+            count: this.props.commitCount,
+          })
 
     if (selectedBranch !== null) {
       return (
         <>
-          {okButtonText} to <strong>{selectedBranch.name}</strong>…
+          {okButtonText} {t('multiCommit.cherryPick.toBranchPrefix')}{' '}
+          <strong>{selectedBranch.name}</strong>…
         </>
       )
     }
@@ -180,20 +186,24 @@ export class ChooseTargetBranchDialog extends React.Component<
 
   public render() {
     const tooltip = this.selectedBranchIsCurrentBranch()
-      ? 'You are not able to cherry-pick from and to the same branch'
+      ? t('multiCommit.cherryPick.sameBranchTooltip')
       : undefined
 
-    const pluralize = this.props.commitCount > 1 ? 'commits' : 'commit'
+    const title =
+      this.props.commitCount === 1
+        ? t('multiCommit.cherryPick.title.one', {
+            count: this.props.commitCount,
+          })
+        : t('multiCommit.cherryPick.title.other', {
+            count: this.props.commitCount,
+          })
+
     return (
       <Dialog
         id="cherry-pick"
         onDismissed={this.props.onDismissed}
         onSubmit={this.onSubmit}
-        title={
-          <strong>
-            Cherry-pick {this.props.commitCount} {pluralize} to a branch
-          </strong>
-        }
+        title={<strong>{title}</strong>}
       >
         <DialogContent>
           <BranchList
