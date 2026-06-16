@@ -12,6 +12,7 @@ import { createObservableRef } from '../lib/observable-ref'
 import { Tooltip } from '../lib/tooltip'
 import { enableAccessibleListToolTips } from '../../lib/feature-flag'
 import { TooltippedContent } from '../lib/tooltipped-content'
+import { t } from '../../lib/i18n'
 
 interface IRepositoryListItemProps {
   readonly repository: Repositoryish
@@ -136,11 +137,19 @@ const renderAheadBehindIndicator = (aheadBehind: IAheadBehind) => {
   }
 
   const aheadBehindTooltip =
-    'The currently checked out branch is' +
-    (behind ? ` ${commitGrammar(behind)} behind ` : '') +
-    (behind && ahead ? 'and' : '') +
-    (ahead ? ` ${commitGrammar(ahead)} ahead of ` : '') +
-    'its tracked branch.'
+    t('repositories.tooltip.currentBranchPrefix') +
+    (behind
+      ? t('repositories.tooltip.behind', {
+          commits: commitGrammar(behind),
+        })
+      : '') +
+    (behind && ahead ? ` ${t('repositories.tooltip.and')} ` : '') +
+    (ahead
+      ? t('repositories.tooltip.ahead', {
+          commits: commitGrammar(ahead),
+        })
+      : '') +
+    t('repositories.tooltip.trackedBranchSuffix')
 
   return (
     <TooltippedContent
@@ -159,7 +168,7 @@ const renderChangesIndicator = () => {
   return (
     <TooltippedContent
       className="change-indicator-wrapper"
-      tooltip="There are uncommitted changes in this repository"
+      tooltip={t('repositories.tooltip.uncommittedChanges')}
       disabled={enableAccessibleListToolTips()}
     >
       <Octicon symbol={octicons.dotFill} />
