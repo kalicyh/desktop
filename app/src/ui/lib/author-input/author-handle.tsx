@@ -6,6 +6,7 @@ import * as octicons from '../../octicons/octicons.generated'
 import { getFullTextForAuthor, getDisplayTextForAuthor } from './author-text'
 import { Tooltip } from '../tooltip'
 import { createObservableRef } from '../observable-ref'
+import { t } from '../../../lib/i18n'
 
 interface IAuthorHandleProps {
   /** Author to render */
@@ -60,14 +61,20 @@ export class AuthorHandle extends React.Component<IAuthorHandleProps> {
   private getAriaLabel() {
     const { author } = this.props
     if (isKnownAuthor(author)) {
-      return `${getFullTextForAuthor(
-        author
-      )} press backspace or delete to remove`
+      return t('authorInput.authorAriaLabel', {
+        author: getFullTextForAuthor(author),
+      })
     }
 
     const isError = author.state === 'error'
-    const stateAriaLabel = isError ? 'user not found' : 'searching'
-    return `${author.username}, ${stateAriaLabel}, press backspace or delete to remove`
+    const stateAriaLabel = isError
+      ? t('authorInput.stateUserNotFound')
+      : t('authorInput.stateSearching')
+
+    return t('authorInput.pendingAuthorAriaLabel', {
+      username: author.username,
+      state: stateAriaLabel,
+    })
   }
 
   private getClassName() {
@@ -88,8 +95,8 @@ export class AuthorHandle extends React.Component<IAuthorHandleProps> {
     }
 
     return author.state === 'error'
-      ? `Could not find user with username ${author.username}`
-      : `Searching for @${author.username}`
+      ? t('authorInput.couldNotFindUser', { username: author.username })
+      : t('authorInput.searchingForUser', { username: author.username })
   }
 
   private getTabIndex() {
