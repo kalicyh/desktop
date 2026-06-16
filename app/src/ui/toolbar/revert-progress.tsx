@@ -6,6 +6,7 @@ import { enableResizingToolbarButtons } from '../../lib/feature-flag'
 import { Resizable } from '../resizable'
 import { IConstrainedValue } from '../../lib/app-state'
 import { Dispatcher } from '../dispatcher'
+import { t } from '../../lib/i18n'
 
 interface IRevertProgressProps {
   /** Progress information associated with the current operation */
@@ -42,12 +43,13 @@ export class RevertProgress extends React.Component<IRevertProgressProps, {}> {
 
   public render() {
     const progress = this.props.progress
-    const title = progress.title || 'Hang on…'
+    const title = progress.title || t('toolbar.revert.hangOn')
+    const revertTitle = t('toolbar.revert.reverting')
 
     if (!enableResizingToolbarButtons()) {
       return (
         <ToolbarButton
-          title="Reverting…"
+          title={revertTitle}
           description={title}
           progressValue={progress.value}
           className="revert-progress"
@@ -66,10 +68,10 @@ export class RevertProgress extends React.Component<IRevertProgressProps, {}> {
         onResize={this.onResize}
         maximumWidth={this.props.width.max}
         minimumWidth={this.props.width.min}
-        description="Revert progress button"
+        description={t('toolbar.revert.progressButton')}
       >
         <ToolbarButton
-          title="Reverting…"
+          title={revertTitle}
           description={title}
           progressValue={progress.value}
           className="revert-progress"

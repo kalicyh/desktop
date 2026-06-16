@@ -849,12 +849,8 @@ export class CommitMessage extends React.Component<
 
   private get toggleCoAuthorsText(): string {
     return this.props.showCoAuthoredBy
-      ? __DARWIN__
-        ? 'Remove Co-Authors'
-        : 'Remove co-authors'
-      : __DARWIN__
-      ? 'Add Co-Authors'
-      : 'Add co-authors'
+      ? t('commitMessage.coAuthors.remove')
+      : t('commitMessage.coAuthors.add')
   }
 
   private getAddRemoveCoAuthorsMenuItem(): IMenuItem {
@@ -888,9 +884,7 @@ export class CommitMessage extends React.Component<
     const noChangesAvailable = !commitToAmend && noFilesSelected
 
     return {
-      label: __DARWIN__
-        ? 'Generate Commit Message with Copilot'
-        : 'Generate commit message with Copilot',
+      label: t('commitMessage.copilot.generate'),
       action: () => {
         const { commitMessage } = this.state
         onGenerateCommitMessage(
@@ -947,12 +941,8 @@ export class CommitMessage extends React.Component<
   }
 
   private getCommitSpellcheckEnabilityMenuItem(isEnabled: boolean): IMenuItem {
-    const enableLabel = __DARWIN__
-      ? 'Enable Commit Spellcheck'
-      : 'Enable commit spellcheck'
-    const disableLabel = __DARWIN__
-      ? 'Disable Commit Spellcheck'
-      : 'Disable commit spellcheck'
+    const enableLabel = t('commitMessage.spellcheck.enable')
+    const disableLabel = t('commitMessage.spellcheck.disable')
     return {
       label: isEnabled ? disableLabel : enableLabel,
       action: () => this.props.onCommitSpellcheckEnabledChanged(!isEnabled),
@@ -996,10 +986,10 @@ export class CommitMessage extends React.Component<
     const noChangesAvailable = !commitToAmend && noFilesSelected
 
     const ariaLabel = isGeneratingCommitMessage
-      ? 'Generating commit details…'
-      : 'Generate commit message with Copilot' +
+      ? t('commitMessage.generatingDetails')
+      : t('commitMessage.copilot.generate') +
         (noChangesAvailable
-          ? '. Files must be selected to generate a commit message.'
+          ? t('commitMessage.copilot.filesMustBeSelected')
           : '')
 
     return (
@@ -1018,12 +1008,16 @@ export class CommitMessage extends React.Component<
         >
           <AriaLiveContainer
             message={
-              isGeneratingCommitMessage ? 'Generating commit details…' : ''
+              isGeneratingCommitMessage
+                ? t('commitMessage.generatingDetails')
+                : ''
             }
           />
           <Octicon symbol={octicons.copilot} />
           {shouldShowGenerateCommitMessageCallOut && (
-            <span className="call-to-action-bubble">New</span>
+            <span className="call-to-action-bubble">
+              {t('commitMessage.new')}
+            </span>
           )}
         </Button>
       </>
@@ -1031,7 +1025,7 @@ export class CommitMessage extends React.Component<
   }
 
   private renderCommitOptionsButton() {
-    const ariaLabel = 'Configure commit options'
+    const ariaLabel = t('commitMessage.options.configure')
 
     return (
       <>
@@ -1066,7 +1060,7 @@ export class CommitMessage extends React.Component<
       items.push({
         type: 'checkbox',
         checked: this.props.skipCommitHooks,
-        label: __DARWIN__ ? 'Bypass Commit Hooks' : 'Bypass Commit hooks',
+        label: t('commitMessage.options.bypassHooks'),
         action: () => {
           this.props.onUpdateCommitOptions(this.props.repository, {
             skipCommitHooks: !this.props.skipCommitHooks,
@@ -1078,9 +1072,7 @@ export class CommitMessage extends React.Component<
     items.push({
       type: 'checkbox',
       checked: this.props.signOffCommits,
-      label: __DARWIN__
-        ? 'Add Signed-off-by Trailer'
-        : 'Add Signed-off-by trailer',
+      label: t('commitMessage.options.addSignedOffBy'),
       action: () => {
         this.props.onUpdateCommitOptions(this.props.repository, {
           signOffCommits: !this.props.signOffCommits,
@@ -1092,7 +1084,7 @@ export class CommitMessage extends React.Component<
       items.push({
         type: 'checkbox',
         checked: this.props.allowEmptyCommit,
-        label: __DARWIN__ ? 'Allow Empty Commit' : 'Allow empty commit',
+        label: t('commitMessage.options.allowEmpty'),
         action: () => {
           this.props.onUpdateCommitOptions(this.props.repository, {
             allowEmptyCommit: !this.props.allowEmptyCommit,
@@ -1294,10 +1286,11 @@ export class CommitMessage extends React.Component<
     if (showNoWriteAccess) {
       return (
         <CommitWarning icon={CommitWarningIcon.Warning}>
-          You don't have write access to <strong>{repository.name}</strong>.
-          Want to{' '}
+          {t('commitMessage.warning.noWriteAccessPrefix')}{' '}
+          <strong>{repository.name}</strong>.{' '}
+          {t('commitMessage.warning.wantTo')}{' '}
           <LinkButton onClick={this.props.onShowCreateForkDialog}>
-            create a fork
+            {t('commitMessage.warning.createFork')}
           </LinkButton>
           ?
         </CommitWarning>
@@ -1313,8 +1306,11 @@ export class CommitMessage extends React.Component<
 
       return (
         <CommitWarning icon={CommitWarningIcon.Warning}>
-          <strong>{branch}</strong> is a protected branch. Want to{' '}
-          <LinkButton onClick={this.onSwitchBranch}>switch branches</LinkButton>
+          <strong>{branch}</strong> {t('commitMessage.warning.protectedBranch')}{' '}
+          {t('commitMessage.warning.wantTo')}{' '}
+          <LinkButton onClick={this.onSwitchBranch}>
+            {t('commitMessage.warning.switchBranches')}
+          </LinkButton>
           ?
         </CommitWarning>
       )
@@ -1325,20 +1321,25 @@ export class CommitMessage extends React.Component<
         <CommitWarning
           icon={canBypass ? CommitWarningIcon.Warning : CommitWarningIcon.Error}
         >
-          The branch name <strong>{branch}</strong> fails{' '}
+          {t('commitMessage.warning.branchNamePrefix')}{' '}
+          <strong>{branch}</strong> {t('commitMessage.warning.branchNameFails')}{' '}
           <RepoRulesetsForBranchLink
             repository={repository.gitHubRepository}
             branch={branch}
           >
-            one or more rules
+            {t('commitMessage.warning.oneOrMoreRules')}
           </RepoRulesetsForBranchLink>{' '}
-          that {canBypass ? 'would' : 'will'} prevent it from being published
-          {canBypass && ', but you can bypass them. Proceed with caution!'}
+          {t('commitMessage.warning.that')}{' '}
+          {canBypass
+            ? t('commitMessage.warning.would')
+            : t('commitMessage.warning.will')}{' '}
+          {t('commitMessage.warning.preventPublished')}
+          {canBypass && t('commitMessage.warning.bypassProceed')}
           {!canBypass && (
             <>
-              . Want to{' '}
+              . {t('commitMessage.warning.wantTo')}{' '}
               <LinkButton onClick={this.onSwitchBranch}>
-                switch branches
+                {t('commitMessage.warning.switchBranches')}
               </LinkButton>
               ?
             </>
@@ -1356,14 +1357,14 @@ export class CommitMessage extends React.Component<
             repository={repository.gitHubRepository}
             branch={branch}
           >
-            One or more rules
+            {t('commitMessage.warning.oneOrMoreRulesCapitalized')}
           </RepoRulesetsForBranchLink>{' '}
-          apply to the branch <strong>{branch}</strong> that require signed
-          commits
-          {canBypass && ', but you can bypass them. Proceed with caution!'}
+          {t('commitMessage.warning.applyToBranch')} <strong>{branch}</strong>{' '}
+          {t('commitMessage.warning.requireSignedCommits')}
+          {canBypass && t('commitMessage.warning.bypassProceed')}
           {!canBypass && '.'}{' '}
           <LinkButton uri="https://docs.github.com/authentication/managing-commit-signature-verification/signing-commits">
-            Learn more about commit signing.
+            {t('commitMessage.warning.learnCommitSigning')}
           </LinkButton>
         </CommitWarning>
       )
@@ -1378,16 +1379,20 @@ export class CommitMessage extends React.Component<
             repository={repository.gitHubRepository}
             branch={branch}
           >
-            One or more rules
+            {t('commitMessage.warning.oneOrMoreRulesCapitalized')}
           </RepoRulesetsForBranchLink>{' '}
-          apply to the branch <strong>{branch}</strong> that{' '}
-          {canBypass ? 'would' : 'will'} prevent pushing
-          {canBypass && ', but you can bypass them. Proceed with caution!'}
+          {t('commitMessage.warning.applyToBranch')} <strong>{branch}</strong>{' '}
+          {t('commitMessage.warning.that')}{' '}
+          {canBypass
+            ? t('commitMessage.warning.would')
+            : t('commitMessage.warning.will')}{' '}
+          {t('commitMessage.warning.preventPushing')}
+          {canBypass && t('commitMessage.warning.bypassProceed')}
           {!canBypass && (
             <>
-              . Want to{' '}
+              . {t('commitMessage.warning.wantTo')}{' '}
               <LinkButton onClick={this.onSwitchBranch}>
-                switch branches
+                {t('commitMessage.warning.switchBranches')}
               </LinkButton>
               ?
             </>
@@ -1415,9 +1420,7 @@ export class CommitMessage extends React.Component<
       return
     }
 
-    const header = __DARWIN__
-      ? 'Commit Message Rule Failures'
-      : 'Commit message rule failures'
+    const header = t('commitMessage.rules.popoverHeader')
     return (
       <Popover
         anchor={this.summaryTextInput}
@@ -1433,7 +1436,7 @@ export class CommitMessage extends React.Component<
           repository={repository.gitHubRepository}
           branch={branch}
           failures={this.state.repoRuleCommitMessageFailures}
-          leadingText="This commit message"
+          leadingText={t('commitMessage.rules.leadingText')}
         />
       </Popover>
     )
@@ -1456,8 +1459,12 @@ export class CommitMessage extends React.Component<
   private getButtonVerb() {
     const { isCommitting, commitToAmend } = this.props
 
-    const amendVerb = isCommitting ? 'Amending' : 'Amend'
-    const commitVerb = isCommitting ? 'Committing' : 'Commit'
+    const amendVerb = isCommitting
+      ? t('commitMessage.button.amending')
+      : t('commitMessage.button.amend')
+    const commitVerb = isCommitting
+      ? t('commitMessage.button.committing')
+      : t('commitMessage.button.commit')
     const isAmending = commitToAmend !== null
 
     return isAmending ? amendVerb : commitVerb
@@ -1476,7 +1483,10 @@ export class CommitMessage extends React.Component<
      * as three separate strings "Verb" and "Count" and "to" and even tho
      * visually it was correctly adding spacings, for screen reader users it was
      * not and putting them all to together as one word. */
-    const action = `${verb} ${this.getFilesToBeCommittedButtonText()}to `
+    const action = t('commitMessage.button.actionToBranch', {
+      verb,
+      files: this.getFilesToBeCommittedButtonText(),
+    })
 
     return (
       <>
@@ -1496,7 +1506,10 @@ export class CommitMessage extends React.Component<
       return ''
     }
 
-    const pluralizedFile = filesToBeCommittedCount > 1 ? 'files' : 'file'
+    const pluralizedFile =
+      filesToBeCommittedCount > 1
+        ? t('commitMessage.button.files')
+        : t('commitMessage.button.file')
 
     return `${filesToBeCommittedCount} ${pluralizedFile} `
   }
@@ -1509,7 +1522,7 @@ export class CommitMessage extends React.Component<
       return verb
     }
 
-    return `${verb} to ${branch}`
+    return t('commitMessage.button.titleToBranch', { verb, branch })
   }
 
   private getButtonText() {
@@ -1532,7 +1545,9 @@ export class CommitMessage extends React.Component<
 
     const isAmending = commitToAmend !== null
     return isAmending
-      ? `${this.getButtonVerb()} last commit`
+      ? t('commitMessage.button.amendLastCommit', {
+          verb: this.getButtonVerb(),
+        })
       : this.getCommittingButtonTitle()
   }
 
@@ -1543,15 +1558,15 @@ export class CommitMessage extends React.Component<
 
     const isSummaryBlank = isEmptyOrWhitespace(this.summaryOrPlaceholder)
     if (isSummaryBlank) {
-      return `A commit summary is required to commit`
+      return t('commitMessage.tooltip.summaryRequired')
     } else if (
       !this.props.anyFilesSelected &&
       this.props.anyFilesAvailable &&
       !this.props.allowEmptyCommit
     ) {
-      return `Select one or more files to commit`
+      return t('commitMessage.tooltip.selectFiles')
     } else if (this.props.isCommitting) {
-      return `Committing changes…`
+      return t('commitMessage.tooltip.committingChanges')
     }
 
     return undefined
@@ -1568,7 +1583,7 @@ export class CommitMessage extends React.Component<
     const loading =
       isCommitting || isGeneratingCommitMessage ? <Loading /> : undefined
     const generatingCommitDetailsMessage = isGeneratingCommitMessage
-      ? 'Generating commit details…'
+      ? t('commitMessage.generatingDetails')
       : null
     const tooltip =
       generatingCommitDetailsMessage ?? this.getButtonTooltip(buttonEnabled)
@@ -1600,20 +1615,18 @@ export class CommitMessage extends React.Component<
         tooltip={
           <>
             <div className="title">
-              Great commit summaries contain fewer than 50 characters
+              {t('commitMessage.summaryLength.title')}
             </div>
             <div className="description">
-              Place extra information in the description field.
+              {t('commitMessage.summaryLength.description')}
             </div>
           </>
         }
-        ariaLiveMessage={
-          'Great commit summaries contain fewer than 50 characters. Place extra information in the description field.'
-        }
+        ariaLiveMessage={t('commitMessage.summaryLength.ariaLive')}
         direction={TooltipDirection.NORTH}
         className="length-hint"
         tooltipClassName="length-hint-tooltip"
-        ariaLabel="Open Summary Length Info"
+        ariaLabel={t('commitMessage.summaryLength.ariaLabel')}
       >
         <Octicon symbol={octicons.lightBulb} />
       </ToggledtippedContent>
@@ -1633,17 +1646,20 @@ export class CommitMessage extends React.Component<
     let ariaLabelPrefix: string
     let bypassMessage = ''
     if (canBypass) {
-      ariaLabelPrefix = 'Warning'
-      bypassMessage = ', but you can bypass them'
+      ariaLabelPrefix = t('commitMessage.rules.warning')
+      bypassMessage = t('commitMessage.rules.canBypass')
     } else {
-      ariaLabelPrefix = 'Error'
+      ariaLabelPrefix = t('commitMessage.rules.error')
     }
 
     return (
       <button
         id="commit-message-failure-hint"
         className="commit-message-failure-hint button-component"
-        aria-label={`${ariaLabelPrefix}: Commit message fails repository rules${bypassMessage}. View details.`}
+        aria-label={t('commitMessage.rules.ariaLabel', {
+          prefix: ariaLabelPrefix,
+          bypass: bypassMessage,
+        })}
         aria-haspopup="dialog"
         aria-expanded={this.state.isRuleFailurePopoverOpen}
         onClick={this.toggleRuleFailurePopover}
@@ -1666,13 +1682,13 @@ export class CommitMessage extends React.Component<
 
     const text =
       hookName === 'pre-auto-gc' && status === 'finished'
-        ? 'Optimizing repository…'
+        ? t('commitMessage.progress.optimizingRepository')
         : status === 'started'
-        ? `${hookName} hook running…`
+        ? t('commitMessage.progress.hookRunning', { hookName })
         : status === 'finished'
-        ? `${hookName} hook finished`
+        ? t('commitMessage.progress.hookFinished', { hookName })
         : status === 'failed'
-        ? `${hookName} hook failed`
+        ? t('commitMessage.progress.hookFailed', { hookName })
         : assertNever(status, `Unknown hook status: ${status}`)
 
     const cn = classNames('commit-progress', {
@@ -1682,7 +1698,10 @@ export class CommitMessage extends React.Component<
       <div className={cn}>
         <div className="description">{text}</div>
         {onShowCommitProgress && (
-          <Button tooltip="Show commit progress" onClick={onShowCommitProgress}>
+          <Button
+            tooltip={t('commitMessage.progress.show')}
+            onClick={onShowCommitProgress}
+          >
             <Octicon symbol={octicons.terminal} />
           </Button>
         )}
@@ -1731,7 +1750,7 @@ export class CommitMessage extends React.Component<
     return (
       <div
         role="group"
-        aria-label="Create commit"
+        aria-label={t('commitMessage.createCommitAriaLabel')}
         className={className}
         onContextMenu={this.onContextMenu}
         ref={this.wrapperRef}
@@ -1741,8 +1760,12 @@ export class CommitMessage extends React.Component<
 
           <AutocompletingInput
             required={true}
-            label={this.props.showInputLabels === true ? 'Summary' : undefined}
-            screenReaderLabel="Commit summary"
+            label={
+              this.props.showInputLabels === true
+                ? t('changes.commitSummaryLabel')
+                : undefined
+            }
+            screenReaderLabel={t('changes.commitSummaryScreenReaderLabel')}
             className={summaryInputClassName}
             placeholder={placeholder}
             value={this.state.commitMessage.summary}

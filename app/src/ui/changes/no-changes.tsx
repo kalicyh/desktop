@@ -215,7 +215,7 @@ export class NoChanges extends React.Component<
     } else if (__WIN32__) {
       return 'Explorer'
     }
-    return 'your File Manager'
+    return t('noChanges.fileManager.generic')
   }
 
   private renderDiscoverabilityElements(menuItem: IMenuItemInfo) {
@@ -223,7 +223,7 @@ export class NoChanges extends React.Component<
 
     return (
       <>
-        {parentMenusText} menu or{' '}
+        {t('noChanges.discoverability.menuOr', { menu: parentMenusText })}{' '}
         {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
       </>
     )
@@ -418,15 +418,15 @@ export class NoChanges extends React.Component<
     const numChanges = stashEntry.files.files.length
     const description = (
       <>
-        You have {numChanges} {numChanges === 1 ? 'change' : 'changes'} in
-        progress that you have not yet committed.
+        {t('noChanges.viewStash.descriptionPrefix', { count: numChanges })}{' '}
+        {numChanges === 1
+          ? t('noChanges.viewStash.change')
+          : t('noChanges.viewStash.changes')}{' '}
+        {t('noChanges.viewStash.descriptionSuffix')}
       </>
     )
     const discoverabilityContent = (
-      <>
-        When a stash exists, access it at the bottom of the Changes tab to the
-        left.
-      </>
+      <>{t('noChanges.viewStash.discoverability')}</>
     )
     const itemId: MenuIDs = 'toggle-stashed-changes'
     const menuItem = this.getMenuItemInfo(itemId)
@@ -438,11 +438,11 @@ export class NoChanges extends React.Component<
     return (
       <MenuBackedSuggestedAction
         key="view-stash-action"
-        title="View your stashed changes"
+        title={t('noChanges.viewStash.title')}
         menuItemId={itemId}
         description={description}
         discoverabilityContent={discoverabilityContent}
-        buttonText="View stash"
+        buttonText={t('noChanges.viewStash.button')}
         type="primary"
         disabled={menuItem !== null && !menuItem.enabled}
         onClick={this.onViewStashClicked}
@@ -468,7 +468,7 @@ export class NoChanges extends React.Component<
 
     const discoverabilityContent = (
       <>
-        Always available in the toolbar for local repositories or{' '}
+        {t('noChanges.publishRepository.discoverability')}{' '}
         {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
       </>
     )
@@ -476,10 +476,10 @@ export class NoChanges extends React.Component<
     return (
       <MenuBackedSuggestedAction
         key="publish-repository-action"
-        title="Publish your repository to GitHub"
-        description="This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others."
+        title={t('noChanges.publishRepository.title')}
+        description={t('noChanges.publishRepository.description')}
         discoverabilityContent={discoverabilityContent}
-        buttonText="Publish repository"
+        buttonText={t('noChanges.publishRepository.button')}
         menuItemId={itemId}
         type="primary"
         disabled={!menuItem.enabled}
@@ -508,16 +508,19 @@ export class NoChanges extends React.Component<
 
     const description = (
       <>
-        The current branch (<Ref>{tip.branch.name}</Ref>) hasn't been published
-        to the remote yet. By publishing it {isGitHub ? 'to GitHub' : ''} you
-        can share it, {isGitHub ? 'open a pull request, ' : ''}
-        and collaborate with others.
+        {t('noChanges.publishBranch.descriptionPrefix')} (
+        <Ref>{tip.branch.name}</Ref>){' '}
+        {t('noChanges.publishBranch.descriptionMiddle')}{' '}
+        {isGitHub ? t('noChanges.publishBranch.toGitHub') : ''}
+        {t('noChanges.publishBranch.descriptionShare')}
+        {isGitHub ? t('noChanges.publishBranch.openPullRequest') : ''}
+        {t('noChanges.publishBranch.descriptionCollaborate')}
       </>
     )
 
     const discoverabilityContent = (
       <>
-        Always available in the toolbar or{' '}
+        {t('noChanges.publishBranch.discoverability')}{' '}
         {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
       </>
     )
@@ -525,11 +528,11 @@ export class NoChanges extends React.Component<
     return (
       <MenuBackedSuggestedAction
         key="publish-branch-action"
-        title="Publish your branch"
+        title={t('noChanges.publishBranch.title')}
         menuItemId={itemId}
         description={description}
         discoverabilityContent={discoverabilityContent}
-        buttonText="Publish branch"
+        buttonText={t('noChanges.publishBranch.button')}
         type="primary"
         disabled={!menuItem.enabled}
         onClick={this.onPublishBranchClicked}
@@ -554,29 +557,44 @@ export class NoChanges extends React.Component<
     }
 
     const isGitHub = this.props.repository.gitHubRepository !== null
+    const commitPhrase =
+      aheadBehind.behind === 1
+        ? t('noChanges.pullBranch.oneCommit')
+        : t('noChanges.pullBranch.commitCount', {
+            count: formatNumber(aheadBehind.behind),
+          })
 
     const description = (
       <>
-        The current branch (<Ref>{tip.branch.name}</Ref>) has{' '}
-        {aheadBehind.behind === 1 ? 'a commit' : 'commits'} on{' '}
-        {isGitHub ? 'GitHub' : 'the remote'} that{' '}
-        {aheadBehind.behind === 1 ? 'does not' : 'do not'} exist on your
-        machine.
+        {t('noChanges.pullBranch.descriptionPrefix')} (
+        <Ref>{tip.branch.name}</Ref>){' '}
+        {t('noChanges.pullBranch.descriptionMiddle', {
+          commitPhrase,
+          remote: isGitHub ? 'GitHub' : t('noChanges.remote'),
+        })}{' '}
+        {aheadBehind.behind === 1
+          ? t('noChanges.pullBranch.doesNotExist')
+          : t('noChanges.pullBranch.doNotExist')}
       </>
     )
 
     const discoverabilityContent = (
       <>
-        Always available in the toolbar when there are remote changes or{' '}
+        {t('noChanges.pullBranch.discoverability')}{' '}
         {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
       </>
     )
 
-    const title = `Pull ${formatNumber(aheadBehind.behind)} ${
-      aheadBehind.behind === 1 ? 'commit' : 'commits'
-    } from the ${remote.name} remote`
+    const title = t('noChanges.pullBranch.title', {
+      count: formatNumber(aheadBehind.behind),
+      commit:
+        aheadBehind.behind === 1
+          ? t('noChanges.pullBranch.commit')
+          : t('noChanges.pullBranch.commits'),
+      remote: remote.name,
+    })
 
-    const buttonText = `Pull ${remote.name}`
+    const buttonText = t('noChanges.pullBranch.button', { remote: remote.name })
 
     return (
       <MenuBackedSuggestedAction
@@ -612,39 +630,45 @@ export class NoChanges extends React.Component<
     const itemsToPushDescriptions = []
 
     if (aheadBehind.ahead > 0) {
-      itemsToPushTypes.push('commits')
+      itemsToPushTypes.push(t('noChanges.pushBranch.commits'))
       itemsToPushDescriptions.push(
         aheadBehind.ahead === 1
-          ? '1 local commit'
-          : `${formatNumber(aheadBehind.ahead)} local commits`
+          ? t('noChanges.pushBranch.oneLocalCommit')
+          : t('noChanges.pushBranch.localCommits', {
+              count: formatNumber(aheadBehind.ahead),
+            })
       )
     }
 
     if (tagsToPush !== null && tagsToPush.length > 0) {
-      itemsToPushTypes.push('tags')
+      itemsToPushTypes.push(t('noChanges.pushBranch.tags'))
       itemsToPushDescriptions.push(
         tagsToPush.length === 1
-          ? '1 tag'
-          : `${formatNumber(tagsToPush.length)} tags`
+          ? t('noChanges.pushBranch.oneTag')
+          : t('noChanges.pushBranch.tagCount', {
+              count: formatNumber(tagsToPush.length),
+            })
       )
     }
 
-    const description = `You have ${itemsToPushDescriptions.join(
-      ' and '
-    )} waiting to be pushed to ${isGitHub ? 'GitHub' : 'the remote'}.`
+    const description = t('noChanges.pushBranch.description', {
+      items: itemsToPushDescriptions.join(t('noChanges.and')),
+      remote: isGitHub ? 'GitHub' : t('noChanges.remote'),
+    })
 
     const discoverabilityContent = (
       <>
-        Always available in the toolbar when there are local commits waiting to
-        be pushed or {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
+        {t('noChanges.pushBranch.discoverability')}{' '}
+        {this.renderDiscoverabilityKeyboardShortcut(menuItem)}
       </>
     )
 
-    const title = `Push ${itemsToPushTypes.join(' and ')} to the ${
-      remote.name
-    } remote`
+    const title = t('noChanges.pushBranch.title', {
+      items: itemsToPushTypes.join(t('noChanges.and')),
+      remote: remote.name,
+    })
 
-    const buttonText = `Push ${remote.name}`
+    const buttonText = t('noChanges.pushBranch.button', { remote: remote.name })
 
     return (
       <MenuBackedSuggestedAction
@@ -675,14 +699,14 @@ export class NoChanges extends React.Component<
 
     const description = (
       <>
-        The current branch (<Ref>{tip.branch.name}</Ref>) is already published
-        to GitHub. Create a pull request to propose and collaborate on your
-        changes.
+        {t('noChanges.createPullRequest.descriptionPrefix')} (
+        <Ref>{tip.branch.name}</Ref>){' '}
+        {t('noChanges.createPullRequest.descriptionSuffix')}
       </>
     )
 
-    const title = `Create a Pull Request from your current branch`
-    const buttonText = `Create Pull Request`
+    const title = t('noChanges.createPullRequest.title')
+    const buttonText = t('noChanges.createPullRequest.button')
 
     const previewPullMenuItem = this.getMenuItemInfo('preview-pull-request')
 
@@ -704,13 +728,13 @@ export class NoChanges extends React.Component<
     }
 
     const previewPullRequestAction: IDropdownSuggestedActionOption = {
-      title: `Preview the Pull Request from your current branch`,
-      label: 'Preview Pull Request',
+      title: t('noChanges.previewPullRequest.title'),
+      label: t('noChanges.previewPullRequest.button'),
       description: (
         <>
-          The current branch (<Ref>{tip.branch.name}</Ref>) is already published
-          to GitHub. Preview the changes this pull request will have before
-          proposing your changes.
+          {t('noChanges.previewPullRequest.descriptionPrefix')} (
+          <Ref>{tip.branch.name}</Ref>){' '}
+          {t('noChanges.previewPullRequest.descriptionSuffix')}
         </>
       ),
       id: PullRequestSuggestedNextAction.PreviewPullRequest,
