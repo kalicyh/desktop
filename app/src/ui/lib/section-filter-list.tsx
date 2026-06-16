@@ -299,8 +299,12 @@ export class SectionFilterList<
     }
 
     const itemRows = this.state.rows.flat().filter(row => row.kind === 'item')
-    const resultsPluralized = itemRows.length === 1 ? 'result' : 'results'
-    const screenReaderMessage = `${itemRows.length} ${resultsPluralized}`
+    const screenReaderMessage = t(
+      itemRows.length === 1
+        ? 'filterList.resultCount.one'
+        : 'filterList.resultCount.other',
+      { count: itemRows.length }
+    )
 
     return (
       <AriaLiveContainer

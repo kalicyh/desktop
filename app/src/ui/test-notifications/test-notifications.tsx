@@ -716,7 +716,9 @@ export class TestNotifications extends React.Component<
       <TestNotificationItemRowContent
         dispatcher={this.props.dispatcher}
         html_url={htmlURL}
-        linkButtonDescription={`Open pull request #${pullRequest.pullRequestNumber} in browser`}
+        linkButtonDescription={t('testNotifications.openPullRequestInBrowser', {
+          number: pullRequest.pullRequestNumber,
+        })}
         leftAccessory={this.renderPullRequestStateIcon(pullRequest)}
       >
         <b>

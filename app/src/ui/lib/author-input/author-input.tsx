@@ -17,6 +17,7 @@ import memoizeOne from 'memoize-one'
 import { FocusContainer } from '../focus-container'
 import { AuthorHandle } from './author-handle'
 import { getFullTextForAuthor } from './author-text'
+import { t } from '../../../lib/i18n'
 
 interface IAuthorInputProps {
   /**
@@ -292,7 +293,9 @@ export class AuthorInput extends React.Component<
       }
     }
 
-    let actionDescription = `Removed ${authorToRemove.username}`
+    let actionDescription = t('authorInput.removedUser', {
+      username: authorToRemove.username,
+    })
     if (isKnownAuthor(authorToRemove)) {
       actionDescription += ` (${authorToRemove.name})`
     }
@@ -395,7 +398,9 @@ export class AuthorInput extends React.Component<
     const newAuthors = [...this.props.authors, authorToAdd]
     this.emitAuthorsUpdated(newAuthors)
 
-    let actionDescription = `Added ${authorToAdd.username}`
+    let actionDescription = t('authorInput.addedUser', {
+      username: authorToAdd.username,
+    })
     if (!isKnownAuthor(authorToAdd)) {
       this.attemptUnknownAuthorSearch(authorToAdd)
     } else {
@@ -432,7 +437,9 @@ export class AuthorInput extends React.Component<
 
       this.updateUnknownAuthor(erroredUnknownAuthor)
       this.setState({
-        lastActionDescription: `Error: user ${author.username} not found`,
+        lastActionDescription: t('authorInput.userNotFound', {
+          username: author.username,
+        }),
       })
       return
     }
