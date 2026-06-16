@@ -2,6 +2,7 @@ import * as Path from 'path'
 
 import { IMenuItem } from '../../lib/menu-item'
 import { clipboard } from 'electron'
+import { t } from '../../lib/i18n'
 
 interface IWorktreeContextMenuConfig {
   readonly path: string
@@ -21,19 +22,19 @@ export function generateWorktreeContextMenuItems(
 
   if (onRenameWorktree !== undefined) {
     items.push({
-      label: 'Rename…',
+      label: t('worktree.context.rename'),
       action: () => onRenameWorktree(path),
       enabled: !isMainWorktree && !isLocked,
     })
   }
 
   items.push({
-    label: __DARWIN__ ? 'Copy Worktree Name' : 'Copy worktree name',
+    label: t('worktree.context.copyName'),
     action: () => clipboard.writeText(name),
   })
 
   items.push({
-    label: __DARWIN__ ? 'Copy Worktree Path' : 'Copy worktree path',
+    label: t('worktree.context.copyPath'),
     action: () => clipboard.writeText(path),
   })
 
@@ -41,7 +42,7 @@ export function generateWorktreeContextMenuItems(
 
   if (onRemoveWorktree !== undefined) {
     items.push({
-      label: 'Delete…',
+      label: t('worktree.context.delete'),
       action: () => onRemoveWorktree(path),
       enabled: !isMainWorktree && !isLocked,
     })
