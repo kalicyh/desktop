@@ -20,6 +20,7 @@ import {
 } from '../../models/publish-settings'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import memoizeOne from 'memoize-one'
+import { t } from '../../lib/i18n'
 
 enum PublishTab {
   DotCom = 0,
@@ -143,7 +144,7 @@ export class Publish extends React.Component<IPublishProps, IPublishState> {
     return (
       <Dialog
         id="publish-repository"
-        title={__DARWIN__ ? 'Publish Repository' : 'Publish repository'}
+        title={t('publishRepository.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.publishRepository}
         disabled={this.state.publishing}
@@ -271,14 +272,12 @@ export class Publish extends React.Component<IPublishProps, IPublishState> {
   }
 
   private renderSignInTab(tab: PublishTab) {
-    const signInTitle = __DARWIN__ ? 'Sign In' : 'Sign in'
+    const signInTitle = t('signIn.title')
     switch (tab) {
       case PublishTab.DotCom:
         return (
           <CallToAction actionTitle={signInTitle} onAction={this.signInDotCom}>
-            <div>
-              Sign in to your GitHub.com account to access your repositories.
-            </div>
+            <div>{t('publishRepository.signInDotCom')}</div>
           </CallToAction>
         )
       case PublishTab.Enterprise:
@@ -287,10 +286,7 @@ export class Publish extends React.Component<IPublishProps, IPublishState> {
             actionTitle={signInTitle}
             onAction={this.signInEnterprise}
           >
-            <div>
-              If you are using GitHub Enterprise at work, sign in to it to get
-              access to your repositories.
-            </div>
+            <div>{t('publishRepository.signInEnterprise')}</div>
           </CallToAction>
         )
       default:
@@ -307,9 +303,7 @@ export class Publish extends React.Component<IPublishProps, IPublishState> {
       return (
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={
-              __DARWIN__ ? 'Publish Repository' : 'Publish repository'
-            }
+            okButtonText={t('publishRepository.publishButton')}
             okButtonDisabled={disabled}
           />
         </DialogFooter>
