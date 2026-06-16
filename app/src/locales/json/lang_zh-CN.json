@@ -406,6 +406,7 @@
   "commitMessage.copilot.generate": "用 Copilot 生成提交消息",
   "commitMessage.copilot.filesMustBeSelected": "。必须先选择文件才能生成提交消息。",
   "commitMessage.generatingDetails": "正在生成提交详情…",
+  "commitMessage.cancelGeneratingDetails": "取消生成提交详情",
   "commitMessage.new": "新",
   "commitMessage.options.configure": "配置提交选项",
   "commitMessage.options.bypassHooks": "绕过提交钩子",

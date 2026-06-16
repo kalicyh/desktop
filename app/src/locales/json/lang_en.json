@@ -406,6 +406,7 @@
   "commitMessage.copilot.generate": "Generate commit message with Copilot",
   "commitMessage.copilot.filesMustBeSelected": ". Files must be selected to generate a commit message.",
   "commitMessage.generatingDetails": "Generating commit details…",
+  "commitMessage.cancelGeneratingDetails": "Cancel generating commit details",
   "commitMessage.new": "New",
   "commitMessage.options.configure": "Configure commit options",
   "commitMessage.options.bypassHooks": "Bypass commit hooks",
