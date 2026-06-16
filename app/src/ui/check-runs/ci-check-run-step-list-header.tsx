@@ -4,6 +4,7 @@ import * as octicons from '../octicons/octicons.generated'
 import { Button } from '../lib/button'
 import { getCombinedStatusSummary } from './ci-check-run-popover'
 import { IRefCheck } from '../../lib/ci-checks/ci-checks'
+import { t } from '../../lib/i18n'
 
 interface ICICheckRunStepListHeaderProps {
   /** The check run to display **/
@@ -30,7 +31,7 @@ export class CICheckRunStepListHeader extends React.PureComponent<ICICheckRunSte
       return null
     }
 
-    const tooltip = `Re-run ${checkRun.name}`
+    const tooltip = t('checkRuns.rerun.job', { name: checkRun.name })
     return (
       <Button
         className="job-rerun"
@@ -50,7 +51,7 @@ export class CICheckRunStepListHeader extends React.PureComponent<ICICheckRunSte
       return null
     }
 
-    const label = `View ${checkRun.name} on GitHub`
+    const label = t('checkRuns.viewOnGitHub', { name: checkRun.name })
     return (
       <Button
         role="link"

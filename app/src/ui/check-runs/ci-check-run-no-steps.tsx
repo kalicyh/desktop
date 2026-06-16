@@ -3,6 +3,7 @@ import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { Button } from '../lib/button'
 import { encodePathAsUrl } from '../../lib/path'
+import { t } from '../../lib/i18n'
 
 const PaperStackImage = encodePathAsUrl(__dirname, 'static/paper-stack.svg')
 
@@ -17,13 +18,13 @@ export class CICheckRunNoStepItem extends React.PureComponent<ICICheckRunNoStepP
     return (
       <div className="ci-check-run-no-steps">
         <p>
-          There are no steps to display for this check.
+          {t('checkRuns.noSteps')}
           <Button
             className="button-with-icon"
             onClick={this.props.onViewCheckExternally}
             role="link"
           >
-            View check details
+            {t('checkRuns.viewDetails')}
             <Octicon symbol={octicons.linkExternal} />
           </Button>
         </p>

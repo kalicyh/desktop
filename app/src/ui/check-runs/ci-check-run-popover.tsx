@@ -23,6 +23,7 @@ import {
 } from '../lib/popover'
 import { CICheckRunList } from './ci-check-run-list'
 import { encodePathAsUrl } from '../../lib/path'
+import { t } from '../../lib/i18n'
 import { PopupType } from '../../models/popup'
 import * as octicons from '../octicons/octicons.generated'
 import { Donut } from '../donut'
@@ -262,11 +263,11 @@ export class CICheckRunPopover extends React.PureComponent<
 
     const valueMap = getCheckStatusCountMap(checkRuns)
 
-    const ariaLabel = `Completeness indicator. ${
-      valueMap.get(APICheckStatus.Completed) ?? 0
-    } completed, ${valueMap.get(APICheckStatus.InProgress) ?? 0} in progress, ${
-      valueMap.get(APICheckStatus.Queued) ?? 0
-    } queued.`
+    const ariaLabel = t('checkRuns.completenessIndicator', {
+      completed: valueMap.get(APICheckStatus.Completed) ?? 0,
+      inProgress: valueMap.get(APICheckStatus.InProgress) ?? 0,
+      queued: valueMap.get(APICheckStatus.Queued) ?? 0,
+    })
 
     return <Donut ariaLabel={ariaLabel} valueMap={valueMap} />
   }
@@ -279,18 +280,18 @@ export class CICheckRunPopover extends React.PureComponent<
   ): JSX.Element {
     switch (true) {
       case loading:
-        return <>Checks Summary</>
+        return <>{t('checkRuns.summary.title')}</>
       case somePendingNoFailures:
-        return (
-          <span className="pending">Some checks haven't completed yet</span>
-        )
+        return <span className="pending">{t('checkRuns.summary.pending')}</span>
       case allFailure:
-        return <span className="failure">All checks have failed</span>
+        return (
+          <span className="failure">{t('checkRuns.summary.allFailed')}</span>
+        )
       case allSuccess:
-        return <>All checks have passed</>
+        return <>{t('checkRuns.summary.allPassed')}</>
     }
 
-    return <span className="failure">Some checks were not successful</span>
+    return <span className="failure">{t('checkRuns.summary.someFailed')}</span>
   }
 
   private renderHeader = (): JSX.Element => {

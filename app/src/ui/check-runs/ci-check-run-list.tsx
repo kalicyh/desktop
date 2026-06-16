@@ -9,6 +9,7 @@ import {
 import { CICheckRunListItem } from './ci-check-run-list-item'
 import { FocusContainer } from '../lib/focus-container'
 import classNames from 'classnames'
+import { t } from '../../lib/i18n'
 
 interface ICICheckRunListProps {
   /** List of check runs to display */
@@ -195,9 +196,12 @@ export class CICheckRunList extends React.PureComponent<
     })
 
     const groups = checkRunGroupNames.map((groupName, i) => {
+      const groupHeader =
+        groupName === 'Other' ? t('checkRuns.group.other') : groupName
+
       return (
         <div className="ci-check-run-list-group" key={i}>
-          <h2 className={groupHeaderClasses}>{groupName}</h2>
+          <h2 className={groupHeaderClasses}>{groupHeader}</h2>
           {this.renderListItems(checkRunGroups.get(groupName))}
         </div>
       )

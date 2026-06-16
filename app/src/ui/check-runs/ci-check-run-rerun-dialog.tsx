@@ -14,6 +14,7 @@ import { Octicon } from '../octicons'
 import * as octicons from './../octicons/octicons.generated'
 import { encodePathAsUrl } from '../../lib/path'
 import { offsetFromNow } from '../../lib/offset-from'
+import { t } from '../../lib/i18n'
 
 const BlankSlateImage = encodePathAsUrl(
   __dirname,
@@ -157,14 +158,18 @@ export class CICheckRunRerunDialog extends React.Component<
       this.props.checkRuns.length === 1 ? (
         <strong>{this.props.checkRuns[0].name}</strong>
       ) : (
-        'these workflows'
+        t('checkRuns.rerun.theseWorkflows')
       )
-    const dependentAdj = this.props.checkRuns.length === 1 ? 'its' : 'their'
+    const dependentAdj =
+      this.props.checkRuns.length === 1
+        ? t('checkRuns.rerun.dependentAdj.one')
+        : t('checkRuns.rerun.dependentAdj.other')
 
     return (
       <div className="re-run-dependents-message">
-        A new attempt of {name} will be started, including all of {dependentAdj}{' '}
-        dependents:
+        {t('checkRuns.rerun.dependentsPrefix')} {name}{' '}
+        {t('checkRuns.rerun.dependentsMiddle')} {dependentAdj}{' '}
+        {t('checkRuns.rerun.dependentsSuffix')}
       </div>
     )
   }
@@ -177,42 +182,48 @@ export class CICheckRunRerunDialog extends React.Component<
       return null
     }
 
-    const pluralize = `check${this.state.nonRerunnable.length !== 1 ? 's' : ''}`
-    const verb = this.state.nonRerunnable.length !== 1 ? 'are' : 'is'
     const warningPrefix =
       this.state.rerunnable.length === 0
-        ? `There are no ${
-            this.props.failedOnly ? 'failed ' : ''
-          }checks that can be re-run`
-        : `There ${verb} ${this.state.nonRerunnable.length} ${
-            this.props.failedOnly ? 'failed ' : ''
-          }${pluralize} that cannot be re-run`
+        ? this.props.failedOnly
+          ? t('checkRuns.rerun.warning.noFailedRerunnable')
+          : t('checkRuns.rerun.warning.noRerunnable')
+        : this.props.failedOnly
+        ? this.state.nonRerunnable.length === 1
+          ? t('checkRuns.rerun.warning.failedNotRerunnable.one', {
+              count: this.state.nonRerunnable.length,
+            })
+          : t('checkRuns.rerun.warning.failedNotRerunnable.other', {
+              count: this.state.nonRerunnable.length,
+            })
+        : this.state.nonRerunnable.length === 1
+        ? t('checkRuns.rerun.warning.notRerunnable.one', {
+            count: this.state.nonRerunnable.length,
+          })
+        : t('checkRuns.rerun.warning.notRerunnable.other', {
+            count: this.state.nonRerunnable.length,
+          })
     return (
       <div className="non-re-run-info warning-helper-text">
         <Octicon symbol={octicons.alert} />
-
-        {`${warningPrefix}. A check run cannot be re-run if the check is more than one month old,
-          the check or its dependent has not completed, or the check is not configured to be
-          re-run.`}
+        {warningPrefix}. {t('checkRuns.rerun.warning.reason')}
       </div>
     )
   }
 
   public getTitle = (showDescriptor: boolean = true) => {
     const { checkRuns, failedOnly } = this.props
-    const s = checkRuns.length === 1 ? '' : 's'
-    const c = __DARWIN__ ? 'C' : 'c'
-
-    let descriptor = ''
-    if (showDescriptor && checkRuns.length === 1) {
-      descriptor = __DARWIN__ ? 'Single ' : 'single '
-    }
 
     if (showDescriptor && failedOnly) {
-      descriptor = __DARWIN__ ? 'Failed ' : 'failed '
+      return t('checkRuns.rerun.title.failed')
     }
 
-    return `Re-run ${descriptor}${c}heck${s}`
+    if (showDescriptor && checkRuns.length === 1) {
+      return t('checkRuns.rerun.title.single')
+    }
+
+    return checkRuns.length === 1
+      ? t('checkRuns.rerun.title.one')
+      : t('checkRuns.rerun.title.other')
   }
 
   private renderDialogContent = () => {
@@ -220,9 +231,9 @@ export class CICheckRunRerunDialog extends React.Component<
       return (
         <div className="loading-rerun-checks">
           <img src={BlankSlateImage} className="blankslate-image" alt="" />
-          <div className="title">Please wait</div>
+          <div className="title">{t('checkRuns.rerun.loadingTitle')}</div>
           <div className="call-to-action">
-            Determining which checks can be re-run.
+            {t('checkRuns.rerun.loadingDescription')}
           </div>
         </div>
       )
