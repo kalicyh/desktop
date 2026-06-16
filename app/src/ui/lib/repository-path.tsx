@@ -7,6 +7,7 @@ import { Row } from './row'
 import { getDefaultDir, setDefaultDir } from './default-dir'
 import { showOpenDialog } from '../main-process-proxy'
 import { InputWarning } from './input-description/input-warning'
+import { t } from '../../lib/i18n'
 
 // We use this instead of sanitizedRepositoryName because it deals with
 // valid repository names on GitHub.com but here we only care about whether
@@ -164,11 +165,13 @@ export class RepositoryPath extends React.Component<
       <InputWarning
         id="repo-sanitized-name-warning"
         trackedUserInput={this.state.name}
-        ariaLiveMessage={`Will be created as ${sanitizedName}. Invalid characters have been replaced by hyphens.`}
+        ariaLiveMessage={t('repositoryPath.sanitizedAriaMessage', {
+          name: sanitizedName,
+        })}
       >
-        <p>Will be created as {sanitizedName}</p>
+        <p>{t('repositoryPath.sanitizedName', { name: sanitizedName })}</p>
         <span className="sr-only">
-          Invalid characters have been replaced by hyphens.
+          {t('repositoryPath.invalidCharactersReplaced')}
         </span>
       </InputWarning>
     )

@@ -227,8 +227,10 @@ export class CICheckRunPopover extends React.PureComponent<
     return (
       <div className="loading-check-runs">
         <img src={BlankSlateImage} className="blankslate-image" alt="" />
-        <div className="title">Stand By</div>
-        <div className="call-to-action">Check runs incoming!</div>
+        <div className="title">{t('checkRuns.loading.title')}</div>
+        <div className="call-to-action">
+          {t('checkRuns.loading.description')}
+        </div>
       </div>
     )
   }
