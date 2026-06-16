@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { LinkButton } from '../lib/link-button'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
+import { t } from '../../lib/i18n'
 
 interface IAttributeMismatchProps {
   /** Called when the dialog should be dismissed. */
@@ -18,31 +19,24 @@ export class AttributeMismatch extends React.Component<IAttributeMismatchProps> 
     return (
       <Dialog
         id="lfs-attribute-mismatch"
-        title={
-          __DARWIN__
-            ? 'Update Existing Git LFS Filters?'
-            : 'Update existing Git LFS filters?'
-        }
+        title={t('lfs.attributeMismatch.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onSubmit}
       >
         <DialogContent>
           <p>
-            Git LFS filters are already configured in{' '}
+            {t('lfs.attributeMismatch.messagePrefix')}{' '}
             <LinkButton onClick={this.props.onEditGlobalGitConfig}>
-              your global git config
+              {t('lfs.attributeMismatch.globalGitConfig')}
             </LinkButton>{' '}
-            but are not the values it expects. Would you like to update them
-            now?
+            {t('lfs.attributeMismatch.messageSuffix')}
           </p>
         </DialogContent>
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={
-              __DARWIN__ ? 'Update Existing Filters' : 'Update existing filters'
-            }
-            cancelButtonText={__DARWIN__ ? 'Not Now' : 'Not now'}
+            okButtonText={t('lfs.attributeMismatch.updateFilters')}
+            cancelButtonText={t('dialog.notNow')}
           />
         </DialogFooter>
       </Dialog>

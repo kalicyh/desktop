@@ -11,6 +11,7 @@ import {
 } from '../../lib/custom-integration'
 import { getAvailableEditors } from '../../lib/editors/lookup'
 import { enableCustomIntegration } from '../../lib/feature-flag'
+import { t } from '../../lib/i18n'
 
 const CustomIntegrationValue = 'other'
 
@@ -105,7 +106,7 @@ export class OpenWithExternalEditor extends React.Component<
 
     return (
       <Select
-        label="Select an editor"
+        label={t('openWithExternalEditor.selectEditor')}
         value={
           this.state.useCustomEditor
             ? CustomIntegrationValue
@@ -120,9 +121,7 @@ export class OpenWithExternalEditor extends React.Component<
         ))}
         {enableCustomIntegration() && (
           <option key={CustomIntegrationValue} value={CustomIntegrationValue}>
-            {__DARWIN__
-              ? 'Configure Custom Editor…'
-              : 'Configure custom editor…'}
+            {t('openWithExternalEditor.configureCustomEditor')}
           </option>
         )}
       </Select>
@@ -148,7 +147,6 @@ export class OpenWithExternalEditor extends React.Component<
   }
 
   public render() {
-    const title = __DARWIN__ ? 'Open With…' : 'Open with…'
     const disabled =
       (!this.state.useCustomEditor && this.state.selectedEditor === null) ||
       (this.state.useCustomEditor && !this.state.customEditor.path)
@@ -156,7 +154,7 @@ export class OpenWithExternalEditor extends React.Component<
     return (
       <Dialog
         id="open-with-external-editor"
-        title={title}
+        title={t('openWithExternalEditor.title')}
         onDismissed={this.props.onDismissed}
         onSubmit={this.onSubmit}
       >
@@ -166,7 +164,7 @@ export class OpenWithExternalEditor extends React.Component<
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Open"
+            okButtonText={t('openWithExternalEditor.open')}
             okButtonDisabled={disabled}
             onCancelButtonClick={this.props.onDismissed}
           />

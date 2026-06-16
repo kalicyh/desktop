@@ -7,6 +7,7 @@ import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { Ref } from '../lib/ref'
 import { LinkButton } from '../lib/link-button'
 import { PasswordTextBox } from '../lib/password-text-box'
+import { t } from '../../lib/i18n'
 
 interface IGenericGitAuthenticationProps {
   /** The remote url with which the user tried to authenticate. */
@@ -46,7 +47,7 @@ export class GenericGitAuthentication extends React.Component<
     return (
       <Dialog
         id="generic-git-auth"
-        title={__DARWIN__ ? `Authentication Failed` : `Authentication failed`}
+        title={t('genericGitAuth.title')}
         onDismissed={this.props.onDismiss}
         onSubmit={this.save}
         role="alertdialog"
@@ -54,22 +55,26 @@ export class GenericGitAuthentication extends React.Component<
       >
         <DialogContent>
           <p id="generic-git-auth-error">
-            We were unable to authenticate with{' '}
-            <Ref>{this.props.remoteUrl}</Ref>. Please enter{' '}
+            {t('genericGitAuth.messagePrefix')}{' '}
+            <Ref>{this.props.remoteUrl}</Ref>. {t('genericGitAuth.enter')}{' '}
             {this.props.username ? (
               <>
-                the password for the user <Ref>{this.props.username}</Ref>
+                {t('genericGitAuth.passwordForUser')}{' '}
+                <Ref>{this.props.username}</Ref>
+                {t('genericGitAuth.passwordTryAgain')}
               </>
             ) : (
-              'your username and password'
-            )}{' '}
-            to try again.
+              <>
+                {t('genericGitAuth.usernameAndPassword')}{' '}
+                {t('genericGitAuth.tryAgain')}
+              </>
+            )}
           </p>
 
           {this.props.username === undefined && (
             <Row>
               <TextBox
-                label="Username"
+                label={t('genericGitAuth.username')}
                 autoFocus={true}
                 value={this.state.username}
                 onValueChanged={this.onUsernameChange}
@@ -79,7 +84,7 @@ export class GenericGitAuthentication extends React.Component<
 
           <Row>
             <PasswordTextBox
-              label="Password"
+              label={t('genericGitAuth.password')}
               value={this.state.password}
               onValueChanged={this.onPasswordChange}
               ariaDescribedBy="generic-git-auth-password-description"
@@ -88,11 +93,9 @@ export class GenericGitAuthentication extends React.Component<
 
           <Row>
             <div id="generic-git-auth-password-description">
-              Depending on your repository's hosting service, you might need to
-              use a Personal Access Token (PAT) as your password. Learn more
-              about creating a PAT in our{' '}
+              {t('genericGitAuth.patDescription')}{' '}
               <LinkButton uri="https://github.com/desktop/desktop/tree/development/docs/integrations">
-                integration docs
+                {t('genericGitAuth.integrationDocs')}
               </LinkButton>
               .
             </div>
