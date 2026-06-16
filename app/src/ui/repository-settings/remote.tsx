@@ -2,6 +2,7 @@ import * as React from 'react'
 import { IRemote } from '../../models/remote'
 import { TextBox } from '../lib/text-box'
 import { DialogContent } from '../dialog'
+import { t } from '../../lib/i18n'
 
 interface IRemoteProps {
   /** The remote being shown. */
@@ -18,12 +19,10 @@ export class Remote extends React.Component<IRemoteProps, {}> {
     return (
       <DialogContent>
         <TextBox
-          placeholder="Remote URL"
-          label={
-            __DARWIN__
-              ? `Primary Remote Repository (${remote.name}) URL`
-              : `Primary remote repository (${remote.name}) URL`
-          }
+          placeholder={t('repositorySettings.remote.urlPlaceholder')}
+          label={t('repositorySettings.remote.primaryRemoteUrl', {
+            remote: remote.name,
+          })}
           value={remote.url}
           onValueChanged={this.props.onRemoteUrlChanged}
         />
