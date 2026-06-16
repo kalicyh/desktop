@@ -165,9 +165,7 @@ export class PullRequestFilesChanged extends React.Component<
     if (!fileExistsOnDisk) {
       showContextualMenu([
         {
-          label: __DARWIN__
-            ? 'File Does Not Exist on Disk'
-            : 'File does not exist on disk',
+          label: t('openPullRequest.fileDoesNotExistOnDisk'),
           enabled: false,
         },
       ])
@@ -247,7 +245,7 @@ export class PullRequestFilesChanged extends React.Component<
     return (
       <div className="files-changed-header">
         <div className="commits-displayed">
-          Showing changes from all commits
+          {t('openPullRequest.showingChangesFromAllCommits')}
         </div>
         <DiffOptions
           isInteractiveDiff={false}
@@ -271,7 +269,7 @@ export class PullRequestFilesChanged extends React.Component<
         maximumWidth={fileListWidth.max}
         onResize={this.onFileListResize}
         onReset={this.onFileListSizeReset}
-        description="Pull request file list"
+        description={t('openPullRequest.fileListDescription')}
       >
         <FileList
           files={files}

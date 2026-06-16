@@ -5,6 +5,7 @@ import { DialogHeader } from '../dialog/header'
 import { Ref } from '../lib/ref'
 import { Repository } from '../../models/repository'
 import { IChangesetData } from '../../lib/git'
+import { t } from '../../lib/i18n'
 
 export const OpenPullRequestDialogId = 'Dialog_Open_Pull_Request'
 
@@ -64,7 +65,7 @@ export class OpenPullRequestDialogHeader extends React.Component<IOpenPullReques
   }
 
   public render() {
-    const title = __DARWIN__ ? 'Open a Pull Request' : 'Open a pull request'
+    const title = t('openPullRequest.title')
     const {
       baseBranch,
       currentBranch,
@@ -77,7 +78,10 @@ export class OpenPullRequestDialogHeader extends React.Component<IOpenPullReques
       onDismissed,
     } = this.props
     const { linesAdded, linesDeleted } = changesetData
-    const commits = `${commitCount} commit${commitCount > 1 ? 's' : ''}`
+    const commits =
+      commitCount === 1
+        ? t('openPullRequest.oneCommit')
+        : t('openPullRequest.commitCount', { count: commitCount })
 
     return (
       <DialogHeader
@@ -87,7 +91,8 @@ export class OpenPullRequestDialogHeader extends React.Component<IOpenPullReques
       >
         <div className="break"></div>
         <div className="base-branch-details">
-          Merge {commits} into{' '}
+          {t('openPullRequest.mergePrefix')} {commits}{' '}
+          {t('openPullRequest.mergeInto')}{' '}
           <BranchSelect
             repository={this.props.repository}
             branch={baseBranch}
@@ -98,18 +103,22 @@ export class OpenPullRequestDialogHeader extends React.Component<IOpenPullReques
             onChange={onBranchChange}
             noBranchesMessage={
               <>
-                <p>Sorry, I can't find that remote branch.</p>
-                <p>You can only open pull requests against remote branches.</p>
+                <p>{t('openPullRequest.remoteBranchNotFound')}</p>
+                <p>{t('openPullRequest.remoteBranchesOnly')}</p>
               </>
             }
           />{' '}
-          from <Ref>{currentBranch.name}</Ref>.
+          {t('openPullRequest.from')} <Ref>{currentBranch.name}</Ref>.
         </div>
         <div className="lines-added-deleted">
-          <span className="sr-only">Lines changed:</span>
-          <span className="lines-added">{linesAdded} added lines</span>
+          <span className="sr-only">{t('openPullRequest.linesChanged')}</span>
+          <span className="lines-added">
+            {t('openPullRequest.addedLines', { count: linesAdded })}
+          </span>
           <span>, </span>
-          <span className="lines-deleted">{linesDeleted} removed lines</span>
+          <span className="lines-deleted">
+            {t('openPullRequest.removedLines', { count: linesDeleted })}
+          </span>
         </div>
       </DialogHeader>
     )

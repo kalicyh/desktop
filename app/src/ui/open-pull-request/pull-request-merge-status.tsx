@@ -4,6 +4,7 @@ import { ComputedAction } from '../../models/computed-action'
 import { MergeTreeResult } from '../../models/merge'
 import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
+import { t } from '../../lib/i18n'
 
 interface IPullRequestMergeStatusProps {
   /** The result of merging the pull request branch into the base branch */
@@ -24,33 +25,35 @@ export class PullRequestMergeStatus extends React.Component<IPullRequestMergeSta
       case ComputedAction.Loading:
         return (
           <span className="pr-merge-status-loading">
-            <strong>Checking mergeability&hellip;</strong> Don’t worry, you can
-            still create the pull request.
+            <strong>{t('openPullRequest.mergeStatus.checking')}</strong>{' '}
+            {t('openPullRequest.mergeStatus.canStillCreate')}
           </span>
         )
       case ComputedAction.Invalid:
         return (
           <span className="pr-merge-status-invalid">
-            <strong>Error checking merge status.</strong> Unable to merge
-            unrelated histories in this repository
+            <strong>{t('openPullRequest.mergeStatus.error')}</strong>{' '}
+            {t('openPullRequest.mergeStatus.unrelatedHistories')}
           </span>
         )
       case ComputedAction.Clean:
         return (
           <span className="pr-merge-status-clean">
             <strong>
-              <Octicon symbol={octicons.check} /> Able to merge.
+              <Octicon symbol={octicons.check} />{' '}
+              {t('openPullRequest.mergeStatus.ableToMerge')}
             </strong>{' '}
-            These branches can be automatically merged.
+            {t('openPullRequest.mergeStatus.autoMerge')}
           </span>
         )
       case ComputedAction.Conflicts:
         return (
           <span className="pr-merge-status-conflicts">
             <strong>
-              <Octicon symbol={octicons.x} /> Can't automatically merge.
+              <Octicon symbol={octicons.x} />{' '}
+              {t('openPullRequest.mergeStatus.cannotAutoMerge')}
             </strong>{' '}
-            Don’t worry, you can still create the pull request.
+            {t('openPullRequest.mergeStatus.canStillCreate')}
           </span>
         )
       default:

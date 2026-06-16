@@ -16,6 +16,7 @@ import {
 import { PullRequestFilesChanged } from './pull-request-files-changed'
 import { PullRequestMergeStatus } from './pull-request-merge-status'
 import { ComputedAction } from '../../models/computed-action'
+import { t } from '../../lib/i18n'
 
 interface IOpenPullRequestDialogProps {
   readonly repository: Repository
@@ -207,20 +208,23 @@ export class OpenPullRequestDialog extends React.Component<IOpenPullRequestDialo
     const hasMergeBase = mergeStatus?.kind !== ComputedAction.Invalid
     const message = hasMergeBase ? (
       <>
-        <Ref>{baseBranch.name}</Ref> is up to date with all commits from{' '}
+        <Ref>{baseBranch.name}</Ref>{' '}
+        {t('openPullRequest.noChanges.upToDateMiddle')}{' '}
         <Ref>{currentBranch.name}</Ref>.
       </>
     ) : (
       <>
-        <Ref>{baseBranch.name}</Ref> and <Ref>{currentBranch.name}</Ref> are
-        entirely different commit histories.
+        <Ref>{baseBranch.name}</Ref>{' '}
+        {t('openPullRequest.noChanges.differentHistoriesMiddle')}{' '}
+        <Ref>{currentBranch.name}</Ref>{' '}
+        {t('openPullRequest.noChanges.differentHistoriesSuffix')}
       </>
     )
     return (
       <div className="open-pull-request-message">
         <div>
           <Octicon symbol={octicons.gitPullRequest} />
-          <h3>There are no changes.</h3>
+          <h3>{t('openPullRequest.noChanges.title')}</h3>
           {message}
         </div>
       </div>
@@ -238,8 +242,8 @@ export class OpenPullRequestDialog extends React.Component<IOpenPullRequestDialo
       <div className="open-pull-request-message">
         <div>
           <Octicon symbol={octicons.gitPullRequest} />
-          <h3>Could not find a default branch to compare against.</h3>
-          Select a base branch above.
+          <h3>{t('openPullRequest.noDefaultBranch.title')}</h3>
+          {t('openPullRequest.noDefaultBranch.message')}
         </div>
       </div>
     )
@@ -253,19 +257,22 @@ export class OpenPullRequestDialog extends React.Component<IOpenPullRequestDialo
     const isEnterprise =
       gitHubRepository && gitHubRepository.endpoint !== getDotComAPIEndpoint()
 
-    const viewCreate = currentBranchHasPullRequest ? 'View' : ' Create'
-    const buttonTitle = `${viewCreate} pull request on GitHub${
-      isEnterprise ? ' Enterprise' : ''
-    }.`
+    const buttonTitle = currentBranchHasPullRequest
+      ? t('openPullRequest.viewOnGitHubTitle', {
+          provider: isEnterprise ? 'GitHub Enterprise' : 'GitHub',
+        })
+      : t('openPullRequest.createOnGitHubTitle', {
+          provider: isEnterprise ? 'GitHub Enterprise' : 'GitHub',
+        })
 
     const okButton = (
       <>
         {currentBranchHasPullRequest && (
           <Octicon symbol={octicons.linkExternal} />
         )}
-        {__DARWIN__
-          ? `${viewCreate} Pull Request`
-          : `${viewCreate} pull request`}
+        {currentBranchHasPullRequest
+          ? t('openPullRequest.viewPullRequest')
+          : t('openPullRequest.createPullRequest')}
       </>
     )
 
@@ -276,7 +283,7 @@ export class OpenPullRequestDialog extends React.Component<IOpenPullRequestDialo
         <OkCancelButtonGroup
           okButtonText={okButton}
           okButtonTitle={buttonTitle}
-          cancelButtonText="Cancel"
+          cancelButtonText={t('dialog.cancel')}
           okButtonDisabled={commitSHAs === null || commitSHAs.length === 0}
         />
       </DialogFooter>
