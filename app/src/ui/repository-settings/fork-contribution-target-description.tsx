@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ForkContributionTarget } from '../../models/workflow-preferences'
 import { RepositoryWithForkedGitHubRepository } from '../../models/repository'
+import { t } from '../../lib/i18n'
 
 interface IForkSettingsDescription {
   readonly repository: RepositoryWithForkedGitHubRepository
@@ -18,23 +19,29 @@ export function ForkSettingsDescription(props: IForkSettingsDescription) {
   return (
     <ul className="fork-settings-description">
       <li>
-        Pull requests targeting <strong>{targetRepository.fullName}</strong>{' '}
-        will be shown in the pull request list.
+        {t('forkSettings.pullRequestsPrefix')}
+        <strong>{targetRepository.fullName}</strong>
+        {t('forkSettings.pullRequestsSuffix')}
       </li>
       <li>
-        Issues will be created in <strong>{targetRepository.fullName}</strong>.
+        {t('forkSettings.issuesPrefix')}
+        <strong>{targetRepository.fullName}</strong>
+        {t('forkSettings.issuesSuffix')}
       </li>
       <li>
-        "View on GitHub" will open <strong>{targetRepository.fullName}</strong>{' '}
-        in the browser.
+        {t('forkSettings.viewOnGitHubPrefix')}
+        <strong>{targetRepository.fullName}</strong>
+        {t('forkSettings.viewOnGitHubSuffix')}
       </li>
       <li>
-        New branches will be based on{' '}
-        <strong>{targetRepository.fullName}</strong>'s default branch.
+        {t('forkSettings.newBranchesPrefix')}
+        <strong>{targetRepository.fullName}</strong>
+        {t('forkSettings.newBranchesSuffix')}
       </li>
       <li>
-        Autocompletion of user and issues will be based on{' '}
-        <strong>{targetRepository.fullName}</strong>.
+        {t('forkSettings.autocompletePrefix')}
+        <strong>{targetRepository.fullName}</strong>
+        {t('forkSettings.autocompleteSuffix')}
       </li>
     </ul>
   )

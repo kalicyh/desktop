@@ -9,6 +9,7 @@ import { Octicon } from './octicons'
 import * as octicons from './octicons/octicons.generated'
 import classNames from 'classnames'
 import { Emoji } from '../lib/emoji'
+import { t } from '../lib/i18n'
 
 /**
  * The max height of the visible quick view card is 556 (500 for scrollable
@@ -165,13 +166,13 @@ export class PullRequestQuickView extends React.Component<
     return (
       <header className="header">
         <Octicon symbol={octicons.listUnordered} />
-        <div className="action-needed">Review requested</div>
+        <div className="action-needed">{t('pullRequest.reviewRequested')}</div>
         <Button
           className="button-with-icon"
           onClick={this.onViewOnGitHub}
           role="link"
         >
-          View on GitHub
+          {t('history.context.viewOnGitHub')}
           <Octicon symbol={octicons.linkExternal} />
         </Button>
       </header>

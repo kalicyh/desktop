@@ -38,6 +38,7 @@ import { ExpandableCommitSummary } from './expandable-commit-summary'
 import { DiffHeader } from '../diff/diff-header'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
+import { t } from '../../lib/i18n'
 
 interface ISelectedCommitsProps {
   readonly repository: Repository
@@ -430,14 +431,14 @@ export class SelectedCommits extends React.Component<
       { type: 'separator' },
     ]
 
-    let viewOnGitHubLabel = 'View on GitHub'
+    let viewOnGitHubLabel = t('history.context.viewOnGitHub')
     const gitHubRepository = repository.gitHubRepository
 
     if (
       gitHubRepository &&
       gitHubRepository.endpoint !== getDotComAPIEndpoint()
     ) {
-      viewOnGitHubLabel = 'View on GitHub Enterprise'
+      viewOnGitHubLabel = t('history.context.viewOnGitHubEnterprise')
     }
 
     items.push({

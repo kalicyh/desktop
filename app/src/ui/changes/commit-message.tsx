@@ -69,6 +69,7 @@ import {
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
 import { HookProgress } from '../../lib/git'
 import { assertNever } from '../../lib/fatal-error'
+import { t } from '../../lib/i18n'
 
 const addAuthorIcon: OcticonSymbolVariant = {
   w: 18,
@@ -1765,7 +1766,9 @@ export class CommitMessage extends React.Component<
         {this.state.isRuleFailurePopoverOpen && this.renderRuleFailurePopover()}
 
         {this.props.showInputLabels === true && (
-          <label htmlFor="commit-message-description">Description</label>
+          <label htmlFor="commit-message-description">
+            {t('changes.commitDescriptionPlaceholder')}
+          </label>
         )}
         <FocusContainer
           className="description-focus-container"
@@ -1776,10 +1779,10 @@ export class CommitMessage extends React.Component<
             className={descriptionClassName}
             screenReaderLabel={
               this.props.showInputLabels !== true
-                ? 'Commit description'
+                ? t('changes.commitDescriptionScreenReaderLabel')
                 : undefined
             }
-            placeholder="Description"
+            placeholder={t('changes.commitDescriptionPlaceholder')}
             value={this.state.commitMessage.description || ''}
             onValueChanged={this.onDescriptionChanged}
             autocompletionProviders={

@@ -1,6 +1,7 @@
 import { IFileListFilterState } from '../../lib/app-state'
 import { IChangesListItem } from './filter-changes-list'
 import memoizeOne from 'memoize-one'
+import { t } from '../../lib/i18n'
 
 /**
  * Apply filter options to determine if a file should be shown
@@ -88,23 +89,23 @@ export function getNoResultsMessage(
   }
 
   if (filters.isIncludedInCommit) {
-    activeFilters.push('Included in commit')
+    activeFilters.push(t('changes.filterOptions.includedName'))
   }
 
   if (filters.isExcludedFromCommit) {
-    activeFilters.push('Excluded from commit')
+    activeFilters.push(t('changes.filterOptions.excludedName'))
   }
 
   if (filters.isNewFile) {
-    activeFilters.push('New files')
+    activeFilters.push(t('changes.filterOptions.newFilesName'))
   }
 
   if (filters.isModifiedFile) {
-    activeFilters.push('Modified files')
+    activeFilters.push(t('changes.filterOptions.modifiedFilesName'))
   }
 
   if (filters.isDeletedFile) {
-    activeFilters.push('Deleted files')
+    activeFilters.push(t('changes.filterOptions.deletedFilesName'))
   }
 
   if (activeFilters.length === 0) {

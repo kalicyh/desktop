@@ -58,6 +58,7 @@ import { RepoRulesInfo } from '../../models/repo-rules'
 import { IAheadBehind } from '../../models/branch'
 import { StashDiffViewerId } from '../stashing'
 import { AugmentedSectionFilterList } from '../lib/augmented-filter-list'
+import { t } from '../../lib/i18n'
 import { IFilterListGroup, IFilterListItem } from '../lib/filter-list'
 import { ClickSource } from '../lib/list'
 import memoizeOne from 'memoize-one'
@@ -861,7 +862,7 @@ export class FilterChangesList extends React.Component<
     prepopulateCommitSummary: boolean
   ) {
     if (!prepopulateCommitSummary) {
-      return 'Summary (required)'
+      return t('changes.commitSummaryPlaceholder')
     }
 
     const firstFile = files[0]
@@ -870,15 +871,15 @@ export class FilterChangesList extends React.Component<
     switch (firstFile.status.kind) {
       case AppFileStatusKind.New:
       case AppFileStatusKind.Untracked:
-        return `Create ${fileName}`
+        return t('changes.createFileSummary', { fileName })
       case AppFileStatusKind.Deleted:
-        return `Delete ${fileName}`
+        return t('changes.deleteFileSummary', { fileName })
       default:
         // TODO:
         // this doesn't feel like a great message for AppFileStatus.Copied or
         // AppFileStatus.Renamed but without more insight (and whether this
         // affects other parts of the flow) we can just default to this for now
-        return `Update ${fileName}`
+        return t('changes.updateFileSummary', { fileName })
     }
   }
 
@@ -1298,7 +1299,7 @@ export class FilterChangesList extends React.Component<
         <TextBox
           ref={this.onTextBoxRef}
           displayClearButton={true}
-          placeholder={'Filter'}
+          placeholder={t('common.filter')}
           className="filter-list-filter-field"
           onValueChanged={this.onFilterTextChanged}
           onKeyDown={this.onFilterKeyDown}

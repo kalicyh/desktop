@@ -29,6 +29,7 @@ import { formatDate } from '../../lib/format-date'
 import { Avatar } from '../lib/avatar'
 import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
+import { t } from '../../lib/i18n'
 
 const RowHeight = 50
 
@@ -634,9 +635,7 @@ export class CommitList extends React.Component<
     }
 
     const containerWidth = this.containerRef.current?.clientWidth ?? 0
-    const reorderCommitsHintTitle = __DARWIN__
-      ? 'Reorder Commits'
-      : 'Reorder commits'
+    const reorderCommitsHintTitle = t('history.reorderCommitsHint.title')
 
     return (
       <Popover
@@ -739,14 +738,14 @@ export class CommitList extends React.Component<
       this.props.canResetToCommits === true && isResettableCommit
     const canBeCheckedOut = row > 0 //Cannot checkout the current commit
 
-    let viewOnGitHubLabel = 'View on GitHub'
+    let viewOnGitHubLabel = t('history.context.viewOnGitHub')
     const gitHubRepository = this.props.gitHubRepository
 
     if (
       gitHubRepository &&
       gitHubRepository.endpoint !== getDotComAPIEndpoint()
     ) {
-      viewOnGitHubLabel = 'View on GitHub Enterprise'
+      viewOnGitHubLabel = t('history.context.viewOnGitHubEnterprise')
     }
 
     const items: IMenuItem[] = []
@@ -760,7 +759,7 @@ export class CommitList extends React.Component<
 
     if (canBeUndone) {
       items.push({
-        label: __DARWIN__ ? 'Undo Commit…' : 'Undo commit…',
+        label: t('history.context.undoCommit'),
         action: () => {
           if (this.props.onUndoCommit) {
             this.props.onUndoCommit(commit)
@@ -771,7 +770,7 @@ export class CommitList extends React.Component<
     }
 
     items.push({
-      label: __DARWIN__ ? 'Reset to Commit…' : 'Reset to commit…',
+      label: t('history.context.resetToCommit'),
       action: () => {
         if (this.props.onResetToCommit) {
           this.props.onResetToCommit(commit)
@@ -781,7 +780,7 @@ export class CommitList extends React.Component<
     })
 
     items.push({
-      label: __DARWIN__ ? 'Checkout Commit' : 'Checkout commit',
+      label: t('history.context.checkoutCommit'),
       action: () => {
         this.props.onCheckoutCommit?.(commit)
       },
@@ -789,7 +788,7 @@ export class CommitList extends React.Component<
     })
 
     items.push({
-      label: __DARWIN__ ? 'Reorder Commit' : 'Reorder commit',
+      label: t('history.context.reorderCommit'),
       action: () => {
         this.props.onKeyboardReorder?.([commit])
       },
@@ -798,9 +797,7 @@ export class CommitList extends React.Component<
 
     items.push(
       {
-        label: __DARWIN__
-          ? 'Revert Changes in Commit'
-          : 'Revert changes in commit',
+        label: t('history.context.revertChangesInCommit'),
         action: () => {
           if (this.props.onRevertCommit) {
             this.props.onRevertCommit(commit)
@@ -810,9 +807,7 @@ export class CommitList extends React.Component<
       },
       { type: 'separator' },
       {
-        label: __DARWIN__
-          ? 'Create Branch from Commit'
-          : 'Create branch from commit',
+        label: t('history.context.createBranchFromCommit'),
         action: () => {
           if (this.props.onCreateBranch) {
             this.props.onCreateBranch(commit)
@@ -820,7 +815,7 @@ export class CommitList extends React.Component<
         },
       },
       {
-        label: 'Create Tag…',
+        label: t('history.context.createTag'),
         action: () => this.props.onCreateTag?.(commit.sha),
         enabled: this.props.onCreateTag !== undefined,
       }
@@ -836,21 +831,22 @@ export class CommitList extends React.Component<
         deleteTagsMenuItem
       )
     }
-    const darwinTagsLabel = commit.tags.length > 1 ? 'Copy Tags' : 'Copy Tag'
-    const windowTagsLabel = commit.tags.length > 1 ? 'Copy tags' : 'Copy tag'
     items.push(
       {
-        label: __DARWIN__ ? 'Cherry-pick Commit…' : 'Cherry-pick commit…',
+        label: t('history.context.cherryPickCommit'),
         action: () => this.props.onCherryPick?.(this.selectedCommits),
         enabled: this.canCherryPick(),
       },
       { type: 'separator' },
       {
-        label: 'Copy SHA',
+        label: t('history.context.copySHA'),
         action: () => clipboard.writeText(commit.sha),
       },
       {
-        label: __DARWIN__ ? darwinTagsLabel : windowTagsLabel,
+        label:
+          commit.tags.length > 1
+            ? t('history.context.copyTags')
+            : t('history.context.copyTag'),
         action: () => clipboard.writeText(commit.tags.join(' ')),
         enabled: commit.tags.length > 0,
       },

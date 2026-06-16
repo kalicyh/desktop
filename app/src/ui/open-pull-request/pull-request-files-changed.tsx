@@ -25,6 +25,7 @@ import { clamp } from '../../lib/clamp'
 import { getDotComAPIEndpoint } from '../../lib/api'
 import { createCommitURL } from '../../lib/commit-url'
 import { DiffOptions } from '../diff/diff-options'
+import { t } from '../../lib/i18n'
 
 interface IPullRequestFilesChangedProps {
   readonly repository: Repository
@@ -216,7 +217,9 @@ export class PullRequestFilesChanged extends React.Component<
       gitHubRepository && gitHubRepository.endpoint !== getDotComAPIEndpoint()
 
     items.push({
-      label: `View on GitHub${isEnterprise ? ' Enterprise' : ''}`,
+      label: isEnterprise
+        ? t('history.context.viewOnGitHubEnterprise')
+        : t('history.context.viewOnGitHub'),
       action: () => this.onViewOnGitHub(file),
       enabled: nonLocalCommitSHA !== null && gitHubRepository !== null,
     })

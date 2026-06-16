@@ -32,6 +32,7 @@ import {
 } from '../../models/pull-request'
 import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
 import { formatNumber } from '../../lib/format-number'
+import { t } from '../../lib/i18n'
 
 function formatMenuItemLabel(text: string) {
   if (__WIN32__ || __LINUX__) {
@@ -268,7 +269,7 @@ export class NoChanges extends React.Component<
 
     return this.renderMenuBackedAction(
       'open-working-directory',
-      `View the files of your repository in ${fileManager}`,
+      t('noChanges.showInFileManager.title', { fileManager }),
       undefined,
       this.onShowInFileManagerClicked
     )
@@ -286,7 +287,7 @@ export class NoChanges extends React.Component<
 
     return this.renderMenuBackedAction(
       'view-repository-on-github',
-      `Open the repository page on GitHub in your browser`,
+      t('noChanges.viewOnGitHub.title'),
       undefined,
       this.onViewOnGitHubClicked
     )
@@ -322,13 +323,15 @@ export class NoChanges extends React.Component<
       return null
     }
 
-    const title = `Open the repository in your external editor`
+    const title = t('noChanges.openExternalEditor.title')
 
     const description = (
       <>
-        Select your editor in{' '}
+        {t('noChanges.openExternalEditor.descriptionPrefix')}
         <LinkButton onClick={this.openIntegrationPreferences}>
-          {__DARWIN__ ? 'Settings' : 'Options'}
+          {__DARWIN__
+            ? t('preferences.title.settings')
+            : t('preferences.title.options')}
         </LinkButton>
       </>
     )
@@ -769,11 +772,8 @@ export class NoChanges extends React.Component<
         <div className="content">
           <div className="interstitial-header">
             <div className="text">
-              <h1>No local changes</h1>
-              <p>
-                There are no uncommitted changes in this repository. Here are
-                some friendly suggestions for what to do next.
-              </p>
+              <h1>{t('noChanges.title')}</h1>
+              <p>{t('noChanges.description')}</p>
             </div>
             <img src={PaperStackImage} className="blankslate-image" alt="" />
           </div>

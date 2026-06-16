@@ -355,38 +355,38 @@ export function buildDefaultMenuTemplate({
       separator,
       {
         id: 'view-repository-on-github',
-        label: __DARWIN__ ? 'View on GitHub' : '&View on GitHub',
+        label: translate('history.context.viewOnGitHub', currentLanguage),
         accelerator: 'CmdOrCtrl+Shift+G',
         click: emit('view-repository-on-github'),
       },
       {
-        label: __DARWIN__
-          ? `Open in ${selectedShell ?? 'Shell'}`
-          : `O&pen in ${selectedShell ?? 'shell'}`,
+        label: translate('menu.openInShell', currentLanguage, {
+          label: selectedShell ?? 'Shell',
+        }),
         id: 'open-in-shell',
         accelerator: 'Ctrl+`',
         click: emit('open-in-shell'),
       },
       {
         label: __DARWIN__
-          ? 'Show in Finder'
+          ? translate('menu.showInFinder', currentLanguage)
           : __WIN32__
-          ? 'Show in E&xplorer'
-          : 'Show in your File Manager',
+          ? translate('menu.showInExplorer', currentLanguage)
+          : translate('menu.showInFileManager', currentLanguage),
         id: 'open-working-directory',
         accelerator: 'CmdOrCtrl+Shift+F',
         click: emit('open-working-directory'),
       },
       {
-        label: __DARWIN__
-          ? `Open in ${selectedExternalEditor ?? 'External Editor'}`
-          : `&Open in ${selectedExternalEditor ?? 'external editor'}`,
+        label: translate('menu.openInExternalEditor', currentLanguage, {
+          label: selectedExternalEditor ?? 'External Editor',
+        }),
         id: 'open-external-editor',
         accelerator: 'CmdOrCtrl+Shift+A',
         click: emit('open-external-editor'),
       },
       {
-        label: __DARWIN__ ? 'Open With…' : 'Open &with…',
+        label: translate('menu.openWith', currentLanguage),
         id: 'open-with-external-editor',
         accelerator: 'CmdOrCtrl+Shift+Alt+A',
         click: emit('open-with-external-editor'),
