@@ -117,7 +117,7 @@ export class RepositoryListItem extends React.Component<
   }
 }
 
-const renderRepoIndicators: React.FunctionComponent<{
+export const renderRepoIndicators: React.FunctionComponent<{
   aheadBehind: IAheadBehind | null
   hasChanges: boolean
 }> = props => {

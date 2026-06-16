@@ -1,7 +1,10 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { join } from 'path'
-import { RepositoriesStore } from '../../src/lib/stores/repositories-store'
+import {
+  RepositoriesStore,
+  RepositoryGroupNameTakenError,
+} from '../../src/lib/stores/repositories-store'
 import { TestRepositoriesDatabase } from '../helpers/databases'
 import { IAPIFullRepository, getDotComAPIEndpoint } from '../../src/lib/api'
 import { assertIsRepositoryWithGitHubRepository } from '../../src/models/repository'
@@ -39,6 +42,83 @@ describe('RepositoriesStore', () => {
 
       const repositories = await repositoriesStore.getAll()
       assert.equal(repositories.length, 2)
+    })
+  })
+
+  describe('repository groups and favorites', () => {
+    it('persists a repository favorite marker', async () => {
+      const repoPath = '/some/cool/path'
+      const repository = await repositoriesStore.addRepository(
+        repoPath,
+        join(repoPath, '.git')
+      )
+
+      await repositoriesStore.updateRepositoryFavorite(repository, true)
+
+      const repositories = await repositoriesStore.getAll()
+      assert.equal(repositories[0].isFavorite, true)
+      assert.equal(repositories[0].groupId, null)
+    })
+
+    it('persists custom repository groups and memberships', async () => {
+      const repoPath = '/some/cool/path'
+      const repository = await repositoriesStore.addRepository(
+        repoPath,
+        join(repoPath, '.git')
+      )
+      const group = await repositoriesStore.addRepositoryGroup('Client Work')
+
+      await repositoriesStore.updateRepositoryGroup(repository, group.id)
+
+      const repositories = await repositoriesStore.getAll()
+      assert.equal(repositories[0].groupId, group.id)
+
+      const groups = await repositoriesStore.getAllRepositoryGroups()
+      assert.equal(groups.length, 1)
+      assert.equal(groups[0].name, 'Client Work')
+    })
+
+    it('rejects duplicate repository group names case-insensitively', async () => {
+      await repositoriesStore.addRepositoryGroup('Client Work')
+
+      await assert.rejects(
+        repositoriesStore.addRepositoryGroup(' client work '),
+        RepositoryGroupNameTakenError
+      )
+    })
+
+    it('renames repository groups and preserves order', async () => {
+      const first = await repositoriesStore.addRepositoryGroup('First')
+      const second = await repositoriesStore.addRepositoryGroup('Second')
+
+      await repositoriesStore.renameRepositoryGroup(second.id, 'Renamed')
+
+      const groups = await repositoriesStore.getAllRepositoryGroups()
+      assert.equal(groups.length, 2)
+      assert.equal(groups[0].id, first.id)
+      assert.equal(groups[0].name, 'First')
+      assert.equal(groups[1].id, second.id)
+      assert.equal(groups[1].name, 'Renamed')
+    })
+
+    it('removing a repository group clears memberships but keeps favorites', async () => {
+      const repoPath = '/some/cool/path'
+      const repository = await repositoriesStore.addRepository(
+        repoPath,
+        join(repoPath, '.git')
+      )
+      const group = await repositoriesStore.addRepositoryGroup('Client Work')
+
+      await repositoriesStore.updateRepositoryGroup(repository, group.id)
+      await repositoriesStore.updateRepositoryFavorite(repository, true)
+      await repositoriesStore.removeRepositoryGroup(group.id)
+
+      const repositories = await repositoriesStore.getAll()
+      assert.equal(repositories[0].groupId, null)
+      assert.equal(repositories[0].isFavorite, true)
+
+      const groups = await repositoriesStore.getAllRepositoryGroups()
+      assert.equal(groups.length, 0)
     })
   })
 

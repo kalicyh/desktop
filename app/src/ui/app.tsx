@@ -142,6 +142,9 @@ import { CommitDragElement } from './drag-elements/commit-drag-element'
 import classNames from 'classnames'
 import { MoveToApplicationsFolder } from './move-to-applications-folder'
 import { ChangeRepositoryAlias } from './change-repository-alias/change-repository-alias-dialog'
+import { RepositoryGroupNameDialog } from './repository-groups/repository-group-name-dialog'
+import { ConfirmDeleteRepositoryGroupDialog } from './repository-groups/confirm-delete-repository-group-dialog'
+import { FavoritesSidebar } from './favorites-sidebar/favorites-sidebar'
 import { ThankYou } from './thank-you'
 import {
   getUserContributions,
@@ -546,6 +549,8 @@ export class App extends React.Component<IAppProps, IAppState> {
         return this.resizeActiveResizable('decrease-active-resizable-width')
       case 'toggle-changes-filter':
         return this.toggleChangesFilterVisibility()
+      case 'toggle-favorites-sidebar':
+        return this.props.dispatcher.toggleFavoritesSidebarVisibility()
       default:
         if (isTestMenuEvent(name)) {
           return showTestUI(
@@ -2245,6 +2250,30 @@ export class App extends React.Component<IAppProps, IAppState> {
           />
         )
       }
+      case PopupType.RepositoryGroupName: {
+        return (
+          <RepositoryGroupNameDialog
+            dispatcher={this.props.dispatcher}
+            mode={popup.mode}
+            repository={popup.repository}
+            groupId={popup.groupId}
+            currentName={popup.currentName}
+            existingGroups={this.state.repositoryGroups}
+            onDismissed={onPopupDismissedFn}
+          />
+        )
+      }
+      case PopupType.ConfirmDeleteRepositoryGroup: {
+        return (
+          <ConfirmDeleteRepositoryGroupDialog
+            dispatcher={this.props.dispatcher}
+            groupId={popup.groupId}
+            groupName={popup.groupName}
+            memberCount={popup.memberCount}
+            onDismissed={onPopupDismissedFn}
+          />
+        )
+      }
       case PopupType.ThankYou:
         return (
           <ThankYou
@@ -3189,10 +3218,44 @@ export class App extends React.Component<IAppProps, IAppState> {
       >
         {this.renderToolbar()}
         {this.renderBanner()}
-        {this.renderRepository()}
+        {this.renderMainContent()}
         {this.renderPopups()}
         {this.renderDragElement()}
       </div>
+    )
+  }
+
+  private renderMainContent() {
+    return (
+      <div className="desktop-app-main-content">
+        {this.renderFavoritesSidebar()}
+        {this.renderRepository()}
+      </div>
+    )
+  }
+
+  private renderFavoritesSidebar() {
+    if (!this.state.showFavoritesSidebar || this.inNoRepositoriesViewState()) {
+      return null
+    }
+
+    const repositories = this.state.repositories.filter(
+      (repository): repository is Repository => repository instanceof Repository
+    )
+    const selectedRepository =
+      this.state.selectedState?.repository instanceof Repository
+        ? this.state.selectedState.repository
+        : null
+
+    return (
+      <FavoritesSidebar
+        repositories={repositories}
+        repositoryGroups={this.state.repositoryGroups}
+        selectedRepository={selectedRepository}
+        localRepositoryStateLookup={this.state.localRepositoryStateLookup}
+        dispatcher={this.props.dispatcher}
+        onShowRepositoryContextMenu={this.showRepositoryContextMenu}
+      />
     )
   }
 
@@ -3212,6 +3275,7 @@ export class App extends React.Component<IAppProps, IAppState> {
         onSelectionChanged={this.onSelectionChanged}
         repositories={repositories}
         recentRepositories={this.state.recentRepositories}
+        repositoryGroups={this.state.repositoryGroups}
         localRepositoryStateLookup={this.state.localRepositoryStateLookup}
         askForConfirmationOnRemoveRepository={
           this.state.askForConfirmationOnRepositoryRemoval
@@ -3387,6 +3451,12 @@ export class App extends React.Component<IAppProps, IAppState> {
       return
     }
 
+    this.showRepositoryContextMenu(repository)
+  }
+
+  private showRepositoryContextMenu = (
+    repository: Repository | CloningRepository
+  ) => {
     const onChangeRepositoryAlias = (repository: Repository) => {
       this.props.dispatcher.showPopup({
         type: PopupType.ChangeRepositoryAlias,
@@ -3396,6 +3466,28 @@ export class App extends React.Component<IAppProps, IAppState> {
 
     const onRemoveRepositoryAlias = (repository: Repository) => {
       this.props.dispatcher.changeRepositoryAlias(repository, null)
+    }
+
+    const onSetRepositoryFavorite = (
+      repository: Repository,
+      isFavorite: boolean
+    ) => {
+      this.props.dispatcher.setRepositoryFavorite(repository, isFavorite)
+    }
+
+    const onSetRepositoryGroup = (
+      repository: Repository,
+      groupId: number | null
+    ) => {
+      this.props.dispatcher.changeRepositoryGroup(repository, groupId)
+    }
+
+    const onCreateRepositoryGroupForRepository = (repository: Repository) => {
+      this.props.dispatcher.showPopup({
+        type: PopupType.RepositoryGroupName,
+        mode: 'create',
+        repository,
+      })
     }
 
     const onCreateWorktree = (repository: Repository) => {
@@ -3419,10 +3511,14 @@ export class App extends React.Component<IAppProps, IAppState> {
       externalEditorLabel: this.externalEditorLabel,
       onChangeRepositoryAlias: onChangeRepositoryAlias,
       onRemoveRepositoryAlias: onRemoveRepositoryAlias,
+      onSetRepositoryFavorite,
+      onSetRepositoryGroup,
+      onCreateRepositoryGroupForRepository,
       onViewOnGitHub: this.viewOnGitHub,
       onCreateWorktree: enableWorktreeSupport() ? onCreateWorktree : undefined,
       onShowWorktrees: enableWorktreeSupport() ? onShowWorktrees : undefined,
       repository: repository,
+      repositoryGroups: this.state.repositoryGroups,
       shellLabel: this.state.useCustomShell
         ? undefined
         : this.state.selectedShell,

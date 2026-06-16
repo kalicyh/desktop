@@ -4,6 +4,7 @@ import { groupRepositories } from '../../src/ui/repositories-list/group-reposito
 import { Repository, ILocalRepositoryState } from '../../src/models/repository'
 import { CloningRepository } from '../../src/models/cloning-repository'
 import { gitHubRepoFixture } from '../helpers/github-repo-builder'
+import { RepositoryGroup } from '../../src/models/repository-group'
 
 describe('repository list grouping', () => {
   const repositories: Array<Repository | CloningRepository> = [
@@ -29,7 +30,7 @@ describe('repository list grouping', () => {
   const cache = new Map<number, ILocalRepositoryState>()
 
   it('groups repositories by owners/Enterprise/Other', () => {
-    const grouped = groupRepositories(repositories, cache, [])
+    const grouped = groupRepositories(repositories, [], cache, [])
     assert.equal(grouped.length, 3)
 
     assert.equal(grouped[0].identifier.kind, 'dotcom')
@@ -71,6 +72,7 @@ describe('repository list grouping', () => {
 
     const grouped = groupRepositories(
       [repoC, repoB, repoZ, repoD, repoA],
+      [],
       cache,
       []
     )
@@ -127,7 +129,12 @@ describe('repository list grouping', () => {
       false
     )
 
-    const grouped = groupRepositories([repoA, repoB, repoC, repoD], cache, [])
+    const grouped = groupRepositories(
+      [repoA, repoB, repoC, repoD],
+      [],
+      cache,
+      []
+    )
     assert.equal(grouped.length, 3)
 
     assert.equal(grouped[0].identifier.kind, 'dotcom')
@@ -152,5 +159,37 @@ describe('repository list grouping', () => {
 
     assert.equal(grouped[2].items[1].text[0], 'enterprise-repo')
     assert(grouped[2].items[1].needsDisambiguation)
+  })
+
+  it('places repositories into their user-defined groups first', () => {
+    const group = new RepositoryGroup(1, 'Client Work', 0)
+    const repoA = new Repository(
+      'repo-a',
+      1,
+      gitHubRepoFixture({ owner: 'me', name: 'repo-a' }),
+      false,
+      null,
+      {},
+      false,
+      undefined,
+      group.id
+    )
+    const repoB = new Repository(
+      'repo-b',
+      2,
+      gitHubRepoFixture({ owner: 'me', name: 'repo-b' }),
+      false
+    )
+
+    const grouped = groupRepositories([repoB, repoA], [group], cache, [])
+
+    assert.equal(grouped.length, 2)
+    assert.equal(grouped[0].identifier.kind, 'group')
+    assert.equal((grouped[0].identifier as any).group.name, 'Client Work')
+    assert.equal(grouped[0].items[0].repository.path, 'repo-a')
+
+    assert.equal(grouped[1].identifier.kind, 'dotcom')
+    assert.equal((grouped[1].identifier as any).owner.login, 'me')
+    assert.equal(grouped[1].items[0].repository.path, 'repo-b')
   })
 })

@@ -3,8 +3,11 @@ import {
   IDatabaseGitHubRepository,
   IDatabaseProtectedBranch,
   IDatabaseRepository,
+  IDatabaseRepositoryGroup,
+  getRepositoryGroupNameKey,
   getOwnerKey,
 } from '../databases/repositories-database'
+import { RepositoryGroup } from '../../models/repository-group'
 import { Owner } from '../../models/owner'
 import {
   GitHubRepository,
@@ -31,6 +34,20 @@ import { shallowEquals } from '../equality'
 
 type AddRepositoryOptions = {
   missing?: boolean
+}
+
+export class RepositoryGroupNameTakenError extends Error {
+  public constructor(name: string) {
+    super(`A repository group named "${name}" already exists.`)
+    this.name = 'RepositoryGroupNameTakenError'
+  }
+}
+
+export class UnknownRepositoryGroupError extends Error {
+  public constructor(id: number) {
+    super(`Unknown repository group ${id}`)
+    this.name = 'UnknownRepositoryGroupError'
+  }
 }
 
 /** The store for local repositories. */
@@ -153,7 +170,9 @@ export class RepositoriesStore extends TypedBaseStore<
       repo.alias,
       repo.workflowPreferences,
       repo.isTutorialRepository,
-      repo.gitDir
+      repo.gitDir,
+      repo.groupId ?? null,
+      repo.isFavorite ?? false
     )
   }
 
@@ -221,6 +240,8 @@ export class RepositoriesStore extends TypedBaseStore<
           lastStashCheckDate: null,
           isTutorialRepository: true,
           gitDir,
+          groupId: existingRepo?.groupId ?? null,
+          isFavorite: existingRepo?.isFavorite ?? false,
         })
       }
     )
@@ -257,6 +278,8 @@ export class RepositoriesStore extends TypedBaseStore<
           lastStashCheckDate: null,
           alias: null,
           gitDir,
+          groupId: null,
+          isFavorite: false,
         }
         const id = await this.db.repositories.add(dbRepo)
         return this.toRepository({ id, ...dbRepo })
@@ -293,7 +316,9 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.alias,
       repository.workflowPreferences,
       repository.isTutorialRepository,
-      repository.gitDir
+      repository.gitDir,
+      repository.groupId,
+      repository.isFavorite
     )
   }
 
@@ -314,7 +339,9 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.alias,
       repository.workflowPreferences,
       repository.isTutorialRepository,
-      gitDir
+      gitDir,
+      repository.groupId,
+      repository.isFavorite
     )
   }
 
@@ -329,6 +356,117 @@ export class RepositoriesStore extends TypedBaseStore<
     alias: string | null
   ): Promise<void> {
     await this.db.repositories.update(repository.id, { alias })
+
+    this.emitUpdatedRepositories()
+  }
+
+  /** Move a repository into a user-defined group, or remove it from groups. */
+  public async updateRepositoryGroup(
+    repository: Repository,
+    groupId: number | null
+  ): Promise<void> {
+    await this.db.transaction(
+      'rw',
+      this.db.repositories,
+      this.db.repositoryGroups,
+      async () => {
+        if (groupId !== null) {
+          const group = await this.db.repositoryGroups.get(groupId)
+          if (group === undefined) {
+            throw new UnknownRepositoryGroupError(groupId)
+          }
+        }
+
+        await this.db.repositories.update(repository.id, { groupId })
+      }
+    )
+
+    this.emitUpdatedRepositories()
+  }
+
+  /** Set whether a repository appears in the favorites sidebar. */
+  public async updateRepositoryFavorite(
+    repository: Repository,
+    isFavorite: boolean
+  ): Promise<void> {
+    await this.db.repositories.update(repository.id, { isFavorite })
+
+    this.emitUpdatedRepositories()
+  }
+
+  public async getAllRepositoryGroups(): Promise<
+    ReadonlyArray<RepositoryGroup>
+  > {
+    const rows = await this.db.repositoryGroups.toArray()
+    return rows.slice().sort(byGroupOrder).map(toRepositoryGroup)
+  }
+
+  public async addRepositoryGroup(name: string): Promise<RepositoryGroup> {
+    const trimmed = normalizeGroupName(name)
+    const nameKey = getRepositoryGroupNameKey(trimmed)
+
+    const result = await this.db.transaction(
+      'rw',
+      this.db.repositoryGroups,
+      async () => {
+        const existing = await this.db.repositoryGroups.toArray()
+        if (existing.some(g => g.nameKey === nameKey)) {
+          throw new RepositoryGroupNameTakenError(trimmed)
+        }
+
+        const sortOrder =
+          existing.reduce((max, g) => Math.max(max, g.sortOrder), -1) + 1
+        const id = await this.db.repositoryGroups.add({
+          name: trimmed,
+          nameKey,
+          sortOrder,
+        })
+
+        return { id, sortOrder }
+      }
+    )
+
+    this.emitUpdatedRepositories()
+    return new RepositoryGroup(result.id, trimmed, result.sortOrder)
+  }
+
+  public async renameRepositoryGroup(id: number, name: string): Promise<void> {
+    const trimmed = normalizeGroupName(name)
+    const nameKey = getRepositoryGroupNameKey(trimmed)
+
+    await this.db.transaction('rw', this.db.repositoryGroups, async () => {
+      const groups = await this.db.repositoryGroups.toArray()
+      const target = groups.find(g => g.id === id)
+      if (target === undefined) {
+        throw new UnknownRepositoryGroupError(id)
+      }
+
+      if (groups.some(g => g.id !== id && g.nameKey === nameKey)) {
+        throw new RepositoryGroupNameTakenError(trimmed)
+      }
+
+      await this.db.repositoryGroups.update(id, {
+        name: trimmed,
+        nameKey,
+      })
+    })
+
+    this.emitUpdatedRepositories()
+  }
+
+  public async removeRepositoryGroup(id: number): Promise<void> {
+    await this.db.transaction(
+      'rw',
+      this.db.repositoryGroups,
+      this.db.repositories,
+      async () => {
+        await this.db.repositories
+          .where('groupId')
+          .equals(id)
+          .modify({ groupId: null })
+        await this.db.repositoryGroups.delete(id)
+      }
+    )
 
     this.emitUpdatedRepositories()
   }
@@ -371,7 +509,9 @@ export class RepositoriesStore extends TypedBaseStore<
       repository.alias,
       repository.workflowPreferences,
       repository.isTutorialRepository,
-      gitDir
+      gitDir,
+      repository.groupId,
+      repository.isFavorite
     )
   }
 
@@ -414,7 +554,10 @@ export class RepositoriesStore extends TypedBaseStore<
         missing,
         repository.alias,
         repository.workflowPreferences,
-        repository.isTutorialRepository
+        repository.isTutorialRepository,
+        repository.gitDir,
+        repository.groupId,
+        repository.isFavorite
       ),
       existingRepository: false,
     }
@@ -563,7 +706,9 @@ export class RepositoriesStore extends TypedBaseStore<
       repo.alias,
       repo.workflowPreferences,
       repo.isTutorialRepository,
-      repo.gitDir
+      repo.gitDir,
+      repo.groupId,
+      repo.isFavorite
     )
 
     assertIsRepositoryWithGitHubRepository(updatedRepo)
@@ -800,6 +945,31 @@ function getKey(dbID: number, branchName: string) {
 /** Compute the key prefix for the branch protection cache */
 function getKeyPrefix(dbID: number) {
   return `${dbID}-`
+}
+
+function normalizeGroupName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.length === 0) {
+    throw new Error('Repository group name cannot be empty')
+  }
+
+  return trimmed
+}
+
+function byGroupOrder(
+  a: IDatabaseRepositoryGroup,
+  b: IDatabaseRepositoryGroup
+) {
+  if (a.sortOrder !== b.sortOrder) {
+    return a.sortOrder - b.sortOrder
+  }
+
+  return (a.id ?? 0) - (b.id ?? 0)
+}
+
+function toRepositoryGroup(row: IDatabaseRepositoryGroup): RepositoryGroup {
+  assertNonNullable(row.id, 'Missing repository group id')
+  return new RepositoryGroup(row.id, row.name, row.sortOrder)
 }
 
 function getPermissionsString(

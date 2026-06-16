@@ -54,7 +54,11 @@ export class Repository {
      * hasn't been resolved yet (e.g. for repositories added before this
      * property was introduced).
      */
-    public readonly gitDir: string | undefined = undefined
+    public readonly gitDir: string | undefined = undefined,
+    /** The user-defined repository group this repository belongs to. */
+    public readonly groupId: number | null = null,
+    /** Whether this repository is pinned into the favorites sidebar. */
+    public readonly isFavorite: boolean = false
   ) {
     this.name = (gitHubRepository && gitHubRepository.name) || getBaseName(path)
 
@@ -65,7 +69,9 @@ export class Repository {
       this.missing,
       this.alias,
       this.workflowPreferences.forkContributionTarget,
-      this.isTutorialRepository
+      this.isTutorialRepository,
+      this.groupId,
+      this.isFavorite
     )
   }
 

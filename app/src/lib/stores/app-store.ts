@@ -76,6 +76,7 @@ import {
   getNonForkGitHubRepository,
   isForkedRepositoryContributingToParent,
 } from '../../models/repository'
+import { RepositoryGroup } from '../../models/repository-group'
 import {
   CommittedFileChange,
   WorkingDirectoryFileChange,
@@ -543,6 +544,8 @@ const alwaysUseCopilotForConflictResolutionKey =
   'always-use-copilot-for-conflict-resolution'
 
 export const showChangesFilterKey = 'show-changes-filter'
+export const showFavoritesSidebarKey = 'show-favorites-sidebar'
+export const showFavoritesSidebarDefault = false
 
 const selectedCopilotModelsKey = 'selected-copilot-models'
 export const showChangesFilterDefault = true
@@ -712,6 +715,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private alwaysUseCopilotForConflictResolution: boolean = false
 
   private showChangesFilter: boolean = false
+  private showFavoritesSidebar: boolean = showFavoritesSidebarDefault
+  private repositoryGroups: ReadonlyArray<RepositoryGroup> = []
 
   private selectedCopilotModels: CopilotModelSelections = {}
   private copilotModels: ReadonlyArray<Model> | null = null
@@ -1273,6 +1278,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
       alwaysUseCopilotForConflictResolution:
         this.alwaysUseCopilotForConflictResolution,
       showChangesFilter: this.showChangesFilter,
+      showFavoritesSidebar: this.showFavoritesSidebar,
+      repositoryGroups: this.repositoryGroups,
       selectedCopilotModels: this.selectedCopilotModels,
       copilotModels: this.copilotModels,
       byokProviders: this.byokProviders,
@@ -2332,9 +2339,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
   /** Load the initial state for the app. */
   public async loadInitialState() {
-    const [accounts, repositories] = await Promise.all([
+    const [accounts, repositories, repositoryGroups] = await Promise.all([
       this.accountsStore.getAll(),
       this.repositoriesStore.getAll(),
+      this.repositoriesStore.getAllRepositoryGroups(),
     ])
 
     log.info(
@@ -2346,6 +2354,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.accounts = accounts
     this.repositories = repositories
+    this.repositoryGroups = repositoryGroups
 
     this.updateRepositorySelectionAfterRepositoriesChanged()
 
@@ -2566,6 +2575,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
       showChangesFilterDefault
     )
 
+    this.showFavoritesSidebar = getBoolean(
+      showFavoritesSidebarKey,
+      showFavoritesSidebarDefault
+    )
+
     this.selectedCopilotModels = this.loadCopilotModelSelections()
     this.byokProviders = loadBYOKProviders()
 
@@ -2768,6 +2782,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       selectedExternalEditor: useCustomEditor ? null : selectedExternalEditor,
       askForConfirmationOnRepositoryRemoval,
       askForConfirmationOnForcePush,
+      isFavoritesSidebarVisible: this.showFavoritesSidebar,
     }
 
     if (state === null) {
@@ -4755,6 +4770,57 @@ export class AppStore extends TypedBaseStore<IAppState> {
     newAlias: string | null
   ): Promise<void> {
     return this.repositoriesStore.updateRepositoryAlias(repository, newAlias)
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _changeRepositoryGroup(
+    repository: Repository,
+    groupId: number | null
+  ): Promise<void> {
+    await this.repositoriesStore.updateRepositoryGroup(repository, groupId)
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _setRepositoryFavorite(
+    repository: Repository,
+    isFavorite: boolean
+  ): Promise<void> {
+    await this.repositoriesStore.updateRepositoryFavorite(
+      repository,
+      isFavorite
+    )
+
+    if (isFavorite && !this.showFavoritesSidebar) {
+      this.showFavoritesSidebar = true
+      setBoolean(showFavoritesSidebarKey, true)
+      this.updateMenuLabelsForSelectedRepository()
+      this.emitUpdate()
+    }
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _addRepositoryGroup(name: string): Promise<RepositoryGroup> {
+    const group = await this.repositoriesStore.addRepositoryGroup(name)
+    await this.refreshRepositoryGroups()
+    return group
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _renameRepositoryGroup(id: number, name: string): Promise<void> {
+    await this.repositoriesStore.renameRepositoryGroup(id, name)
+    await this.refreshRepositoryGroups()
+  }
+
+  /** This shouldn't be called directly. See `Dispatcher`. */
+  public async _removeRepositoryGroup(id: number): Promise<void> {
+    await this.repositoriesStore.removeRepositoryGroup(id)
+    await this.refreshRepositoryGroups()
+  }
+
+  private async refreshRepositoryGroups() {
+    this.repositoryGroups =
+      await this.repositoriesStore.getAllRepositoryGroups()
+    this.emitUpdate()
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
@@ -10203,6 +10269,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
   public _toggleChangesFilterVisibility() {
     this.showChangesFilter = !this.showChangesFilter
     setBoolean(showChangesFilterKey, this.showChangesFilter)
+    this.updateMenuLabelsForSelectedRepository()
+    this.emitUpdate()
+  }
+
+  public _toggleFavoritesSidebarVisibility() {
+    this.showFavoritesSidebar = !this.showFavoritesSidebar
+    setBoolean(showFavoritesSidebarKey, this.showFavoritesSidebar)
     this.updateMenuLabelsForSelectedRepository()
     this.emitUpdate()
   }

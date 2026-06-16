@@ -51,6 +51,8 @@ export interface IDatabaseRepository {
   readonly gitHubRepositoryID: number | null
   readonly path: string
   readonly alias: string | null
+  readonly groupId?: number | null
+  readonly isFavorite?: boolean
   readonly missing: boolean
 
   /** The path to the .git directory for this repository */
@@ -68,6 +70,17 @@ export interface IDatabaseRepository {
    * of Git and GitHub.
    */
   readonly isTutorialRepository?: boolean
+}
+
+/** A user-defined repository group. */
+export interface IDatabaseRepositoryGroup {
+  readonly id?: number
+  readonly name: string
+  /**
+   * Lower-cased derivation of `name`, used for case-insensitive uniqueness.
+   */
+  readonly nameKey: string
+  readonly sortOrder: number
 }
 
 /**
@@ -95,6 +108,9 @@ export class RepositoriesDatabase extends BaseDatabase {
 
   /** The GitHub repository owners table. */
   public declare owners: Dexie.Table<IDatabaseOwner, number>
+
+  /** User-defined repository groups. */
+  public declare repositoryGroups: Dexie.Table<IDatabaseRepositoryGroup, number>
 
   /**
    * Initialize a new repository database.
@@ -140,7 +156,15 @@ export class RepositoriesDatabase extends BaseDatabase {
 
     this.conditionalVersion(8, {}, ensureNoUndefinedParentID)
     this.conditionalVersion(9, { owners: '++id, &key' }, createOwnerKey)
+    this.conditionalVersion(10, {
+      repositories: '++id, &path, groupId, isFavorite',
+      repositoryGroups: '++id, name, &nameKey, sortOrder',
+    })
   }
+}
+
+export function getRepositoryGroupNameKey(name: string): string {
+  return name.trim().toLowerCase()
 }
 
 /**

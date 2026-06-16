@@ -143,6 +143,7 @@ const allMenuIds: ReadonlyArray<MenuIDs> = [
   'toggle-stashed-changes',
   'create-worktree',
   'show-worktrees-list',
+  'toggle-favorites-sidebar',
 ]
 
 function getAllMenusDisabledBuilder(): MenuStateBuilder {
@@ -252,6 +253,7 @@ function getRepositoryMenuBuilder(state: IAppState): MenuStateBuilder {
     'open-with-external-editor',
     'compare-to-branch',
     'toggle-changes-filter',
+    'toggle-favorites-sidebar',
     'create-worktree',
   ]
 

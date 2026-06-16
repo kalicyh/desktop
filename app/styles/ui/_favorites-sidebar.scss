@@ -1,0 +1,180 @@
+@import '../mixins';
+
+.desktop-app-main-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.favorites-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 220px;
+  min-width: 180px;
+  max-width: 260px;
+  min-height: 0;
+  border-right: 1px solid var(--box-border-color);
+  border-top: var(--base-border);
+  background: var(--box-background-color);
+  color: var(--text-color);
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-half);
+    height: 34px;
+    padding: 0 var(--spacing);
+    flex-shrink: 0;
+    border-bottom: var(--base-border);
+    color: var(--text-secondary-color);
+  }
+
+  &-title {
+    @include ellipsis;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+  }
+
+  &-add-group {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    flex: 0 0 24px;
+
+    .octicon {
+      margin: 0;
+    }
+  }
+
+  &-empty {
+    padding: var(--spacing);
+    color: var(--text-secondary-color);
+  }
+
+  &-list {
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  &-group-header,
+  &-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &-group-header {
+    height: 28px;
+    padding: var(--spacing) var(--spacing-half) var(--spacing-half) var(--spacing);
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+
+    &:hover {
+      color: var(--text-color);
+    }
+  }
+
+  &-disclosure {
+    flex: 0 0 12px;
+    margin-right: var(--spacing-half);
+  }
+
+  &-group-name,
+  &-item-name {
+    @include ellipsis;
+    min-width: 0;
+  }
+
+  &-group-name {
+    flex: 1 1 auto;
+  }
+
+  &-group-count {
+    flex: 0 0 auto;
+    margin-left: var(--spacing-half);
+    color: var(--text-secondary-color);
+    font-weight: var(--font-weight-normal);
+  }
+
+  &-item {
+    height: 29px;
+    padding: 0 var(--spacing);
+
+    &:hover {
+      background: var(--list-item-hover-background-color);
+    }
+
+    &.selected {
+      --text-color: var(--box-selected-active-text-color);
+      --text-secondary-color: var(--box-selected-active-text-color);
+
+      color: var(--text-color);
+      background: var(--box-selected-active-background-color);
+    }
+
+    .icon-for-repository {
+      flex: 0 0 16px;
+      width: 16px;
+      margin-right: var(--spacing-half);
+    }
+
+    .repo-indicators {
+      margin-left: auto;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-right: 0;
+    }
+
+    .change-indicator-wrapper {
+      display: flex;
+      min-width: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-left: var(--spacing-half);
+
+      .octicon {
+        color: var(--tab-bar-active-color);
+        width: auto;
+      }
+    }
+
+    .ahead-behind {
+      height: 16px;
+      background: var(--list-item-badge-background-color);
+      color: var(--list-item-badge-color);
+      align-items: center;
+      margin-left: auto;
+
+      @include darwin {
+        height: 12px;
+        line-height: 12px;
+      }
+
+      @include win32 {
+        height: 13px;
+        line-height: 13px;
+      }
+
+      .octicon {
+        margin: 0;
+        height: 20px;
+        width: 12px;
+      }
+    }
+  }
+}

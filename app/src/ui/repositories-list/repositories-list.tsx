@@ -11,6 +11,7 @@ import {
 import { IFilterListGroup } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
 import { ILocalRepositoryState, Repository } from '../../models/repository'
+import { RepositoryGroup } from '../../models/repository-group'
 import { Dispatcher } from '../dispatcher'
 import { Button } from '../lib/button'
 import { Octicon } from '../octicons'
@@ -34,6 +35,7 @@ interface IRepositoriesListProps {
   readonly selectedRepository: Repositoryish | null
   readonly repositories: ReadonlyArray<Repositoryish>
   readonly recentRepositories: ReadonlyArray<number>
+  readonly repositoryGroups: ReadonlyArray<RepositoryGroup>
 
   /** A cache of the latest repository state values, keyed by the repository id */
   readonly localRepositoryStateLookup: ReadonlyMap<
@@ -121,6 +123,7 @@ export class RepositoriesList extends React.Component<
   private getRepositoryGroups = memoizeOne(
     (
       repositories: ReadonlyArray<Repositoryish> | null,
+      repositoryGroups: ReadonlyArray<RepositoryGroup>,
       localRepositoryStateLookup: ReadonlyMap<number, ILocalRepositoryState>,
       recentRepositories: ReadonlyArray<number>
     ) =>
@@ -128,6 +131,7 @@ export class RepositoriesList extends React.Component<
         ? []
         : groupRepositories(
             repositories,
+            repositoryGroups,
             localRepositoryStateLookup,
             recentRepositories
           )
@@ -250,6 +254,8 @@ export class RepositoriesList extends React.Component<
       return group.owner.login
     } else if (kind === 'recent') {
       return 'Recent'
+    } else if (kind === 'group') {
+      return group.group.name
     } else {
       assertNever(kind, `Unknown repository group kind ${kind}`)
     }
@@ -297,6 +303,10 @@ export class RepositoriesList extends React.Component<
       externalEditorLabel: this.props.externalEditorLabel,
       onChangeRepositoryAlias: this.onChangeRepositoryAlias,
       onRemoveRepositoryAlias: this.onRemoveRepositoryAlias,
+      onSetRepositoryFavorite: this.onSetRepositoryFavorite,
+      onSetRepositoryGroup: this.onSetRepositoryGroup,
+      onCreateRepositoryGroupForRepository:
+        this.onCreateRepositoryGroupForRepository,
       onViewOnGitHub: this.props.onViewOnGitHub,
       onCreateWorktree: enableWorktreeSupport()
         ? this.onCreateWorktree
@@ -305,6 +315,7 @@ export class RepositoriesList extends React.Component<
         ? this.onShowWorktrees
         : undefined,
       repository: item.repository,
+      repositoryGroups: this.props.repositoryGroups,
       shellLabel: this.props.shellLabel,
     })
 
@@ -324,6 +335,7 @@ export class RepositoriesList extends React.Component<
   public render() {
     const groups = this.getRepositoryGroups(
       this.props.repositories,
+      this.props.repositoryGroups,
       this.props.localRepositoryStateLookup,
       this.props.recentRepositories
     )
@@ -462,6 +474,28 @@ export class RepositoriesList extends React.Component<
 
   private onRemoveRepositoryAlias = (repository: Repository) => {
     this.props.dispatcher.changeRepositoryAlias(repository, null)
+  }
+
+  private onSetRepositoryFavorite = (
+    repository: Repository,
+    isFavorite: boolean
+  ) => {
+    this.props.dispatcher.setRepositoryFavorite(repository, isFavorite)
+  }
+
+  private onSetRepositoryGroup = (
+    repository: Repository,
+    groupId: number | null
+  ) => {
+    this.props.dispatcher.changeRepositoryGroup(repository, groupId)
+  }
+
+  private onCreateRepositoryGroupForRepository = (repository: Repository) => {
+    this.props.dispatcher.showPopup({
+      type: PopupType.RepositoryGroupName,
+      mode: 'create',
+      repository,
+    })
   }
 
   private onCreateWorktree = (repository: Repository) => {

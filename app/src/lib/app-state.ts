@@ -10,6 +10,7 @@ import { Account } from '../models/account'
 import { CommitIdentity } from '../models/commit-identity'
 import { IDiff, ImageDiffType } from '../models/diff'
 import { Repository, ILocalRepositoryState } from '../models/repository'
+import { RepositoryGroup } from '../models/repository-group'
 import { Branch, IAheadBehind } from '../models/branch'
 import { Tip } from '../models/tip'
 import { Commit } from '../models/commit'
@@ -413,6 +414,12 @@ export interface IAppState {
 
   /** Whether the changes filter is shown */
   readonly showChangesFilter: boolean
+
+  /** Whether the favorites sidebar is shown. */
+  readonly showFavoritesSidebar: boolean
+
+  /** User-defined groups used to organize the repository list. */
+  readonly repositoryGroups: ReadonlyArray<RepositoryGroup>
 
   /**
    * Per-feature Copilot model selections. An absent key means the default

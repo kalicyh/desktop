@@ -1,6 +1,7 @@
 import { Repository } from '../../models/repository'
 import { IMenuItem } from '../../lib/menu-item'
 import { Repositoryish } from './group-repositories'
+import { RepositoryGroup } from '../../models/repository-group'
 import { clipboard } from 'electron'
 import {
   RevealInFileManagerLabel,
@@ -13,6 +14,7 @@ interface IRepositoryListItemContextMenuConfig {
   shellLabel: string | undefined
   externalEditorLabel: string | undefined
   askForConfirmationOnRemoveRepository: boolean
+  repositoryGroups: ReadonlyArray<RepositoryGroup>
   onViewOnGitHub: (repository: Repositoryish) => void
   onOpenInShell: (repository: Repositoryish) => void
   onShowRepository: (repository: Repositoryish) => void
@@ -20,6 +22,9 @@ interface IRepositoryListItemContextMenuConfig {
   onRemoveRepository: (repository: Repositoryish) => void
   onChangeRepositoryAlias: (repository: Repository) => void
   onRemoveRepositoryAlias: (repository: Repository) => void
+  onSetRepositoryFavorite: (repository: Repository, isFavorite: boolean) => void
+  onSetRepositoryGroup: (repository: Repository, groupId: number | null) => void
+  onCreateRepositoryGroupForRepository: (repository: Repository) => void
   onCreateWorktree?: (repository: Repository) => void
   onShowWorktrees?: (repository: Repository) => void
 }
@@ -40,6 +45,8 @@ export const generateRepositoryListContextMenu = (
 
   const items: ReadonlyArray<IMenuItem> = [
     ...buildAliasMenuItems(config),
+    ...buildFavoriteMenuItems(config),
+    ...buildGroupMenuItems(config),
     ...buildWorktreeMenuItems(config),
     {
       label: __DARWIN__ ? 'Copy Repo Name' : 'Copy repo name',
@@ -76,6 +83,79 @@ export const generateRepositoryListContextMenu = (
       action: () => config.onRemoveRepository(repository),
     },
   ]
+
+  return items
+}
+
+const buildFavoriteMenuItems = (
+  config: IRepositoryListItemContextMenuConfig
+): ReadonlyArray<IMenuItem> => {
+  const { repository } = config
+
+  if (!(repository instanceof Repository)) {
+    return []
+  }
+
+  return [
+    {
+      label: repository.isFavorite
+        ? __DARWIN__
+          ? 'Remove from Favorites'
+          : 'Remove from favorites'
+        : __DARWIN__
+        ? 'Add to Favorites'
+        : 'Add to favorites',
+      action: () =>
+        config.onSetRepositoryFavorite(repository, !repository.isFavorite),
+    },
+  ]
+}
+
+const buildGroupMenuItems = (
+  config: IRepositoryListItemContextMenuConfig
+): ReadonlyArray<IMenuItem> => {
+  const { repository, repositoryGroups } = config
+
+  if (!(repository instanceof Repository)) {
+    return []
+  }
+
+  const submenu: Array<IMenuItem> = repositoryGroups.map(group => ({
+    label: group.name,
+    type: 'checkbox',
+    checked: group.id === repository.groupId,
+    action: () => config.onSetRepositoryGroup(repository, group.id),
+  }))
+
+  if (submenu.length > 0) {
+    submenu.push({ type: 'separator' })
+  }
+
+  submenu.push({
+    label: __DARWIN__ ? 'New Group…' : 'New group…',
+    action: () => config.onCreateRepositoryGroupForRepository(repository),
+  })
+
+  const items: Array<IMenuItem> = [
+    {
+      label:
+        repository.groupId === null
+          ? __DARWIN__
+            ? 'Add to Group'
+            : 'Add to group'
+          : __DARWIN__
+          ? 'Move to Group'
+          : 'Move to group',
+      submenu,
+    },
+  ]
+
+  if (repository.groupId !== null) {
+    items.push({
+      label: __DARWIN__ ? 'Remove from Group' : 'Remove from group',
+      action: () => config.onSetRepositoryGroup(repository, null),
+    })
+  }
 
   return items
 }

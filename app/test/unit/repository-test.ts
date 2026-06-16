@@ -16,4 +16,41 @@ describe('Repository', () => {
       assert.equal(repository.name, 'T:\\')
     })
   })
+
+  describe('hash', () => {
+    it('changes when group membership changes', async () => {
+      const ungrouped = new Repository('/some/cool/path', -1, null, false)
+      const grouped = new Repository(
+        '/some/cool/path',
+        -1,
+        null,
+        false,
+        null,
+        {},
+        false,
+        undefined,
+        1
+      )
+
+      assert.notEqual(ungrouped.hash, grouped.hash)
+    })
+
+    it('changes when favorite state changes', async () => {
+      const regular = new Repository('/some/cool/path', -1, null, false)
+      const favorite = new Repository(
+        '/some/cool/path',
+        -1,
+        null,
+        false,
+        null,
+        {},
+        false,
+        undefined,
+        null,
+        true
+      )
+
+      assert.notEqual(regular.hash, favorite.hash)
+    })
+  })
 })

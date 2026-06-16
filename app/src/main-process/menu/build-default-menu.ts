@@ -51,6 +51,7 @@ export function buildDefaultMenuTemplate({
   isStashedChangesVisible = false,
   askForConfirmationWhenStashingAllChanges = true,
   isChangesFilterVisible = true,
+  isFavoritesSidebarVisible = false,
 }: MenuLabelsEvent): Electron.MenuItemConstructorOptions[] {
   contributionTargetDefaultBranch = truncateWithEllipsis(
     contributionTargetDefaultBranch,
@@ -196,6 +197,13 @@ export function buildDefaultMenuTemplate({
         id: 'show-repository-list',
         accelerator: 'CmdOrCtrl+T',
         click: emit('choose-repository'),
+      },
+      {
+        label: __DARWIN__
+          ? `${isFavoritesSidebarVisible ? 'Hide' : 'Show'} Favorites Sidebar`
+          : `${isFavoritesSidebarVisible ? 'Hide' : 'Show'} Favorites sidebar`,
+        id: 'toggle-favorites-sidebar',
+        click: emit('toggle-favorites-sidebar'),
       },
       {
         label: __DARWIN__ ? 'Show Branches List' : '&Branches list',

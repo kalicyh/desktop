@@ -13,10 +13,15 @@ import { IAheadBehind } from '../../models/branch'
 import { assertNever } from '../../lib/fatal-error'
 import { isDotCom } from '../../lib/endpoint-capabilities'
 import { Owner } from '../../models/owner'
+import { RepositoryGroup } from '../../models/repository-group'
 
 export type RepositoryListGroup =
   | {
       kind: 'recent' | 'other'
+    }
+  | {
+      kind: 'group'
+      group: RepositoryGroup
     }
   | {
       kind: 'dotcom'
@@ -37,12 +42,14 @@ export const getGroupKey = (group: RepositoryListGroup) => {
   switch (kind) {
     case 'recent':
       return `0:recent`
+    case 'group':
+      return `1:group:${group.group.sortOrder}:${group.group.id}`
     case 'dotcom':
-      return `1:dotcom:${group.owner.login}`
+      return `2:dotcom:${group.owner.login}`
     case 'enterprise':
-      return `2:enterprise:${group.host}`
+      return `3:enterprise:${group.host}`
     case 'other':
-      return `3:other`
+      return `4:other`
     default:
       assertNever(group, `Unknown repository group kind ${kind}`)
   }
@@ -63,7 +70,17 @@ const recentRepositoriesThreshold = 7
 const getHostForRepository = (repo: RepositoryWithGitHubRepository) =>
   new URL(getHTMLURL(repo.gitHubRepository.endpoint)).host
 
-const getGroupForRepository = (repo: Repositoryish): RepositoryListGroup => {
+const getGroupForRepository = (
+  repo: Repositoryish,
+  repositoryGroupLookup: ReadonlyMap<number, RepositoryGroup>
+): RepositoryListGroup => {
+  if (repo instanceof Repository && repo.groupId !== null) {
+    const group = repositoryGroupLookup.get(repo.groupId)
+    if (group !== undefined) {
+      return { kind: 'group', group }
+    }
+  }
+
   if (repo instanceof Repository && isRepositoryWithGitHubRepository(repo)) {
     return isDotCom(repo.gitHubRepository.endpoint)
       ? { kind: 'dotcom', owner: repo.gitHubRepository.owner }
@@ -76,11 +93,13 @@ type RepoGroupItem = { group: RepositoryListGroup; repos: Repositoryish[] }
 
 export function groupRepositories(
   repositories: ReadonlyArray<Repositoryish>,
+  repositoryGroups: ReadonlyArray<RepositoryGroup>,
   localRepositoryStateLookup: ReadonlyMap<number, ILocalRepositoryState>,
   recentRepositories: ReadonlyArray<number>
 ): ReadonlyArray<IFilterListGroup<IRepositoryListItem, RepositoryListGroup>> {
   const includeRecentGroup = repositories.length > recentRepositoriesThreshold
   const recentSet = includeRecentGroup ? new Set(recentRepositories) : undefined
+  const repositoryGroupLookup = new Map(repositoryGroups.map(g => [g.id, g]))
   const groups = new Map<string, RepoGroupItem>()
 
   const addToGroup = (group: RepositoryListGroup, repo: Repositoryish) => {
@@ -99,7 +118,7 @@ export function groupRepositories(
       addToGroup({ kind: 'recent' }, repo)
     }
 
-    addToGroup(getGroupForRepository(repo), repo)
+    addToGroup(getGroupForRepository(repo, repositoryGroupLookup), repo)
   }
 
   return Array.from(groups)
@@ -160,7 +179,8 @@ const toSortedListItems = (
           // already grouped by owner. If the repository is in the 'recent'
           // group and has a duplicate name in any group, we need to
           // disambiguate it.
-          ((groupNames.get(title) ?? 0) > 1 && group.kind === 'enterprise') ||
+          ((groupNames.get(title) ?? 0) > 1 &&
+            (group.kind === 'enterprise' || group.kind === 'group')) ||
           ((allNames.get(title) ?? 0) > 1 && group.kind === 'recent'),
         aheadBehind: repoState?.aheadBehind ?? null,
         changedFilesCount: repoState?.changedFilesCount ?? 0,

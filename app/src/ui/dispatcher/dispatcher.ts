@@ -84,6 +84,7 @@ import {
   isRepositoryWithForkedGitHubRepository,
   getNonForkGitHubRepository,
 } from '../../models/repository'
+import { RepositoryGroup } from '../../models/repository-group'
 import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import {
   CommittedFileChange,
@@ -869,6 +870,42 @@ export class Dispatcher {
     newAlias: string | null
   ): Promise<void> {
     return this.appStore._changeRepositoryAlias(repository, newAlias)
+  }
+
+  /** Moves a repository into a user-defined group, or removes its group. */
+  public changeRepositoryGroup(
+    repository: Repository,
+    groupId: number | null
+  ): Promise<void> {
+    return this.appStore._changeRepositoryGroup(repository, groupId)
+  }
+
+  /** Marks a repository as favorite or removes it from favorites. */
+  public setRepositoryFavorite(
+    repository: Repository,
+    isFavorite: boolean
+  ): Promise<void> {
+    return this.appStore._setRepositoryFavorite(repository, isFavorite)
+  }
+
+  /** Creates a repository group. */
+  public addRepositoryGroup(name: string): Promise<RepositoryGroup> {
+    return this.appStore._addRepositoryGroup(name)
+  }
+
+  /** Renames a repository group. */
+  public renameRepositoryGroup(id: number, name: string): Promise<void> {
+    return this.appStore._renameRepositoryGroup(id, name)
+  }
+
+  /** Deletes a repository group and returns its repositories to auto-groups. */
+  public removeRepositoryGroup(id: number): Promise<void> {
+    return this.appStore._removeRepositoryGroup(id)
+  }
+
+  /** Toggles the favorites sidebar visibility. */
+  public toggleFavoritesSidebarVisibility(): void {
+    this.appStore._toggleFavoritesSidebarVisibility()
   }
 
   /** Rename the branch to a new name. */
