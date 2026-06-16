@@ -23,6 +23,7 @@ import {
   DefaultCommitMessage,
 } from '../../models/commit-message'
 import { ComparisonMode } from '../app-state'
+import { t } from '../i18n'
 
 import { IAppShell } from '../app-shell'
 import {
@@ -685,9 +686,7 @@ export class GitStore extends BaseStore {
     )
 
     if (status == null) {
-      throw new Error(
-        `Unable to undo commit because there are too many files in your repository's working directory.`
-      )
+      throw new Error(t('gitStore.error.tooManyFilesToUndoCommit'))
     }
 
     const paths = status.workingDirectory.files
@@ -1186,7 +1185,7 @@ export class GitStore extends BaseStore {
       return foundCommit
     }
 
-    throw new Error(`Could not load commit: '${sha}'`)
+    throw new Error(t('gitStore.error.couldNotLoadCommit', { sha }))
   }
 
   /**

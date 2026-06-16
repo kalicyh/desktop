@@ -500,6 +500,8 @@
   "git.error.localChangesOverwritten": "Unable to switch branches as there are working directory changes which would be overwritten. Please commit or stash your changes.",
   "git.error.unresolvedConflicts": "There are unresolved conflicts in the working directory.",
   "git.error.tagAlreadyExists": "A tag with that name already exists",
+  "gitStore.error.tooManyFilesToUndoCommit": "Unable to undo commit because there are too many files in your repository's working directory.",
+  "gitStore.error.couldNotLoadCommit": "Could not load commit: '{sha}'",
   "suggestedActions.dropdownAriaLabel": "Suggested actions for this branch",
   "appMenu.applicationMenu": "Application menu",
   "common.cancel": "Cancel",
