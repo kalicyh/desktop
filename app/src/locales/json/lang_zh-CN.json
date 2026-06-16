@@ -938,6 +938,7 @@
   "history.unreachableCommits.reachableMessage": "你会看到以下 {count} 个提交的更改，因为它们位于所选最新提交的祖先路径中。",
   "history.unreachableCommits.learnMore": "了解不可达提交。",
   "history.unreachableCommits.title": "提交可达性",
+  "history.selected.noCommitSelected": "未选择提交",
   "history.selected.noFileSelected": "未选择文件",
   "history.selected.noFilesInCommit": "提交中没有文件",
   "history.selected.changedFileCount.one": "1 个变更文件",

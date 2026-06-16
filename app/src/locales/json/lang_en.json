@@ -938,6 +938,7 @@
   "history.unreachableCommits.reachableMessage": "You will see changes from the following {count} commits because they are in the ancestry path of the most recent commit in your selection.",
   "history.unreachableCommits.learnMore": "Learn more about unreachable commits.",
   "history.unreachableCommits.title": "Commit Reachability",
+  "history.selected.noCommitSelected": "No commit selected",
   "history.selected.noFileSelected": "No file selected",
   "history.selected.noFilesInCommit": "No files in commit",
   "history.selected.changedFileCount.one": "1 changed file",
