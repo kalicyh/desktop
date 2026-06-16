@@ -49,7 +49,7 @@ export class DeleteWorktreeFailedDialog extends React.Component<
     return (
       <Dialog
         id="delete-worktree-failed"
-        title={__DARWIN__ ? 'Delete Worktree Failed' : 'Delete worktree failed'}
+        title={t('worktree.deleteFailed.title')}
         type="error"
         onSubmit={this.onSubmit}
         onDismissed={this.onDismissed}

@@ -11,6 +11,7 @@ import { DesktopFakeRepository } from '../../lib/desktop-fake-repository'
 import { SandboxedMarkdown } from '../lib/sandboxed-markdown'
 import { Button } from '../lib/button'
 import { Emoji } from '../../lib/emoji'
+import { t } from '../../lib/i18n'
 
 interface IReleaseNotesProps {
   readonly onDismissed: () => void
@@ -60,9 +61,12 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
     return (
       <div className="container">
         <div className="column">
-          {this.renderList(release.bugfixes, 'Bugfixes')}
-          {this.renderList(release.enhancements, 'Enhancements')}
-          {this.renderList(release.other, 'Other')}
+          {this.renderList(release.bugfixes, t('releaseNotes.bugfixes'))}
+          {this.renderList(
+            release.enhancements,
+            t('releaseNotes.enhancements')
+          )}
+          {this.renderList(release.other, t('releaseNotes.other'))}
         </div>
       </div>
     )
@@ -72,11 +76,14 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
     return (
       <div className="container">
         <div className="column">
-          {this.renderList(release.enhancements, 'Enhancements')}
-          {this.renderList(release.other, 'Other')}
+          {this.renderList(
+            release.enhancements,
+            t('releaseNotes.enhancements')
+          )}
+          {this.renderList(release.other, t('releaseNotes.other'))}
         </div>
         <div className="column">
-          {this.renderList(release.bugfixes, 'Bugfixes')}
+          {this.renderList(release.bugfixes, t('releaseNotes.bugfixes'))}
         </div>
       </div>
     )
@@ -121,7 +128,7 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
         emoji={this.props.emoji}
         onMarkdownLinkClicked={this.onMarkdownLinkClicked}
         underlineLinks={this.props.underlineLinks}
-        ariaLabel="Release notes generated from markdown"
+        ariaLabel={t('releaseNotes.generatedFromMarkdown')}
       />
     )
   }
@@ -136,7 +143,7 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
     if (latestVersion === __APP_VERSION__) {
       return (
         <Button type="submit" onClick={this.onDismissed}>
-          Close
+          {t('common.close')}
         </Button>
       )
     }
@@ -144,10 +151,8 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
     return (
       <OkCancelButtonGroup
         destructive={true}
-        okButtonText={
-          __DARWIN__ ? 'Install and Restart' : 'Install and restart'
-        }
-        cancelButtonText="Close"
+        okButtonText={t('releaseNotes.installAndRestart')}
+        cancelButtonText={t('common.close')}
       />
     )
   }
@@ -169,7 +174,9 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
 
     const dialogHeader = (
       <>
-        <span className="version">Version {latestVersion}</span>
+        <span className="version">
+          {t('releaseNotes.version', { version: latestVersion })}
+        </span>
         <span className="date">{datePublished}</span>
       </>
     )
@@ -187,7 +194,7 @@ export class ReleaseNotes extends React.Component<IReleaseNotesProps, {}> {
         </DialogContent>
         <DialogFooter>
           <LinkButton onClick={this.showAllReleaseNotes}>
-            View all release notes
+            {t('releaseNotes.viewAll')}
           </LinkButton>
           {this.renderButtons()}
         </DialogFooter>

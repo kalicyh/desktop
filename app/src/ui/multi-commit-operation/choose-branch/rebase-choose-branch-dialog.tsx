@@ -96,9 +96,9 @@ export class RebaseChooseBranchDialog extends React.Component<
         : false
 
     return selectedBranchIsCurrentBranch
-      ? 'You are not able to rebase this branch onto itself.'
+      ? t('rebase.chooseBranch.cannotRebaseOntoSelf')
       : !currentBranchIsBehindSelectedBranch
-      ? 'The current branch is already up to date with the selected branch.'
+      ? t('rebase.chooseBranch.alreadyUpToDateTooltip')
       : undefined
   }
 
@@ -164,12 +164,19 @@ export class RebaseChooseBranchDialog extends React.Component<
   ) {
     // The current branch is behind the base branch
     if (commitsBehindCount > 0 && commitsAheadCount <= 0) {
-      const pluralized = commitsBehindCount === 1 ? 'commit' : 'commits'
+      const commits = t(
+        commitsBehindCount === 1
+          ? 'rebase.chooseBranch.commit.one'
+          : 'rebase.chooseBranch.commit.other',
+        { count: commitsBehindCount }
+      )
       return (
         <>
-          This will fast-forward <strong>{currentBranch.name}</strong> by
-          <strong>{` ${commitsBehindCount} ${pluralized}`}</strong>
-          {` to match `}
+          {t('rebase.chooseBranch.fastForwardPrefix')}{' '}
+          <strong>{currentBranch.name}</strong>{' '}
+          {t('rebase.chooseBranch.fastForwardMiddle')}{' '}
+          <strong>{commits}</strong>{' '}
+          {t('rebase.chooseBranch.fastForwardSuffix')}{' '}
           <strong>{baseBranch.name}</strong>
         </>
       )
@@ -177,13 +184,18 @@ export class RebaseChooseBranchDialog extends React.Component<
 
     // The current branch is behind and ahead of the base branch
     if (commitsBehindCount > 0 && commitsAheadCount > 0) {
-      const pluralized = commitsAheadCount === 1 ? 'commit' : 'commits'
+      const commits = t(
+        commitsAheadCount === 1
+          ? 'rebase.chooseBranch.commit.one'
+          : 'rebase.chooseBranch.commit.other',
+        { count: commitsAheadCount }
+      )
       return (
         <>
-          This will update <strong>{currentBranch.name}</strong>
-          {` by applying its `}
-          <strong>{` ${commitsAheadCount} ${pluralized}`}</strong>
-          {` on top of `}
+          {t('rebase.chooseBranch.updatePrefix')}{' '}
+          <strong>{currentBranch.name}</strong>{' '}
+          {t('rebase.chooseBranch.updateMiddle')} <strong>{commits}</strong>{' '}
+          {t('rebase.chooseBranch.updateSuffix')}{' '}
           <strong>{baseBranch.name}</strong>
         </>
       )
@@ -193,9 +205,9 @@ export class RebaseChooseBranchDialog extends React.Component<
     // Condition: commitsBehindCount <= 0 && commitsAheadCount >= 0
     return (
       <>
-        <strong>{currentBranch.name}</strong>
-        {` `}
-        is already up to date with <strong>{baseBranch.name}</strong>
+        <strong>{currentBranch.name}</strong>{' '}
+        {t('rebase.chooseBranch.alreadyUpToDate')}{' '}
+        <strong>{baseBranch.name}</strong>
       </>
     )
   }

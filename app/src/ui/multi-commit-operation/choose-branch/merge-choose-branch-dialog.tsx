@@ -91,11 +91,12 @@ export class MergeChooseBranchDialog extends React.Component<
     )
     const squashPrefix =
       this.props.operation === MultiCommitOperationKind.Squash
-        ? 'Squash and '
+        ? t('merge.chooseBranch.squashAnd')
         : null
     return (
       <>
-        {squashPrefix}Merge into <strong>{truncatedName}</strong>
+        {squashPrefix}
+        {t('merge.chooseBranch.mergeInto')} <strong>{truncatedName}</strong>
       </>
     )
   }
@@ -184,22 +185,24 @@ export class MergeChooseBranchDialog extends React.Component<
     if (commitCount === 0) {
       return (
         <React.Fragment>
-          <strong>{currentBranch.name}</strong>
-          {` `}
-          is already up to date with <strong>{branch.name}</strong>
+          <strong>{currentBranch.name}</strong>{' '}
+          {t('merge.chooseBranch.alreadyUpToDate')}{' '}
+          <strong>{branch.name}</strong>
         </React.Fragment>
       )
     }
 
-    const pluralized = commitCount === 1 ? 'commit' : 'commits'
+    const commits = t(
+      commitCount === 1
+        ? 'merge.chooseBranch.commit.one'
+        : 'merge.chooseBranch.commit.other',
+      { count: formatNumber(commitCount) }
+    )
     return (
       <React.Fragment>
-        This will merge
-        <strong>{` ${formatNumber(commitCount)} ${pluralized}`}</strong>
-        {` from `}
-        <strong>{branch.name}</strong>
-        {` into `}
-        <strong>{currentBranch.name}</strong>
+        {t('merge.chooseBranch.willMerge')} <strong>{commits}</strong>{' '}
+        {t('merge.chooseBranch.from')} <strong>{branch.name}</strong>{' '}
+        {t('merge.chooseBranch.into')} <strong>{currentBranch.name}</strong>
       </React.Fragment>
     )
   }
@@ -207,7 +210,7 @@ export class MergeChooseBranchDialog extends React.Component<
   private renderInvalidMergeMessage() {
     return (
       <React.Fragment>
-        Unable to merge unrelated histories in this repository
+        {t('merge.chooseBranch.unrelatedHistories')}
       </React.Fragment>
     )
   }
@@ -217,15 +220,17 @@ export class MergeChooseBranchDialog extends React.Component<
     currentBranch: Branch,
     count: number
   ) {
-    const pluralized = count === 1 ? 'file' : 'files'
+    const files = t(
+      count === 1
+        ? 'merge.chooseBranch.conflictedFile.one'
+        : 'merge.chooseBranch.conflictedFile.other',
+      { count: formatNumber(count) }
+    )
     return (
       <React.Fragment>
-        There will be
-        <strong>{` ${formatNumber(count)} conflicted ${pluralized}`}</strong>
-        {` when merging `}
-        <strong>{branch.name}</strong>
-        {` into `}
-        <strong>{currentBranch.name}</strong>
+        {t('merge.chooseBranch.conflictPrefix')} <strong>{files}</strong>{' '}
+        {t('merge.chooseBranch.conflictMiddle')} <strong>{branch.name}</strong>{' '}
+        {t('merge.chooseBranch.into')} <strong>{currentBranch.name}</strong>
       </React.Fragment>
     )
   }
