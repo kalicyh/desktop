@@ -6,6 +6,7 @@ import * as Linux from './linux'
 import { ShellError } from './error'
 import { pathExists } from '../path-exists'
 import { ICustomIntegration } from '../custom-integration'
+import { t } from '../i18n'
 
 export type Shell = Darwin.Shell | Win32.Shell | Linux.Shell
 
@@ -95,9 +96,15 @@ export async function launchShell(
   // platform-specific build targets.
   const exists = await pathExists(shell.path)
   if (!exists) {
-    const label = __DARWIN__ ? 'Settings' : 'Options'
+    const menuItemName = __DARWIN__
+      ? t('preferences.title.settings')
+      : t('preferences.title.options')
     throw new ShellError(
-      `Could not find executable for '${shell.shell}' at path '${shell.path}'.  Please open ${label} and select an available shell.`
+      t('shell.error.executableNotFound', {
+        shell: shell.shell,
+        path: shell.path,
+        menuItemName,
+      })
     )
   }
 
@@ -116,7 +123,7 @@ export async function launchShell(
     return Promise.resolve()
   } else {
     return Promise.reject(
-      `Platform not currently supported for launching shells: ${process.platform}`
+      t('shell.error.platformUnsupported', { platform: process.platform })
     )
   }
 }
@@ -132,9 +139,14 @@ export async function launchCustomShell(
   // platform-specific build targets.
   const exists = await pathExists(customShell.path)
   if (!exists) {
-    const label = __DARWIN__ ? 'Settings' : 'Options'
+    const menuItemName = __DARWIN__
+      ? t('preferences.title.settings')
+      : t('preferences.title.options')
     throw new ShellError(
-      `Could not find executable for custom shell at path '${customShell.path}'.  Please open ${label} and select an available shell.`
+      t('shell.error.customExecutableNotFound', {
+        path: customShell.path,
+        menuItemName,
+      })
     )
   }
 
@@ -153,7 +165,7 @@ export async function launchCustomShell(
     return Promise.resolve()
   } else {
     return Promise.reject(
-      `Platform not currently supported for launching shells: ${process.platform}`
+      t('shell.error.platformUnsupported', { platform: process.platform })
     )
   }
 }

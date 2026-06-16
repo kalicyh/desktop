@@ -6,6 +6,7 @@ import {
   ICustomIntegration,
   parseCustomIntegrationArguments,
 } from '../custom-integration'
+import { t } from '../i18n'
 
 async function launchEditor(
   editorPath: string,
@@ -14,10 +15,16 @@ async function launchEditor(
   spawnAsDarwinApp: boolean
 ) {
   const exists = await pathExists(editorPath)
-  const label = __DARWIN__ ? 'Settings' : 'Options'
+  const menuItemName = __DARWIN__
+    ? t('preferences.title.settings')
+    : t('preferences.title.options')
   if (!exists) {
     throw new ExternalEditorError(
-      `Could not find executable for ${editorName} at path '${editorPath}'. Please open ${label} and select an available editor.`,
+      t('editor.error.executableNotFound', {
+        editorName,
+        path: editorPath,
+        menuItemName,
+      }),
       { openPreferences: true }
     )
   }
@@ -45,8 +52,8 @@ async function launchEditor(
     )
     throw new ExternalEditorError(
       e && typeof e === 'object' && 'code' in e && e.code === 'EACCES'
-        ? `GitHub Desktop doesn't have the proper permissions to start ${editorName}. Please open ${label} and try another editor.`
-        : `Something went wrong while trying to start ${editorName}. Please open ${label} and try another editor.`,
+        ? t('editor.error.permissionDenied', { editorName, menuItemName })
+        : t('editor.error.launchFailed', { editorName, menuItemName }),
       { openPreferences: true }
     )
   })
@@ -80,7 +87,9 @@ export const launchCustomExternalEditor = (
   // which will open the right executable file for us, we only need the path
   // to the editor .app folder.
   const spawnAsDarwinApp = __DARWIN__ && customEditor.bundleID !== undefined
-  const editorName = `custom editor at path '${customEditor.path}'`
+  const editorName = t('editor.error.customEditorAtPath', {
+    path: customEditor.path,
+  })
 
   return launchEditor(customEditor.path, args, editorName, spawnAsDarwinApp)
 }
