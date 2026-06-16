@@ -1889,12 +1889,12 @@ export class API {
       const retryAfter = response.headers.get('Retry-After')
       if (retryAfter) {
         throw new CopilotError(
-          `Rate limited, retry after ${retryAfter} seconds.`,
+          t('copilot.error.rateLimitedRetryAfter', { retryAfter }),
           response.status
         )
       } else {
         throw new CopilotError(
-          'Rate limited, try again in a few minutes.',
+          t('copilot.error.rateLimitedTryAgainLater'),
           response.status
         )
       }
@@ -1905,38 +1905,35 @@ export class API {
       )
     } else if (response.status === HttpStatusCode.Unauthorized) {
       throw new CopilotError(
-        'Unauthorized: error with authentication.',
+        t('copilot.error.authenticationFailed'),
         response.status
       )
     } else if (response.status === HttpStatusCode.Forbidden) {
       const body = await response.text()
       if (body.includes('unauthorized: not licensed to use Copilot')) {
-        throw new CopilotError(
-          'Unauthorized: not licensed to use Copilot.',
-          response.status
-        )
+        throw new CopilotError(t('copilot.error.notLicensed'), response.status)
       } else if (
         body.includes(
           'unauthorized: not authorized to use this Copilot feature'
         )
       ) {
         throw new CopilotError(
-          'Unauthorized: not authorized to use this Copilot feature.',
+          t('copilot.error.featureNotAuthorized'),
           response.status
         )
       } else if (
         body.includes('integration does not have GitHub chat enabled')
       ) {
         throw new CopilotError(
-          'Integration does not have GitHub chat enabled.',
+          t('copilot.error.chatNotEnabled'),
           response.status
         )
       } else {
-        throw new CopilotError('Unauthorized: unknown.', response.status)
+        throw new CopilotError(t('copilot.error.unauthorized'), response.status)
       }
     } else if (response.status === 466) {
       throw new CopilotError(
-        'Client issue: unsupported API version.',
+        t('copilot.error.unsupportedApiVersion'),
         response.status
       )
     } else if (response.status >= HttpStatusCode.BadRequest) {
@@ -1947,7 +1944,7 @@ export class API {
         `Copilot request failed with status ${response.status}: ${internalError}`
       )
       throw new CopilotError(
-        'Something went wrong. Please, try again later.',
+        t('copilot.error.somethingWentWrong'),
         response.status
       )
     }
@@ -1966,7 +1963,7 @@ export class API {
       }
     }
 
-    throw new Error('No data line found in response')
+    throw new Error(t('copilot.error.noDataLine'))
   }
 
   /**
@@ -1988,12 +1985,12 @@ export class API {
       const choice = response.choices.at(0)
 
       if (!choice) {
-        throw new Error('No choice found in response')
+        throw new Error(t('copilot.error.noChoice'))
       }
 
       const message = choice.message.content
       if (!message) {
-        throw new Error('No message found in response')
+        throw new Error(t('copilot.error.noMessage'))
       }
 
       return parseCopilotCommitMessage(message)

@@ -592,7 +592,9 @@ export async function runConflictResolutionTurn(
       }
 
       const timer = setTimeout(() => {
-        finish(() => reject(new Error('Copilot conflict resolution timed out')))
+        finish(() =>
+          reject(new Error(t('copilot.error.conflictResolutionTimedOut')))
+        )
       }, timeoutMs)
 
       // If the signal already aborted before we got here, tear down now. The
@@ -644,7 +646,13 @@ export async function runConflictResolutionTurn(
       unsubs.push(
         session.on('session.error', event => {
           finish(() =>
-            reject(new Error(`Copilot error: ${event.data.message}`))
+            reject(
+              new Error(
+                t('copilot.error.sessionError', {
+                  message: event.data.message,
+                })
+              )
+            )
           )
         })
       )
@@ -1131,7 +1139,7 @@ export class CopilotStore extends BaseStore {
     const filesTotal = resolvableFiles.length
 
     if (filesTotal === 0) {
-      throw new Error('No resolvable conflicted files')
+      throw new Error(t('copilot.error.noResolvableConflictedFiles'))
     }
 
     onProgress?.({ filesResolved: 0, filesTotal })
@@ -1366,7 +1374,7 @@ export class CopilotStore extends BaseStore {
     }
 
     log.warn('CopilotStore: Failed to resolve conflicts after retry', lastError)
-    throw lastError ?? new Error('Conflict resolution failed')
+    throw lastError ?? new Error(t('copilot.error.conflictResolutionFailed'))
   }
 
   /**
