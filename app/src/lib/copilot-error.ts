@@ -1,4 +1,5 @@
 import { HttpStatusCode } from './http-status-code'
+import { t } from './i18n'
 
 export type CopilotPaymentRequiredErrorCode =
   | 'quota_exceeded'
@@ -125,13 +126,13 @@ function getFallbackPaymentRequiredMessage(
 ) {
   switch (code) {
     case 'quota_exceeded':
-      return 'You have reached your GitHub Copilot usage limit.'
+      return t('copilot.error.quotaExceededMessage')
     case 'session_quota_exceeded':
-      return 'You have reached your GitHub Copilot session limit.'
+      return t('copilot.error.sessionQuotaExceededMessage')
     case 'billing_not_configured':
-      return 'GitHub Copilot billing is not configured for this account.'
+      return t('copilot.error.billingNotConfiguredMessage')
     default:
-      return 'GitHub Copilot returned a billing error.'
+      return t('copilot.error.genericBillingMessage')
   }
 }
 
@@ -191,11 +192,15 @@ export function parseCopilotPaymentRequiredError(
 function getRetryAfterMessage(retryAfter: string) {
   if (/^\d+$/.test(retryAfter)) {
     const seconds = Number(retryAfter)
-    const unit = seconds === 1 ? 'second' : 'seconds'
-    return `You can try again in ${seconds} ${unit}.`
+    return t(
+      seconds === 1
+        ? 'copilot.error.retryAfter.second'
+        : 'copilot.error.retryAfter.seconds',
+      { seconds }
+    )
   }
 
-  return `You can try again after ${retryAfter}.`
+  return t('copilot.error.retryAfter.date', { retryAfter })
 }
 
 export function getCopilotErrorDisplayInfo(
@@ -208,7 +213,7 @@ export function getCopilotErrorDisplayInfo(
   switch (error.code) {
     case 'quota_exceeded':
       return {
-        title: 'Quota exceeded',
+        title: t('copilot.error.quotaExceededTitle'),
         message: error.message,
         retryAfterMessage:
           error.retryAfter !== undefined
@@ -218,7 +223,7 @@ export function getCopilotErrorDisplayInfo(
 
     case 'session_quota_exceeded':
       return {
-        title: 'Session quota exceeded',
+        title: t('copilot.error.sessionQuotaExceededTitle'),
         message: error.message,
         retryAfterMessage:
           error.retryAfter !== undefined
@@ -228,15 +233,15 @@ export function getCopilotErrorDisplayInfo(
 
     case 'billing_not_configured':
       return {
-        title: 'Copilot billing not configured',
+        title: t('copilot.error.billingNotConfiguredTitle'),
         message: error.message,
-        actionText: 'Open GitHub Copilot settings',
+        actionText: t('copilot.error.openCopilotSettings'),
         actionURL: 'https://github.com/settings/copilot',
       }
 
     default:
       return {
-        title: 'Copilot billing issue',
+        title: t('copilot.error.genericBillingTitle'),
         message: error.message,
       }
   }
