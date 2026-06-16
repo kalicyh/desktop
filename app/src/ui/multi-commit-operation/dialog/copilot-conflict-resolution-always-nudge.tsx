@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../../dialog'
 import { OkCancelButtonGroup } from '../../dialog/ok-cancel-button-group'
+import { t } from '../../../lib/i18n'
 
 interface ICopilotConflictResolutionAlwaysNudgeProps {
   readonly onAlwaysUseCopilot: () => void
@@ -27,25 +28,23 @@ export class CopilotConflictResolutionAlwaysNudge extends React.Component<ICopil
     return (
       <Dialog
         id="copilot-conflict-resolution-always-nudge"
-        title={
-          __DARWIN__
-            ? 'Always Use Copilot for Conflict Resolution?'
-            : 'Always use Copilot for conflict resolution?'
-        }
+        title={t('copilotConflicts.alwaysNudge.title')}
         onSubmit={this.onYes}
         onDismissed={this.props.onDismissed}
       >
         <DialogContent>
           <p>
-            Would you like to automatically start with Copilot whenever
-            conflicts are detected? You can change this anytime in{' '}
-            {__DARWIN__ ? 'Settings → Copilot' : 'File → Options → Copilot'}.
+            {t('copilotConflicts.alwaysNudge.messagePrefix')}{' '}
+            {__DARWIN__
+              ? t('copilotConflicts.alwaysNudge.settingsPathMac')
+              : t('copilotConflicts.alwaysNudge.settingsPathWindows')}
+            {t('copilotConflicts.alwaysNudge.messageSuffix')}
           </p>
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Yes"
-            cancelButtonText="No"
+            okButtonText={t('dialog.yes')}
+            cancelButtonText={t('dialog.no')}
             onCancelButtonClick={this.onNo}
           />
         </DialogFooter>

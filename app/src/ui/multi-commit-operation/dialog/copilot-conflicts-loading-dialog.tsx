@@ -13,6 +13,8 @@ import { MultiCommitOperationKind } from '../../../models/multi-commit-operation
 import { AriaLiveContainer } from '../../accessibility/aria-live-container'
 import { IConflictResolutionModelDisplay } from '../../../lib/copilot/conflict-resolution-model'
 import { formatReasoningEffort } from '../../../lib/stores/copilot-store'
+import { t } from '../../../lib/i18n'
+import { assertNever } from '../../../lib/fatal-error'
 
 interface ICopilotConflictsLoadingDialogProps {
   readonly repository: Repository
@@ -90,9 +92,13 @@ const ThemeFallbackMs = 10000
 type LoadingTheme = 'gathering' | 'analyzing'
 
 /** User-facing label for each theme. */
-const ThemeLabels: Record<LoadingTheme, string> = {
-  gathering: 'Gathering context…',
-  analyzing: 'Analyzing conflicts…',
+function getThemeLabel(theme: LoadingTheme): string {
+  switch (theme) {
+    case 'gathering':
+      return t('copilotConflicts.loading.gatheringContext')
+    case 'analyzing':
+      return t('copilotConflicts.loading.analyzingConflicts')
+  }
 }
 
 /** Pick a random dwell duration in [MinDwellSeconds, MaxDwellSeconds]. */
@@ -113,12 +119,12 @@ function buildGatheringPool(
 ): ReadonlyArray<string> {
   const fileNames = filePaths.map(p => p.split('/').pop() ?? p)
   const pool: string[] = [
-    'Reviewing the changes from each side',
-    'Reading recent commit history',
-    'Looking for related context',
+    t('copilotConflicts.loading.reviewingChanges'),
+    t('copilotConflicts.loading.readingHistory'),
+    t('copilotConflicts.loading.lookingForContext'),
   ]
   for (const name of fileNames.slice(0, 4)) {
-    pool.push(`Reading ${name}`)
+    pool.push(t('copilotConflicts.loading.readingFile', { file: name }))
   }
   return pool
 }
@@ -132,14 +138,16 @@ function buildAnalyzingPool(
 ): ReadonlyArray<string> {
   const fileNames = filePaths.map(p => p.split('/').pop() ?? p)
   const pool: string[] = [
-    'Cross-referencing related files',
-    'Considering both sides of each conflict',
+    t('copilotConflicts.loading.crossReferencing'),
+    t('copilotConflicts.loading.consideringBothSides'),
   ]
   for (const name of fileNames.slice(0, 6)) {
-    pool.push(`Analyzing ${name}`)
+    pool.push(t('copilotConflicts.loading.analyzingFile', { file: name }))
   }
   if (fileNames.length > 6) {
-    pool.push(`…and ${fileNames.length - 6} more`)
+    pool.push(
+      t('copilotConflicts.loading.andMore', { count: fileNames.length - 6 })
+    )
   }
   return pool
 }
@@ -419,7 +427,9 @@ export class CopilotConflictsLoadingDialog extends React.Component<
         onDismissed={this.props.onDismissed}
       >
         <DialogHeader
-          title={`Resolving conflicts for ${operationKind.toLowerCase()}`}
+          title={t('copilotConflicts.loading.title', {
+            operation: getOperationLabel(operationKind),
+          })}
           titleId={CopilotConflictsLoadingDialogId}
           showCloseButton={true}
           onCloseButtonClick={this.props.onDismissed}
@@ -434,7 +444,7 @@ export class CopilotConflictsLoadingDialog extends React.Component<
                 symbol={octicons.copilot}
               />
               <span className="copilot-conflicts-loading-theme-label">
-                {ThemeLabels[theme]}
+                {getThemeLabel(theme)}
               </span>
             </div>
             <div
@@ -455,7 +465,7 @@ export class CopilotConflictsLoadingDialog extends React.Component<
               ))}
             </div>
             <AriaLiveContainer message={latestMessage} />
-            <AriaLiveContainer message={ThemeLabels[theme]} />
+            <AriaLiveContainer message={getThemeLabel(theme)} />
           </div>
         </DialogContent>
         <DialogFooter>
@@ -468,14 +478,33 @@ export class CopilotConflictsLoadingDialog extends React.Component<
                 className="copilot-conflicts-loading-stop-icon"
                 symbol={octicons.squareFill}
               />
-              Stop
+              {t('copilotConflicts.loading.stop')}
             </Button>
             <Button onClick={this.props.onAbort}>
-              Abort {operationKind.toLowerCase()}
+              {t('copilotConflicts.abortOperation', {
+                operation: getOperationLabel(operationKind),
+              })}
             </Button>
           </div>
         </DialogFooter>
       </Dialog>
     )
+  }
+}
+
+function getOperationLabel(operationKind: MultiCommitOperationKind): string {
+  switch (operationKind) {
+    case MultiCommitOperationKind.Merge:
+      return t('multiCommit.operation.merge')
+    case MultiCommitOperationKind.Rebase:
+      return t('multiCommit.operation.rebase')
+    case MultiCommitOperationKind.CherryPick:
+      return t('multiCommit.operation.cherryPick')
+    case MultiCommitOperationKind.Squash:
+      return t('multiCommit.operation.squash')
+    case MultiCommitOperationKind.Reorder:
+      return t('multiCommit.operation.reorder')
+    default:
+      return assertNever(operationKind, `Unknown operation: ${operationKind}`)
   }
 }

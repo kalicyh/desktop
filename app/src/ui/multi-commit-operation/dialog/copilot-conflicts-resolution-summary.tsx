@@ -14,6 +14,7 @@ import { LinkButton } from '../../lib/link-button'
 import { Ref } from '../../lib/ref'
 import { Octicon } from '../../octicons'
 import * as octicons from '../../octicons/octicons.generated'
+import { t } from '../../../lib/i18n'
 
 interface ICopilotConflictsResolutionSummaryProps {
   readonly summary: ICopilotResolutionSummary
@@ -37,31 +38,36 @@ function getOperationPhrase(
     case MultiCommitOperationKind.Merge:
       return (
         <span>
-          Merging <Ref>{theirLabel}</Ref> into <Ref>{ourLabel}</Ref>
+          {t('copilotConflicts.summary.mergingPrefix')} <Ref>{theirLabel}</Ref>{' '}
+          {t('copilotConflicts.summary.mergingMiddle')} <Ref>{ourLabel}</Ref>
         </span>
       )
     case MultiCommitOperationKind.Rebase:
       return (
         <span>
-          Rebasing <Ref>{ourLabel}</Ref> onto <Ref>{theirLabel}</Ref>
+          {t('copilotConflicts.summary.rebasingPrefix')} <Ref>{ourLabel}</Ref>{' '}
+          {t('copilotConflicts.summary.rebasingMiddle')} <Ref>{theirLabel}</Ref>
         </span>
       )
     case MultiCommitOperationKind.CherryPick:
       return (
         <span>
-          Cherry-picking from <Ref>{theirLabel}</Ref> into <Ref>{ourLabel}</Ref>
+          {t('copilotConflicts.summary.cherryPickingPrefix')}{' '}
+          <Ref>{theirLabel}</Ref>{' '}
+          {t('copilotConflicts.summary.cherryPickingMiddle')}{' '}
+          <Ref>{ourLabel}</Ref>
         </span>
       )
     case MultiCommitOperationKind.Squash:
       return (
         <span>
-          Squashing into <Ref>{ourLabel}</Ref>
+          {t('copilotConflicts.summary.squashingPrefix')} <Ref>{ourLabel}</Ref>
         </span>
       )
     case MultiCommitOperationKind.Reorder:
       return (
         <span>
-          Reordering <Ref>{ourLabel}</Ref>
+          {t('copilotConflicts.summary.reorderingPrefix')} <Ref>{ourLabel}</Ref>
         </span>
       )
     default:
@@ -124,7 +130,7 @@ export class CopilotConflictsResolutionSummary extends React.Component<ICopilotC
             className="copilot-conflicts-summary-copilot-icon"
           />
           <span className="copilot-conflicts-summary-theme-label">
-            Resolution summary
+            {t('copilotConflicts.summary.title')}
           </span>
         </h2>
         <div className="copilot-conflicts-summary-body">
@@ -150,7 +156,7 @@ export class CopilotConflictsResolutionSummary extends React.Component<ICopilotC
           repository={this.props.gitHubRepository ?? undefined}
           onMarkdownLinkClicked={this.props.onMarkdownLinkClicked}
           underlineLinks={true}
-          ariaLabel="Copilot conflict resolution summary"
+          ariaLabel={t('copilotConflicts.summary.ariaLabel')}
           customCSS={summaryMarkdownCSS}
         />
       </div>
@@ -165,7 +171,9 @@ export class CopilotConflictsResolutionSummary extends React.Component<ICopilotC
 
     return (
       <div className="copilot-conflicts-summary-references">
-        <h3 className="copilot-conflicts-summary-references-title">Context</h3>
+        <h3 className="copilot-conflicts-summary-references-title">
+          {t('copilotConflicts.summary.context')}
+        </h3>
         <ul className="copilot-conflicts-summary-reference-list">
           {references.map((ref, i) => (
             <li
@@ -252,13 +260,13 @@ function renderReference(
           <span className="copilot-conflicts-summary-reference-commit-ref">
             <span className="ref selectable">{ref.commit.shortSha}</span>
             <CopyButton
-              ariaLabel="Copy the full SHA"
+              ariaLabel={t('copilotConflicts.summary.copyFullSha')}
               copyContent={ref.commit.sha}
             />
           </span>
           {!ref.commit.isOnRemote && (
             <span className="copilot-conflicts-summary-reference-tag">
-              local only
+              {t('copilotConflicts.summary.localOnly')}
             </span>
           )}
         </>

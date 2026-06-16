@@ -11,6 +11,7 @@ import { Repository } from '../../../models/repository'
 import { Dispatcher } from '../../dispatcher'
 import { openFile } from '../../lib/open-file'
 import { getResolutionDiff } from '../../../lib/git'
+import { t } from '../../../lib/i18n'
 
 interface ICopilotConflictsChangesProps {
   readonly repository: Repository
@@ -199,7 +200,9 @@ export class CopilotConflictsChanges extends React.Component<
             />
           </div>
           {selectedFile !== null && isLoadingDiff && (
-            <div className="copilot-changes-loading">Loading diff&hellip;</div>
+            <div className="copilot-changes-loading">
+              {t('copilotConflicts.changes.loadingDiff')}
+            </div>
           )}
           {selectedFile !== null && !isLoadingDiff && diff !== null && (
             <Diff
@@ -219,7 +222,7 @@ export class CopilotConflictsChanges extends React.Component<
           )}
           {selectedFile !== null && !isLoadingDiff && diff === null && (
             <div className="copilot-changes-no-diff">
-              Diff preview is only available for files resolved by Copilot.
+              {t('copilotConflicts.changes.noDiff')}
             </div>
           )}
         </div>
