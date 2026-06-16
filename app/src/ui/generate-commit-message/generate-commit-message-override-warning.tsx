@@ -11,6 +11,7 @@ import { Dispatcher } from '../dispatcher'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { LinkButton } from '../lib/link-button'
 import { Row } from '../lib/row'
+import { t } from '../../lib/i18n'
 
 interface IGenerateCommitMessageOverrideWarningProps {
   readonly dispatcher: Dispatcher
@@ -47,7 +48,7 @@ export class GenerateCommitMessageOverrideWarning extends React.Component<
 
     return (
       <Dialog
-        title="Commit message override"
+        title={t('generateCommitMessage.override.title')}
         id="generate-commit-message-override-warning"
         type="warning"
         onDismissed={this.props.onDismissed}
@@ -57,23 +58,22 @@ export class GenerateCommitMessageOverrideWarning extends React.Component<
       >
         <DialogContent>
           <Row id="generate-commit-message-override-warning-body">
-            The commit message you have entered will be overridden by the
-            generated commit message.
+            {t('generateCommitMessage.override.message')}
           </Row>
           {this.props.showCopilotInstructionsTip ? (
             <Row>
               <p id="generate-commit-message-override-warning-tip">
-                Tip: You can use{' '}
+                {t('generateCommitMessage.override.tipPrefix')}{' '}
                 <LinkButton uri="https://gh.io/desktop-copilot-custom-instructions">
                   Copilot Instructions
-                </LinkButton>{' '}
-                to customize how commit messages are generated.
+                </LinkButton>
+                {t('generateCommitMessage.override.tipSuffix')}
               </p>
             </Row>
           ) : null}
           <Row>
             <Checkbox
-              label="Do not show this message again"
+              label={t('common.doNotShowAgain')}
               value={
                 this.state.confirmCommitMessageOverride
                   ? CheckboxValue.Off
@@ -84,7 +84,10 @@ export class GenerateCommitMessageOverrideWarning extends React.Component<
           </Row>
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup destructive={true} okButtonText="Override" />
+          <OkCancelButtonGroup
+            destructive={true}
+            okButtonText={t('generateCommitMessage.override.button')}
+          />
         </DialogFooter>
       </Dialog>
     )
