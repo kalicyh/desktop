@@ -19,6 +19,7 @@ import classNames from 'classnames'
 import { RepoRulesMetadataFailures } from '../../models/repo-rules'
 import { RepoRulesMetadataFailureList } from '../repository-rules/repo-rules-failure-list'
 import { Account } from '../../models/account'
+import { t } from '../../lib/i18n'
 
 export type CommitMessageAvatarWarningType =
   | 'none'
@@ -154,15 +155,15 @@ export class CommitMessageAvatar extends React.Component<
     let ariaLabel = ''
     switch (warningType) {
       case 'none':
-        ariaLabel = 'View commit author information'
+        ariaLabel = t('changes.commitAuthor.viewInfo')
         break
 
       case 'misattribution':
-        ariaLabel = 'Commit may be misattributed. View warning.'
+        ariaLabel = t('changes.commitAuthor.misattributionAriaLabel')
         break
 
       case 'disallowedEmail':
-        ariaLabel = 'Email address is disallowed. View warning.'
+        ariaLabel = t('changes.commitAuthor.disallowedEmailAriaLabel')
         break
     }
 
@@ -237,35 +238,40 @@ export class CommitMessageAvatar extends React.Component<
     const { user } = this.props
     const { isGitConfigLocal } = this.state
 
-    const location = isGitConfigLocal ? 'local' : 'global'
-    const locationDesc = isGitConfigLocal ? 'for your repository' : ''
-    const settingsName = __DARWIN__ ? 'settings' : 'options'
     const settings = isGitConfigLocal
-      ? 'repository settings'
-      : `git ${settingsName}`
-    const buttonText = __DARWIN__ ? 'Open Git Settings' : 'Open git settings'
+      ? t('changes.commitAuthor.repositorySettings')
+      : t('changes.commitAuthor.gitSettings')
+    const configDescription = isGitConfigLocal
+      ? t('changes.commitAuthor.localGitConfiguration')
+      : t('changes.commitAuthor.globalGitConfiguration')
 
     return (
       <>
-        <p>{user && user.name && `Email: ${user.email}`}</p>
+        <p>
+          {user &&
+            user.name &&
+            t('changes.commitAuthor.emailLabel', { email: user.email })}
+        </p>
 
         <p>
-          You can update your {location} git configuration {locationDesc} in
-          your {settings}.
+          {t('changes.commitAuthor.updateConfigMessage', {
+            config: configDescription,
+            settings,
+          })}
         </p>
 
         {!isGitConfigLocal && (
           <p className="secondary-text">
-            You can also set an email local to this repository from the{' '}
+            {t('changes.commitAuthor.setLocalEmailPrefix')}{' '}
             <LinkButton onClick={this.onRepositorySettingsClick}>
-              repository settings
+              {t('changes.commitAuthor.repositorySettings')}
             </LinkButton>
-            .
+            {t('changes.commitAuthor.setLocalEmailSuffix')}
           </p>
         )}
         <Row className="button-row">
           <OkCancelButtonGroup
-            okButtonText={buttonText}
+            okButtonText={t('changes.commitAuthor.openGitSettings')}
             onOkButtonClick={this.onOpenGitSettings}
             onCancelButtonClick={this.onIgnoreClick}
           />
@@ -277,11 +283,11 @@ export class CommitMessageAvatar extends React.Component<
   private renderWarningPopover() {
     const { warningType, emailRuleFailures } = this.props
 
-    const updateEmailTitle = __DARWIN__ ? 'Update Email' : 'Update email'
+    const updateEmailTitle = t('changes.commitAuthor.updateEmail')
 
     const sharedHeader = (
       <>
-        The email in your global Git config (
+        {t('changes.commitAuthor.globalGitConfigEmailPrefix')} (
         <span className="git-email">{this.props.email}</span>)
       </>
     )
@@ -293,7 +299,7 @@ export class CommitMessageAvatar extends React.Component<
         {hasEmails && (
           <Row>
             <Select
-              label="Your Account Emails"
+              label={t('changes.commitAuthor.accountEmails')}
               value={this.state.accountEmail}
               onChange={this.onSelectedGitHubEmailChange}
             >
@@ -307,17 +313,18 @@ export class CommitMessageAvatar extends React.Component<
         )}
         <Row>
           <div className="secondary-text">
-            You can{hasEmails ? ' also' : ''} choose an email local to this
-            repository from the{' '}
+            {hasEmails
+              ? t('changes.commitAuthor.chooseLocalEmailAlsoPrefix')
+              : t('changes.commitAuthor.chooseLocalEmailPrefix')}{' '}
             <LinkButton onClick={this.onRepositorySettingsClick}>
-              repository settings
+              {t('changes.commitAuthor.repositorySettings')}
             </LinkButton>
-            .
+            {t('changes.commitAuthor.chooseLocalEmailSuffix')}
           </div>
         </Row>
         <Row className="button-row">
           <Button onClick={this.onIgnoreClick} type="button">
-            Ignore
+            {t('changes.commitAuthor.ignore')}
           </Button>
           {hasEmails && (
             <Button onClick={this.onUpdateEmailClick} type="submit">
@@ -330,25 +337,28 @@ export class CommitMessageAvatar extends React.Component<
 
     if (warningType === 'misattribution') {
       const accountTypeSuffix = this.props.isEnterpriseAccount
-        ? ' Enterprise'
+        ? t('changes.commitAuthor.enterpriseSuffix')
         : ''
 
       const userName =
         this.props.user && this.props.user.name
-          ? ` for ${this.props.user.name}`
+          ? t('changes.commitAuthor.forUser', { name: this.props.user.name })
           : ''
 
       return (
         <>
           <Row>
             <div>
-              {sharedHeader} doesn't match your GitHub{accountTypeSuffix}{' '}
-              account{userName}.{' '}
+              {sharedHeader}{' '}
+              {t('changes.commitAuthor.misattributionMessage', {
+                accountTypeSuffix,
+                userName,
+              })}{' '}
               <LinkButton
-                ariaLabel="Learn more about commit attribution"
+                ariaLabel={t('preferences.git.emailWarning.learnMoreAriaLabel')}
                 uri="https://docs.github.com/en/github/committing-changes-to-your-project/why-are-my-commits-linked-to-the-wrong-user"
               >
-                Learn more
+                {t('preferences.git.emailWarning.learnMore')}
               </LinkButton>
             </div>
           </Row>
@@ -381,7 +391,7 @@ export class CommitMessageAvatar extends React.Component<
     const { user } = this.props
 
     if (user === undefined) {
-      return 'Unknown user'
+      return t('history.unknownUser')
     }
 
     const { name, email } = user
@@ -389,12 +399,12 @@ export class CommitMessageAvatar extends React.Component<
     if (name) {
       return (
         <>
-          Committing as <strong>{name}</strong>
+          {t('changes.commitAuthor.committingAs')} <strong>{name}</strong>
         </>
       )
     }
 
-    return <>Committing with {email}</>
+    return <>{t('changes.commitAuthor.committingWith', { email })}</>
   }
 
   private renderPopover() {
@@ -403,11 +413,11 @@ export class CommitMessageAvatar extends React.Component<
     let header: string | JSX.Element | undefined = ''
     switch (this.props.warningType) {
       case 'misattribution':
-        header = 'This commit will be misattributed'
+        header = t('changes.commitAuthor.misattributionHeader')
         break
 
       case 'disallowedEmail':
-        header = 'This email address is disallowed'
+        header = t('changes.commitAuthor.disallowedEmailHeader')
         break
 
       default:
