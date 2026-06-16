@@ -5,6 +5,7 @@ import { nameOf, Repository } from '../../models/repository'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { TextBox } from '../lib/text-box'
+import { t } from '../../lib/i18n'
 
 interface IChangeRepositoryAliasProps {
   readonly dispatcher: Dispatcher
@@ -28,13 +29,15 @@ export class ChangeRepositoryAlias extends React.Component<
 
   public render() {
     const repository = this.props.repository
-    const verb = repository.alias === null ? 'Create' : 'Change'
+    const creatingAlias = repository.alias === null
 
     return (
       <Dialog
         id="change-repository-alias"
         title={
-          __DARWIN__ ? `${verb} Repository Alias` : `${verb} repository alias`
+          creatingAlias
+            ? t('repositoryAlias.createTitle')
+            : t('repositoryAlias.changeTitle')
         }
         ariaDescribedBy="change-repository-alias-description"
         onDismissed={this.props.onDismissed}
@@ -42,25 +45,29 @@ export class ChangeRepositoryAlias extends React.Component<
       >
         <DialogContent>
           <p id="change-repository-alias-description">
-            Choose a new alias for the repository "{nameOf(repository)}".{' '}
+            {t('repositoryAlias.description', { name: nameOf(repository) })}
           </p>
           <p>
             <TextBox
-              ariaLabel="Alias"
+              ariaLabel={t('repositoryAlias.aliasLabel')}
               value={this.state.newAlias}
               onValueChanged={this.onNameChanged}
             />
           </p>
           {repository.gitHubRepository !== null && (
             <p className="description">
-              This will not affect the original repository name on GitHub.
+              {t('repositoryAlias.githubUnaffected')}
             </p>
           )}
         </DialogContent>
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={__DARWIN__ ? `${verb} Alias` : `${verb} alias`}
+            okButtonText={
+              creatingAlias
+                ? t('repositoryAlias.createButton')
+                : t('repositoryAlias.changeButton')
+            }
             okButtonDisabled={this.state.newAlias.length === 0}
           />
         </DialogFooter>

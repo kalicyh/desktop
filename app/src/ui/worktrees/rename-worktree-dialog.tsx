@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { TextBox } from '../lib/text-box'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
 import { moveWorktree } from '../../lib/git/worktree'
+import { t } from '../../lib/i18n'
 
 interface IRenameWorktreeDialogProps {
   readonly repository: Repository
@@ -66,14 +67,14 @@ export class RenameWorktreeDialog extends React.Component<
     return (
       <Dialog
         id="rename-worktree"
-        title={__DARWIN__ ? 'Rename Worktree' : 'Rename worktree'}
+        title={t('worktree.rename.title')}
         loading={this.state.renaming}
         onSubmit={this.onSubmit}
         onDismissed={this.props.onDismissed}
       >
         <DialogContent>
           <TextBox
-            label="Name"
+            label={t('worktree.rename.nameLabel')}
             value={this.state.newName}
             onValueChanged={this.onNameChanged}
           />
@@ -81,7 +82,7 @@ export class RenameWorktreeDialog extends React.Component<
 
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText={`Rename ${currentName}`}
+            okButtonText={t('worktree.rename.button', { name: currentName })}
             okButtonDisabled={disabled}
           />
         </DialogFooter>
