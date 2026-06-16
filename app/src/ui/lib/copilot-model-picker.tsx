@@ -8,6 +8,7 @@ import { IFilterListGroup, IFilterListItem } from './filter-list'
 import { PopoverDecoration } from './popover'
 import { PopoverDropdown } from './popover-dropdown'
 import { SectionFilterList } from './section-filter-list'
+import { t } from '../../lib/i18n'
 import type {
   Model,
   ModelBilling,
@@ -85,8 +86,10 @@ const formatReasoningEffortLevels = (
   }
 
   return supportedReasoningEfforts.length === 1
-    ? '1 level'
-    : `${supportedReasoningEfforts.length} levels`
+    ? t('preferences.copilot.modelPicker.reasoningLevel.one')
+    : t('preferences.copilot.modelPicker.reasoningLevel.other', {
+        count: supportedReasoningEfforts.length,
+      })
 }
 
 const formatAIModelCreditAmount = (value: number | undefined) =>
@@ -141,7 +144,9 @@ const getListItemSubtitle = (item: ICopilotModelListItem) => {
   const modelPickerPriceCategory = getModelPickerPriceCategory(item)
   return modelPickerPriceCategory === null
     ? null
-    : `Use of credits: ${modelPickerPriceCategory}`
+    : t('preferences.copilot.modelPicker.useOfCredits', {
+        category: modelPickerPriceCategory,
+      })
 }
 
 export const getCopilotModelPickerSelectionInfo = (
@@ -166,16 +171,17 @@ export const getCopilotModelPickerSelectionInfo = (
   }
 
   const modelPickerCategory = selectedModel?.modelPickerCategory?.trim()
-  const useOfCredits = `Use of credits: ${formatModelPickerCategory(
-    modelPickerPriceCategory
-  )}`
+  const useOfCreditsLabel = t('preferences.copilot.modelPicker.useOfCredits', {
+    category: formatModelPickerCategory(modelPickerPriceCategory),
+  })
 
   const summary =
     modelPickerCategory === undefined || modelPickerCategory.length === 0
-      ? useOfCredits
-      : `${formatModelPickerCategoryHeader(
-          modelPickerCategory
-        )} model. ${useOfCredits}`
+      ? useOfCreditsLabel
+      : t('preferences.copilot.modelPicker.categorySummary', {
+          category: formatModelPickerCategoryHeader(modelPickerCategory),
+          credits: useOfCreditsLabel,
+        })
   const contextWindowTokenCount = getContextWindowTokenCount(
     tokenPrices.contextMax,
     selectedModel.capabilities.limits?.max_output_tokens,
@@ -203,7 +209,9 @@ export const getCopilotModelPickerSelectionInfo = (
 const getCopilotModelTitle = (item: ICopilotModelListItem) => {
   const billingLabel = getPremiumRequestsBillingLabel(item.billing)
   return item.isDefault
-    ? `${item.name}${billingLabel} (default)`
+    ? `${item.name}${billingLabel} ${t(
+        'preferences.copilot.modelPicker.defaultSuffix'
+      )}`
     : `${item.name}${billingLabel}`
 }
 
@@ -419,7 +427,11 @@ export class CopilotModelPicker extends React.Component<
   }
 
   private renderNoItems = () => {
-    return <div className="copilot-model-list-empty">No models found.</div>
+    return (
+      <div className="copilot-model-list-empty">
+        {t('preferences.copilot.modelPicker.noModelsFound')}
+      </div>
+    )
   }
 
   private getItemAriaLabel = (item: ICopilotModelListItem) => {
@@ -450,12 +462,14 @@ export class CopilotModelPicker extends React.Component<
     )
     const buttonItem = this.getItemByValue(groups, this.props.value)
     const buttonAriaLabel = `${this.props.label}: ${
-      buttonItem === undefined ? 'None' : getCopilotModelTitle(buttonItem)
+      buttonItem === undefined
+        ? t('preferences.copilot.modelPicker.none')
+        : getCopilotModelTitle(buttonItem)
     }`
     return (
       <PopoverDropdown
         className="copilot-model-picker"
-        contentTitle="Choose a model"
+        contentTitle={t('preferences.copilot.modelPicker.chooseModel')}
         buttonContent={this.renderButtonContent(buttonItem)}
         buttonAriaLabel={buttonAriaLabel}
         decoration={PopoverDecoration.Bordered}
@@ -476,7 +490,7 @@ export class CopilotModelPicker extends React.Component<
           onSelectionChanged={this.onSelectionChanged}
           getItemAriaLabel={this.getItemAriaLabel}
           getGroupAriaLabel={this.getGroupAriaLabel}
-          placeholderText="Filter models"
+          placeholderText={t('preferences.copilot.modelPicker.filterModels')}
           renderNoItems={this.renderNoItems}
         />
       </PopoverDropdown>

@@ -4,11 +4,6 @@ import { Repositoryish } from './group-repositories'
 import { RepositoryGroup } from '../../models/repository-group'
 import { clipboard } from 'electron'
 import { t } from '../../lib/i18n'
-import {
-  RevealInFileManagerLabel,
-  DefaultEditorLabel,
-  DefaultShellLabel,
-} from '../lib/context-menu'
 
 interface IRepositoryListItemContextMenuConfig {
   repository: Repositoryish
@@ -38,11 +33,11 @@ export const generateRepositoryListContextMenu = (
   const github =
     repository instanceof Repository && repository.gitHubRepository != null
   const openInExternalEditor = config.externalEditorLabel
-    ? `Open in ${config.externalEditorLabel}`
-    : DefaultEditorLabel
+    ? t('repositoryContext.openIn', { label: config.externalEditorLabel })
+    : t('repositoryContext.openInExternalEditor')
   const openInShell = config.shellLabel
-    ? `Open in ${config.shellLabel}`
-    : DefaultShellLabel
+    ? t('repositoryContext.openIn', { label: config.shellLabel })
+    : t('repositoryContext.openInShell')
 
   const items: ReadonlyArray<IMenuItem> = [
     ...buildAliasMenuItems(config),
@@ -50,16 +45,16 @@ export const generateRepositoryListContextMenu = (
     ...buildGroupMenuItems(config),
     ...buildWorktreeMenuItems(config),
     {
-      label: __DARWIN__ ? 'Copy Repo Name' : 'Copy repo name',
+      label: t('repositoryContext.copyRepoName'),
       action: () => clipboard.writeText(repository.name),
     },
     {
-      label: __DARWIN__ ? 'Copy Repo Path' : 'Copy repo path',
+      label: t('repositoryContext.copyRepoPath'),
       action: () => clipboard.writeText(repository.path),
     },
     { type: 'separator' },
     {
-      label: 'View on GitHub',
+      label: t('repositoryContext.viewOnGitHub'),
       action: () => config.onViewOnGitHub(repository),
       enabled: github,
     },
@@ -69,7 +64,7 @@ export const generateRepositoryListContextMenu = (
       enabled: !missing,
     },
     {
-      label: RevealInFileManagerLabel,
+      label: getRevealInFileManagerLabel(),
       action: () => config.onShowRepository(repository),
       enabled: !missing,
     },
@@ -80,7 +75,9 @@ export const generateRepositoryListContextMenu = (
     },
     { type: 'separator' },
     {
-      label: config.askForConfirmationOnRemoveRepository ? 'Remove…' : 'Remove',
+      label: config.askForConfirmationOnRemoveRepository
+        ? t('repositoryContext.removeWithConfirmation')
+        : t('repositoryContext.remove'),
       action: () => config.onRemoveRepository(repository),
     },
   ]
@@ -162,17 +159,19 @@ const buildAliasMenuItems = (
     return []
   }
 
-  const verb = repository.alias == null ? 'Create' : 'Change'
   const items: Array<IMenuItem> = [
     {
-      label: __DARWIN__ ? `${verb} Alias` : `${verb} alias`,
+      label:
+        repository.alias == null
+          ? t('repositoryContext.createAlias')
+          : t('repositoryContext.changeAlias'),
       action: () => config.onChangeRepositoryAlias(repository),
     },
   ]
 
   if (repository.alias !== null) {
     items.push({
-      label: __DARWIN__ ? 'Remove Alias' : 'Remove alias',
+      label: t('repositoryContext.removeAlias'),
       action: () => config.onRemoveRepositoryAlias(repository),
     })
   }
@@ -197,17 +196,29 @@ const buildWorktreeMenuItems = (
 
   if (onShowWorktrees !== undefined) {
     items.push({
-      label: __DARWIN__ ? 'Show Worktrees' : 'Show worktrees',
+      label: t('repositoryContext.showWorktrees'),
       action: () => onShowWorktrees(repository),
     })
   }
 
   if (onCreateWorktree !== undefined) {
     items.push({
-      label: __DARWIN__ ? 'New Worktree…' : 'New worktree…',
+      label: t('repositoryContext.newWorktree'),
       action: () => onCreateWorktree(repository),
     })
   }
 
   return items
+}
+
+const getRevealInFileManagerLabel = () => {
+  if (__DARWIN__) {
+    return t('repositoryContext.revealInFinder')
+  }
+
+  if (__WIN32__) {
+    return t('repositoryContext.showInExplorer')
+  }
+
+  return t('repositoryContext.showInFileManager')
 }

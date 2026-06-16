@@ -158,14 +158,18 @@ export class Appearance extends React.Component<
         return (
           <span>
             <img src={lightThemeImage} alt="" />
-            <span className="theme-value-label">Light</span>
+            <span className="theme-value-label">
+              {t('preferences.appearance.theme.light')}
+            </span>
           </span>
         )
       case ApplicationTheme.Dark:
         return (
           <span>
             <img src={darkThemeImage} alt="" />
-            <span className="theme-value-label">Dark</span>
+            <span className="theme-value-label">
+              {t('preferences.appearance.theme.dark')}
+            </span>
           </span>
         )
       case ApplicationTheme.System:
@@ -180,7 +184,9 @@ export class Appearance extends React.Component<
               <img src={lightThemeImage} alt="" />
               <img src={darkThemeImage} alt="" />
             </span>
-            <span className="theme-value-label">System</span>
+            <span className="theme-value-label">
+              {t('preferences.appearance.theme.system')}
+            </span>
           </span>
         )
     }
@@ -190,7 +196,7 @@ export class Appearance extends React.Component<
     const selectedTheme = this.state.selectedTheme
 
     if (selectedTheme == null) {
-      return <Row>Loading system theme</Row>
+      return <Row>{t('preferences.appearance.theme.loadingSystem')}</Row>
     }
 
     const themes = [
@@ -201,7 +207,7 @@ export class Appearance extends React.Component<
 
     return (
       <div className="appearance-section">
-        <h2 id="theme-heading">Theme</h2>
+        <h2 id="theme-heading">{t('preferences.appearance.theme.heading')}</h2>
 
         <RadioGroup<ApplicationTheme>
           ariaLabelledBy="theme-heading"
@@ -222,11 +228,13 @@ export class Appearance extends React.Component<
 
     return (
       <div className="appearance-section formatting-section">
-        <h2 id="formatting-heading">Formatting</h2>
+        <h2 id="formatting-heading">
+          {t('preferences.appearance.formatting.heading')}
+        </h2>
 
         <Row>
           <Select
-            label={__DARWIN__ ? 'Date Format' : 'Date format'}
+            label={t('preferences.appearance.formatting.dateFormat')}
             value={this.props.selectedDateFormat}
             onChange={this.onDateFormatChanged}
           >
@@ -238,7 +246,7 @@ export class Appearance extends React.Component<
           </Select>
 
           <Select
-            label={__DARWIN__ ? 'Time Format' : 'Time format'}
+            label={t('preferences.appearance.formatting.timeFormat')}
             value={this.props.selectedTimeFormat}
             onChange={this.onTimeFormatChanged}
           >
@@ -251,7 +259,7 @@ export class Appearance extends React.Component<
         </Row>
 
         <Select
-          label={__DARWIN__ ? 'Number Format' : 'Number format'}
+          label={t('preferences.appearance.formatting.numberFormat')}
           value={numberFormatToKey(this.props.selectedNumberFormat)}
           onChange={this.onNumberFormatChanged}
         >
@@ -267,7 +275,7 @@ export class Appearance extends React.Component<
 
         <Checkbox
           className="prefer-absolute-dates"
-          label="Prefer absolute dates over relative"
+          label={t('preferences.appearance.formatting.preferAbsoluteDates')}
           value={
             this.props.preferAbsoluteDates
               ? CheckboxValue.On
@@ -310,16 +318,20 @@ export class Appearance extends React.Component<
 
     return (
       <div className="appearance-section">
-        <h2 id="diff-heading">Diff</h2>
+        <h2 id="diff-heading">{t('preferences.appearance.diff.heading')}</h2>
 
         <Select
           value={this.state.selectedTabSize.toString()}
-          label={__DARWIN__ ? 'Tab Size' : 'Tab size'}
+          label={t('preferences.appearance.diff.tabSize')}
           onChange={this.onSelectedTabSizeChanged}
         >
           {availableTabSizes.map(n => (
             <option key={n} value={n}>
-              {n === tabSizeDefault ? `${n} (default)` : n}
+              {n === tabSizeDefault
+                ? t('preferences.appearance.diff.tabSizeDefault', {
+                    size: n,
+                  })
+                : n}
             </option>
           ))}
         </Select>

@@ -5,6 +5,7 @@ import { isAttributableEmailFor } from '../../lib/email'
 import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
+import { t } from '../../lib/i18n'
 
 interface IGitEmailNotFoundWarningProps {
   /** The account the commit should be attributed to. */
@@ -30,10 +31,10 @@ export class GitEmailNotFoundWarning extends React.Component<IGitEmailNotFoundWa
 
     const learnMore = !isAttributableEmail ? (
       <LinkButton
-        ariaLabel="Learn more about commit attribution"
+        ariaLabel={t('preferences.git.emailWarning.learnMoreAriaLabel')}
         uri="https://docs.github.com/en/github/committing-changes-to-your-project/why-are-my-commits-linked-to-the-wrong-user"
       >
-        Learn more.
+        {t('preferences.git.emailWarning.learnMore')}
       </LinkButton>
     ) : null
 
@@ -47,11 +48,14 @@ export class GitEmailNotFoundWarning extends React.Component<IGitEmailNotFoundWa
   }
 
   private buildScreenReaderMessage(isAttributableEmail: boolean) {
-    const verb = !isAttributableEmail ? 'does not match' : 'matches'
-    const info = !isAttributableEmail
-      ? 'Your commits will be wrongly attributed. '
-      : ''
-    return `This email address ${verb} ${this.getAccountTypeDescription()}. ${info}`
+    const account = this.getAccountTypeDescription()
+
+    return isAttributableEmail
+      ? t('preferences.git.emailWarning.matches', { account })
+      : t('preferences.git.emailWarning.doesNotMatch', {
+          account,
+          info: t('preferences.git.emailWarning.wronglyAttributed'),
+        })
   }
 
   public render() {
@@ -88,12 +92,12 @@ export class GitEmailNotFoundWarning extends React.Component<IGitEmailNotFoundWa
   private getAccountTypeDescription() {
     if (this.props.accounts.length === 1) {
       const accountType = isDotComAccount(this.props.accounts[0])
-        ? 'GitHub'
-        : 'GitHub Enterprise'
+        ? 'preferences.git.emailWarning.dotComAccount'
+        : 'preferences.git.emailWarning.enterpriseAccount'
 
-      return `your ${accountType} account`
+      return t(accountType)
     }
 
-    return 'either of your GitHub.com nor GitHub Enterprise accounts'
+    return t('preferences.git.emailWarning.anyAccount')
   }
 }

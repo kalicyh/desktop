@@ -29,6 +29,7 @@ import * as octicons from '../octicons/octicons.generated'
 import { TabBar } from '../tab-bar'
 import { CopilotModelSelectionInfo } from './copilot-model-selection-info'
 import type { Model } from '@github/copilot-sdk/dist/generated/rpc'
+import { t } from '../../lib/i18n'
 
 interface ICopilotPreferencesProps {
   readonly selectedCopilotModels: CopilotModelSelections
@@ -134,8 +135,8 @@ export class CopilotPreferences extends React.Component<
           selectedIndex={this.state.selectedTabIndex}
           onTabClicked={this.onTabClicked}
         >
-          <span>Models</span>
-          <span>Providers</span>
+          <span>{t('preferences.copilot.tabs.models')}</span>
+          <span>{t('preferences.copilot.tabs.providers')}</span>
         </TabBar>
         <div className="copilot-tab-content">
           <div className="copilot-section">{this.renderCurrentTab()}</div>
@@ -204,23 +205,23 @@ export class CopilotPreferences extends React.Component<
     switch (accessState) {
       case 'signed-out':
         return this.renderAccessCallToAction(
-          'Sign in to an account with a Copilot license to configure Copilot settings.',
-          'Sign In',
+          t('preferences.copilot.access.signInMessage'),
+          t('preferences.copilot.access.signInButton'),
           this.props.onSignIn,
           DialogPreferredFocusClassName
         )
       case 'checking':
-        return <p>Checking Copilot access…</p>
+        return <p>{t('preferences.copilot.access.checking')}</p>
       case 'no-license':
         return this.renderAccessCallToAction(
-          'Copilot features in GitHub Desktop require a GitHub Copilot license.',
-          'View Copilot plans',
+          t('preferences.copilot.access.noLicenseMessage'),
+          t('preferences.copilot.access.viewPlans'),
           this.props.onOpenCopilotPlans
         )
       case 'desktop-disabled':
         return this.renderAccessCallToAction(
-          'A Copilot license is available for your account, but "Copilot in GitHub Desktop" is disabled in your Copilot feature settings.',
-          'Open Copilot feature settings',
+          t('preferences.copilot.access.desktopDisabledMessage'),
+          t('preferences.copilot.access.openFeatureSettings'),
           this.props.onOpenCopilotFeatureSettings
         )
       case 'enabled':
@@ -251,35 +252,33 @@ export class CopilotPreferences extends React.Component<
     const { copilotModels, byokProviders } = this.props
 
     if (copilotModels === null) {
-      return <p>Loading available models…</p>
+      return <p>{t('preferences.copilot.loadingModels')}</p>
     }
 
     if (!hasCopilotModelPickerItems(copilotModels, byokProviders)) {
-      return <p>No Copilot models available.</p>
+      return <p>{t('preferences.copilot.noModels')}</p>
     }
 
     return (
       <>
         <Row className="copilot-feature-hint">
           <p>
-            Tailor how Copilot behaves by using{' '}
+            {t('preferences.copilot.customInstructionsPrefix')}
             <LinkButton uri="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions">
-              custom instructions
+              {t('preferences.copilot.customInstructionsLink')}
             </LinkButton>
-            .
+            {t('preferences.copilot.customInstructionsSuffix')}
           </p>
         </Row>
         {this.renderFeatureModelPicker(
           copilotModels,
           'commit-message-generation',
-          __DARWIN__
-            ? 'Commit Message Generation'
-            : 'Commit message generation',
+          t('preferences.copilot.commitMessageGeneration'),
           this.onCommitMessageModelChanged
         )}
         <p className="settings-description">
           <LinkButton uri="https://docs.github.com/en/desktop/making-changes-in-a-branch/committing-and-reviewing-changes-to-your-project-in-github-desktop#write-a-commit-message-and-push-your-changes">
-            Learn more about generating commit messages.
+            {t('preferences.copilot.learnCommitMessages')}
           </LinkButton>
         </p>
         {enableCopilotConflictResolution() && (
@@ -287,18 +286,14 @@ export class CopilotPreferences extends React.Component<
             {this.renderFeatureModelPicker(
               copilotModels,
               'conflict-resolution',
-              __DARWIN__ ? 'Conflict Resolution' : 'Conflict resolution',
+              t('preferences.copilot.conflictResolution'),
               this.onConflictResolutionModelChanged
             )}
             <p className="settings-description">
-              Model changes apply to future conflict resolutions.
+              {t('preferences.copilot.futureConflictResolution')}
             </p>
             <Checkbox
-              label={
-                __DARWIN__
-                  ? 'Always Use Copilot When Conflicts Are Detected'
-                  : 'Always use Copilot when conflicts are detected'
-              }
+              label={t('preferences.copilot.alwaysUseForConflicts')}
               value={
                 this.props.alwaysUseCopilotForConflictResolution
                   ? CheckboxValue.On
@@ -420,9 +415,7 @@ export class CopilotPreferences extends React.Component<
       <>
         {byokProviders.length === 0 ? (
           <p className="copilot-byok-empty">
-            Add a custom provider to use your own API keys with
-            OpenAI-compatible endpoints, Azure, Anthropic, or local providers
-            like Ollama.
+            {t('preferences.copilot.byok.empty')}
           </p>
         ) : (
           <ul className="copilot-byok-entry-list">
@@ -430,7 +423,7 @@ export class CopilotPreferences extends React.Component<
           </ul>
         )}
         <Button onClick={this.onAddBYOKProviderClick}>
-          {__DARWIN__ ? 'Add Provider…' : 'Add provider…'}
+          {t('preferences.copilot.byok.addProvider')}
         </Button>
       </>
     )
@@ -438,7 +431,12 @@ export class CopilotPreferences extends React.Component<
 
   private renderBYOKProvider = (provider: IBYOKProvider) => {
     const modelCount = provider.models.length
-    const modelLabel = modelCount === 1 ? '1 model' : `${modelCount} models`
+    const modelLabel = t(
+      modelCount === 1
+        ? 'preferences.copilot.byok.modelCount.one'
+        : 'preferences.copilot.byok.modelCount.other',
+      { count: modelCount }
+    )
     const isLocal = isLocalBaseUrl(provider.baseUrl)
     return (
       <li key={provider.id} className="copilot-byok-entry">
@@ -446,7 +444,9 @@ export class CopilotPreferences extends React.Component<
           <div className="copilot-byok-entry-title">
             <span>{provider.name}</span>
             {isLocal && (
-              <span className="copilot-byok-provider-badge">Local</span>
+              <span className="copilot-byok-provider-badge">
+                {t('preferences.copilot.byok.local')}
+              </span>
             )}
           </div>
           <span className="copilot-byok-entry-meta">
@@ -456,13 +456,17 @@ export class CopilotPreferences extends React.Component<
         <div className="copilot-byok-entry-actions">
           <Button
             onClick={this.onEditBYOKProviderClick(provider)}
-            ariaLabel={`Edit ${provider.name}`}
+            ariaLabel={t('preferences.copilot.byok.editProvider', {
+              name: provider.name,
+            })}
           >
             <Octicon symbol={octicons.pencil} />
           </Button>
           <Button
             onClick={this.onDeleteBYOKProviderClick(provider)}
-            ariaLabel={`Remove ${provider.name}`}
+            ariaLabel={t('preferences.copilot.byok.removeProvider', {
+              name: provider.name,
+            })}
           >
             <Octicon symbol={octicons.trash} />
           </Button>

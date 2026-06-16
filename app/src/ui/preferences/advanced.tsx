@@ -4,6 +4,7 @@ import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { LinkButton } from '../lib/link-button'
 import { SamplesURL } from '../../lib/stats'
 import { isWindowsOpenSSHAvailable } from '../../lib/ssh/ssh'
+import { t } from '../../lib/i18n'
 
 interface IAdvancedPreferencesProps {
   readonly useWindowsOpenSSH: boolean
@@ -77,8 +78,10 @@ export class Advanced extends React.Component<
   private reportDesktopUsageLabel() {
     return (
       <span>
-        Help GitHub Desktop improve by submitting{' '}
-        <LinkButton uri={SamplesURL}>usage stats</LinkButton>
+        {t('preferences.advanced.reportUsagePrefix')}
+        <LinkButton uri={SamplesURL}>
+          {t('preferences.advanced.usageStats')}
+        </LinkButton>
       </span>
     )
   }
@@ -87,9 +90,9 @@ export class Advanced extends React.Component<
     return (
       <DialogContent>
         <div className="advanced-section">
-          <h2>Background updates</h2>
+          <h2>{t('preferences.advanced.backgroundUpdates.heading')}</h2>
           <Checkbox
-            label="Show status icons in the repository list"
+            label={t('preferences.advanced.repositoryIndicators')}
             value={
               this.props.repositoryIndicatorsEnabled
                 ? CheckboxValue.On
@@ -99,20 +102,12 @@ export class Advanced extends React.Component<
             ariaDescribedBy="periodic-fetch-description"
           />
           <div id="periodic-fetch-description" className="settings-description">
-            <p>
-              These icons indicate which repositories have local or remote
-              changes, and require the periodic fetching of repositories that
-              are not currently selected.
-            </p>
-            <p>
-              Turning this off will not stop the periodic fetching of your
-              currently selected repository, but may improve overall app
-              performance for users with many repositories.
-            </p>
+            <p>{t('preferences.advanced.repositoryIndicatorsDescription1')}</p>
+            <p>{t('preferences.advanced.repositoryIndicatorsDescription2')}</p>
           </div>
         </div>
         <div className="advanced-section">
-          <h2>Usage</h2>
+          <h2>{t('preferences.advanced.usage.heading')}</h2>
           <Checkbox
             label={this.reportDesktopUsageLabel()}
             value={
@@ -123,11 +118,11 @@ export class Advanced extends React.Component<
             onChange={this.onReportingOptOutChanged}
           />
         </div>
-        <h2>Network and credentials</h2>
+        <h2>{t('preferences.advanced.networkCredentials.heading')}</h2>
         {this.renderSSHSettings()}
         <div className="advanced-section">
           <Checkbox
-            label={'Use Git Credential Manager'}
+            label={t('preferences.advanced.useGitCredentialManager')}
             value={
               this.state.useExternalCredentialHelper
                 ? CheckboxValue.On
@@ -141,12 +136,11 @@ export class Advanced extends React.Component<
             className="settings-description"
           >
             <p>
-              Use{' '}
+              {t('preferences.advanced.gitCredentialManagerPrefix')}
               <LinkButton uri="https://gh.io/gcm">
-                Git Credential Manager{' '}
-              </LinkButton>{' '}
-              for private repositories outside of GitHub.com. This feature is
-              experimental and subject to change.
+                Git Credential Manager
+              </LinkButton>
+              {t('preferences.advanced.gitCredentialManagerSuffix')}
             </p>
           </div>
         </div>
@@ -162,7 +156,7 @@ export class Advanced extends React.Component<
     return (
       <div className="advanced-section">
         <Checkbox
-          label="Use system OpenSSH (recommended)"
+          label={t('preferences.advanced.useSystemOpenSSH')}
           value={
             this.props.useWindowsOpenSSH ? CheckboxValue.On : CheckboxValue.Off
           }

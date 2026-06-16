@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { commitGrammar, RepositoryListItem } from './repository-list-item'
+import { RepositoryListItem } from './repository-list-item'
 import {
   groupRepositories,
   IRepositoryListItem,
@@ -183,12 +183,34 @@ export class RepositoriesList extends React.Component<
       return null
     }
 
-    return (
-      'The currently checked out branch is' +
-      (behind ? ` ${commitGrammar(behind)} behind ` : '') +
-      (behind && ahead ? 'and' : '') +
-      (ahead ? ` ${commitGrammar(ahead)} ahead of ` : '') +
-      'its tracked branch.'
+    let relationship = ''
+    if (behind > 0) {
+      relationship += t('repositories.tooltip.behind', {
+        commits: this.getCommitCountText(behind),
+      })
+    }
+
+    if (behind > 0 && ahead > 0) {
+      relationship += t('repositories.tooltip.and')
+    }
+
+    if (ahead > 0) {
+      relationship += t('repositories.tooltip.ahead', {
+        commits: this.getCommitCountText(ahead),
+      })
+    }
+
+    return `${t('repositories.tooltip.currentBranchPrefix')}${relationship}${t(
+      'repositories.tooltip.trackedBranchSuffix'
+    )}`
+  }
+
+  private getCommitCountText(count: number) {
+    return t(
+      count === 1
+        ? 'repositories.tooltip.commitCount.one'
+        : 'repositories.tooltip.commitCount.other',
+      { count }
     )
   }
 
@@ -203,7 +225,7 @@ export class RepositoriesList extends React.Component<
     const aheadBehindTooltip = this.getAheadBehindTooltip(aheadBehind)
     const hasChanges = changedFilesCount > 0
     const uncommittedChangesTooltip = hasChanges
-      ? `There are uncommitted changes in this repository.`
+      ? t('repositories.tooltip.uncommittedChanges')
       : null
 
     const ahead = aheadBehind?.ahead ?? 0
@@ -212,12 +234,12 @@ export class RepositoriesList extends React.Component<
     return (
       <div className="repository-list-item-tooltip list-item-tooltip">
         <div>
-          <div className="label">Full Name: </div>
+          <div className="label">{t('repositories.tooltip.fullName')} </div>
           {realName}
           {alias && <> ({alias})</>}
         </div>
         <div>
-          <div className="label">Path: </div>
+          <div className="label">{t('repositories.tooltip.path')} </div>
           {repository.path}
         </div>
         {aheadBehindTooltip && (
@@ -389,7 +411,7 @@ export class RepositoriesList extends React.Component<
         ariaExpanded={this.state.newRepositoryMenuExpanded}
         onKeyDown={this.onNewRepositoryButtonKeyDown}
       >
-        Add
+        {t('repositories.addButton')}
         <Octicon symbol={octicons.triangleDown} />
       </Button>
     )
@@ -407,21 +429,21 @@ export class RepositoriesList extends React.Component<
     return (
       <div className="no-items no-results-found">
         <img src={BlankSlateImage} className="blankslate-image" alt="" />
-        <div className="title">Sorry, I can't find that repository</div>
+        <div className="title">{t('repositories.noResults.title')}</div>
 
         <div className="protip">
-          ProTip! Press{' '}
+          {t('repositories.noResults.protipStart')}
           <div className="kbd-shortcut">
             <KeyboardShortcut darwinKeys={['⌘', 'O']} keys={['Ctrl', 'O']} />
-          </div>{' '}
-          to quickly add a local repository, and{' '}
+          </div>
+          {t('repositories.noResults.protipAddLocal')}
           <div className="kbd-shortcut">
             <KeyboardShortcut
               darwinKeys={['⇧', '⌘', 'O']}
               keys={['Ctrl', 'Shift', 'O']}
             />
-          </div>{' '}
-          to clone from anywhere within the app
+          </div>
+          {t('repositories.noResults.protipClone')}
         </div>
       </div>
     )
@@ -430,17 +452,15 @@ export class RepositoriesList extends React.Component<
   private onNewRepositoryButtonClick = () => {
     const items: IMenuItem[] = [
       {
-        label: __DARWIN__ ? 'Clone Repository…' : 'Clone repository…',
+        label: t('repositories.menu.cloneRepository'),
         action: this.onCloneRepository,
       },
       {
-        label: __DARWIN__ ? 'Create New Repository…' : 'Create new repository…',
+        label: t('repositories.menu.createNewRepository'),
         action: this.onCreateNewRepository,
       },
       {
-        label: __DARWIN__
-          ? 'Add Existing Repository…'
-          : 'Add existing repository…',
+        label: t('repositories.menu.addExistingRepository'),
         action: this.onAddExistingRepository,
       },
     ]
