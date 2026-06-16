@@ -30,6 +30,7 @@ import {
   supportsNotificationsPermissionRequest,
 } from 'desktop-notifications'
 import { LinkButton } from '../lib/link-button'
+import { t } from '../../lib/i18n'
 
 enum TestNotificationType {
   PullRequestReview,
@@ -199,11 +200,11 @@ export class TestNotifications extends React.Component<
       return (
         <>
           {' '}
-          You need to{' '}
+          {t('testNotifications.permissionPrefix')}{' '}
           <LinkButton onClick={this.onGrantNotificationPermission}>
-            grant permission
+            {t('testNotifications.grantPermission')}
           </LinkButton>{' '}
-          to display these notifications from GitHub Desktop.
+          {t('testNotifications.permissionSuffix')}
         </>
       )
     }
@@ -217,36 +218,45 @@ export class TestNotifications extends React.Component<
     if (warnNotificationsDenied) {
       return (
         <>
-          <span className="warning-icon">⚠️</span> GitHub Desktop has no
-          permission to display notifications. Please, enable them in the{' '}
+          <span className="warning-icon">⚠️</span>{' '}
+          {t('testNotifications.permissionDeniedPrefix')}{' '}
           <LinkButton uri={notificationSettingsURL}>
-            Notifications Settings
+            {t('testNotifications.notificationSettings')}
           </LinkButton>
-          .
+          {t('testNotifications.permissionDeniedSuffix')}
         </>
       )
     }
 
     const verb = suggestConfigureNotifications
-      ? 'properly configured'
-      : 'enabled'
+      ? t('testNotifications.properlyConfigured')
+      : t('testNotifications.enabled')
 
     return (
       <>
-        Make sure notifications are {verb} for GitHub Desktop in the{' '}
+        {t('testNotifications.configurePrefix', { verb })}{' '}
         <LinkButton uri={notificationSettingsURL}>
-          Notifications Settings
+          {t('testNotifications.notificationSettings')}
         </LinkButton>
-        .
+        {t('testNotifications.configureSuffix')}
       </>
     )
   }
 
   private getTypeFriendlyName(type?: TestNotificationType): string {
     const titleMap = new Map<TestNotificationType, string>([
-      [TestNotificationType.PullRequestReview, 'Pull Request Review'],
-      [TestNotificationType.PullRequestComment, 'Pull Request Comment'],
-      [TestNotificationType.ChecksFailed, 'Pull Request Checks Failed'],
+      [
+        TestNotificationType.PullRequestReview,
+        t('testNotifications.type.pullRequestReview'),
+      ],
+      [
+        TestNotificationType.PullRequestComment,
+        t('testNotifications.type.pullRequestComment'),
+      ],
+      [
+        TestNotificationType.ChecksFailed,
+        t('testNotifications.type.checksFailed'),
+      ],
     ])
 
     return (
@@ -473,7 +483,7 @@ export class TestNotifications extends React.Component<
     if (this.state.selectedFlow === null) {
       return (
         <div>
-          <p>Select the type of notification to display:</p>
+          <p>{t('testNotifications.selectType')}</p>
           <div className="notification-type-list">
             {this.renderNotificationType(
               TestNotificationType.PullRequestReview
@@ -492,7 +502,7 @@ export class TestNotifications extends React.Component<
     )
 
     if (currentStep === undefined) {
-      return <p>Done!</p>
+      return <p>{t('testNotifications.done')}</p>
     }
 
     switch (currentStep) {
@@ -515,12 +525,14 @@ export class TestNotifications extends React.Component<
     const { pullRequests, selectedRows } = this.state
 
     if (pullRequests.length === 0) {
-      return <p>No pull requests found</p>
+      return <p>{t('testNotifications.noPullRequests')}</p>
     }
 
     return (
       <div>
-        Pull requests for {this.getTypeFriendlyName()}:
+        {t('testNotifications.pullRequestsFor', {
+          type: this.getTypeFriendlyName(),
+        })}
         <SectionList
           rowHeight={40}
           rowCount={[pullRequests.length]}
@@ -559,12 +571,12 @@ export class TestNotifications extends React.Component<
     const { reviews, selectedRows } = this.state
 
     if (reviews.length === 0) {
-      return <p>No reviews found</p>
+      return <p>{t('testNotifications.noReviews')}</p>
     }
 
     return (
       <div>
-        Reviews:
+        {t('testNotifications.reviews')}
         <SectionList
           rowHeight={40}
           rowCount={[reviews.length]}
@@ -609,12 +621,12 @@ export class TestNotifications extends React.Component<
     const { comments, selectedRows } = this.state
 
     if (comments.length === 0) {
-      return <p>No comments found</p>
+      return <p>{t('testNotifications.noComments')}</p>
     }
 
     return (
       <div>
-        Comments:
+        {t('testNotifications.comments')}
         <SectionList
           rowHeight={40}
           rowCount={[comments.length]}
@@ -652,12 +664,14 @@ export class TestNotifications extends React.Component<
       <TestNotificationItemRowContent
         dispatcher={this.props.dispatcher}
         html_url={comment.html_url}
-        linkButtonDescription={`Open in browser: ${comment.body}`}
+        linkButtonDescription={t('testNotifications.openInBrowserWithLabel', {
+          label: comment.body,
+        })}
         leftAccessory={this.renderReviewStateIcon('COMMENTED')}
       >
         {comment.body}
         <br />
-        by <i>{comment.user.login}</i>
+        {t('testNotifications.by')} <i>{comment.user.login}</i>
       </TestNotificationItemRowContent>
     )
   }
@@ -669,12 +683,14 @@ export class TestNotifications extends React.Component<
       <TestNotificationItemRowContent
         dispatcher={this.props.dispatcher}
         html_url={review.html_url}
-        linkButtonDescription={`Open in browser: ${review.body}`}
+        linkButtonDescription={t('testNotifications.openInBrowserWithLabel', {
+          label: review.body,
+        })}
         leftAccessory={this.renderReviewStateIcon(review.state)}
       >
-        {review.body || <i>Review without body</i>}
+        {review.body || <i>{t('testNotifications.reviewWithoutBody')}</i>}
         <br />
-        by <i>{review.user.login}</i>
+        {t('testNotifications.by')} <i>{review.user.login}</i>
       </TestNotificationItemRowContent>
     )
   }
@@ -732,7 +748,7 @@ export class TestNotifications extends React.Component<
     return (
       <Dialog
         id="test-notifications"
-        title="Test Notifications"
+        title={t('testNotifications.title')}
         onSubmit={this.props.onDismissed}
         onDismissed={this.props.onDismissed}
       >
@@ -742,11 +758,11 @@ export class TestNotifications extends React.Component<
         </DialogContent>
         <DialogFooter>
           <OkCancelButtonGroup
-            okButtonText="Close"
+            okButtonText={t('common.close')}
             okButtonDisabled={false}
             cancelButtonDisabled={false}
             cancelButtonVisible={this.state.selectedFlow !== null}
-            cancelButtonText="Back"
+            cancelButtonText={t('common.back')}
             onCancelButtonClick={this.onBack}
           />
         </DialogFooter>
