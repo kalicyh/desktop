@@ -1,3 +1,5 @@
+import { t } from './i18n'
+
 // an error that Electron raises when it can't find the installation for the running app
 const squirrelMissingRegex = /^Can not find Squirrel$/
 
@@ -17,19 +19,13 @@ const squirrelTimeoutRegex =
  */
 export function parseError(error: Error): Error | null {
   if (squirrelMissingRegex.test(error.message)) {
-    return new Error(
-      'The application is missing a dependency it needs to check and install updates. This is very, very bad.'
-    )
+    return new Error(t('update.error.missingDependency'))
   }
   if (squirrelDNSRegex.test(error.message)) {
-    return new Error(
-      'GitHub Desktop was not able to contact the update server. Ensure you have internet connectivity and try again.'
-    )
+    return new Error(t('update.error.couldNotContactServer'))
   }
   if (squirrelTimeoutRegex.test(error.message)) {
-    return new Error(
-      'GitHub Desktop was not able to check for updates due to a timeout. Ensure you have internet connectivity and try again.'
-    )
+    return new Error(t('update.error.timeout'))
   }
 
   return null
