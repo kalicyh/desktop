@@ -484,14 +484,6 @@ const exactTranslations = new Map<string, string>([
   ["I'll be using this fork…", '我将使用此复刻…'],
   ['@username', '@username'],
   ['. Want to', '。是否要'],
-  ['No pull requests found', '未找到拉取请求'],
-  ['No comments found', '未找到评论'],
-  ['No reviews found', '未找到审查'],
-  ['Select the type of notification to display:', '选择要显示的通知类型：'],
-  ['Test Notifications', '测试通知'],
-  ['Stats reported.', '统计信息已上报。'],
-  ['You need to', '你需要'],
-  ['grant permission', '授予权限'],
   [
     'to display these notifications from GitHub Desktop.',
     '以显示来自 GitHub Desktop 的这些通知。',
@@ -654,8 +646,6 @@ const exactTranslations = new Map<string, string>([
     '。我们非常感谢你愿意贡献，让这款应用对所有人都更好！',
   ],
   ['You contributed:', '你的贡献：'],
-  ['No comments found', '未找到评论'],
-  ['No reviews found', '未找到审查'],
   ['Support details', '支持详情'],
   [
     'Could not securely connect to the server, because its certificate is not trusted. Attackers might be trying to steal your information. To connect unsafely, which may put your data at risk, you can “Always trust” the certificate and try again.',
