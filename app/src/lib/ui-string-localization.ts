@@ -484,47 +484,6 @@ const exactTranslations = new Map<string, string>([
   ["I'll be using this fork…", '我将使用此复刻…'],
   ['@username', '@username'],
   ['. Want to', '。是否要'],
-  [
-    'Your branch is up to date with the compared branch (',
-    '你的分支已与比较分支（',
-  ],
-  ['The compared branch (', '比较分支（'],
-  [') is up to date with your branch', '）已与你的分支保持最新'],
-  ['Branch filter', '分支筛选'],
-  ['No open pull requests in', '没有打开的拉取请求：'],
-  ['Loading pull requests as fast as I can!', '正在尽快加载拉取请求！'],
-  ['Hang tight', '请稍候'],
-  ["You're all set!", '已全部就绪！'],
-  ["Sorry, I can't find that branch", '抱歉，找不到该分支'],
-  ["Sorry, I can't find that pull request!", '抱歉，找不到该拉取请求！'],
-  ["Sorry, I can't find that remote branch.", '抱歉，找不到该远程分支。'],
-  ['Do you want to create a new branch instead?', '是否改为创建新分支？'],
-  [
-    'to quickly create a new branch from anywhere within the app',
-    '可在应用内任意位置快速创建新分支',
-  ],
-  ['Would you like to', '是否要'],
-  ['and get going on your next project?', '并开始下一个项目？'],
-  ['from the current branch?', '从当前分支？'],
-  ['Select a base branch above.', '请在上方选择基础分支。'],
-  ['There are no changes.', '没有更改。'],
-  [
-    'Could not find a default branch to compare against.',
-    '找不到用于比较的默认分支。',
-  ],
-  [
-    'You can only open pull requests against remote branches.',
-    '只能针对远程分支打开拉取请求。',
-  ],
-  ['Checking mergeability&hellip;', '正在检查可合并性…'],
-  [
-    'Don’t worry, you can still create the pull request.',
-    '不用担心，你仍然可以创建拉取请求。',
-  ],
-  ['Able to merge.', '可以合并。'],
-  ['These branches can be automatically merged.', '这些分支可以自动合并。'],
-  ["Can't automatically merge.", '无法自动合并。'],
-  ['Error checking merge status.', '检查合并状态时出错。'],
   ['No pull requests found', '未找到拉取请求'],
   ['No comments found', '未找到评论'],
   ['No reviews found', '未找到审查'],
@@ -1226,20 +1185,6 @@ function translateTemplate(value: string): string | null {
   )
   if (currentBranchExists !== null) {
     return `当前分支（${currentBranchExists[1]}）在本机有 ${currentBranchExists[2]}。`
-  }
-
-  const compareUpToDate = value.match(
-    /^Your branch is up to date with the compared branch \((.+)\)$/
-  )
-  if (compareUpToDate !== null) {
-    return `你的分支已与比较分支（${compareUpToDate[1]}）保持最新`
-  }
-
-  const comparedUpToDate = value.match(
-    /^The compared branch \((.+)\) is up to date with your branch$/
-  )
-  if (comparedUpToDate !== null) {
-    return `比较分支（${comparedUpToDate[1]}）已与你的分支保持最新`
   }
 
   const forcePush = value.match(
