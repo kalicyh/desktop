@@ -152,11 +152,13 @@ export class AddWorktreeDialog extends React.Component<
         <p className="branch-status-hint">
           {branch.type === BranchType.Remote ? (
             <>
-              Will check out remote branch <Ref>{effectiveName}</Ref>.
+              {t('worktree.add.willCheckoutRemoteBranch')}{' '}
+              <Ref>{effectiveName}</Ref>.
             </>
           ) : (
             <>
-              Will check out existing branch <Ref>{effectiveName}</Ref>.
+              {t('worktree.add.willCheckoutExistingBranch')}{' '}
+              <Ref>{effectiveName}</Ref>.
             </>
           )}
         </p>
@@ -172,7 +174,7 @@ export class AddWorktreeDialog extends React.Component<
 
     return (
       <div id="add-worktree-path-msg">
-        Worktree will be created at <Ref>{fullPath}</Ref>.
+        {t('worktree.add.pathMessage')} <Ref>{fullPath}</Ref>.
       </div>
     )
   }

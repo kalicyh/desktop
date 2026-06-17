@@ -482,82 +482,6 @@ const exactTranslations = new Map<string, string>([
   ],
   ['We will help you contribute to the', '我们将帮助你向'],
   ["I'll be using this fork…", '我将使用此复刻…'],
-  ['Error details', '错误详情'],
-  ['No worktrees found', '没有找到工作树'],
-  ['Current worktree dropdown button', '当前工作树下拉按钮'],
-  ['New worktree', '新建工作树'],
-  ['Will check out remote branch', '将检出远程分支'],
-  ['Will check out existing branch', '将检出现有分支'],
-  ['Worktree will be created at', '工作树将创建于'],
-  ['Are you sure you want to delete the worktree', '确定要删除工作树'],
-  ['Deleting the worktree', '正在删除工作树'],
-  ['Would you like to forcefully delete the worktree', '是否强制删除工作树'],
-  ['Stashed changes', '已贮藏的更改'],
-  ['Stashed Changes', '已贮藏的更改'],
-  ['Stash file list', '贮藏文件列表'],
-  [
-    'will move your stashed files to the Changes list.',
-    '会将贮藏的文件移动到更改列表。',
-  ],
-  [
-    'When a stash exists, access it at the bottom of the Changes tab to the left.',
-    '存在贮藏时，可在左侧“更改”标签底部访问。',
-  ],
-  [
-    'Are you sure you want to discard these stashed changes?',
-    '确定要丢弃这些已贮藏的更改？',
-  ],
-  [
-    'Your current stash will be overwritten by creating a new stash',
-    '创建新贮藏会覆盖当前贮藏',
-  ],
-  [
-    'Your in-progress work will be stashed on this branch for you to return to later',
-    '进行中的工作会被贮藏在此分支，方便稍后返回',
-  ],
-  [
-    'Your in-progress work will follow you to the new branch',
-    '进行中的工作会跟随你到新分支',
-  ],
-  [
-    'You have changes on this branch. What would you like to do with them?',
-    '此分支上有更改。你希望如何处理？',
-  ],
-  [
-    'You can stash your changes now and recover them afterwards.',
-    '你可以现在贮藏更改，并稍后恢复。',
-  ],
-  ['Untracked files will be excluded', '未跟踪文件将被排除'],
-  ['Discard changes', '丢弃更改'],
-  ['Are you sure you want to discard all', '确定要丢弃全部'],
-  ['changed files?', '个已更改文件？'],
-  [
-    'Are you sure you want to discard all changes to:',
-    '确定要丢弃对以下内容的全部更改：',
-  ],
-  [
-    'Are you sure you want to discard the selected changes to:',
-    '确定要丢弃对以下内容的所选更改：',
-  ],
-  [
-    'Changes can be restored by retrieving them from the',
-    '可以从这里恢复更改：',
-  ],
-  ['Common reasons are:', '常见原因包括：'],
-  ['Failed to discard changes to', '丢弃更改失败：'],
-  ['is configured to delete items immediately.', '已配置为立即删除项目。'],
-  ['Restricted access to move the file(s).', '移动文件受限。'],
-  [
-    'These changes will be unrecoverable from the',
-    '这些更改将无法从这里恢复：',
-  ],
-  ['Do not show this message again', '不再显示此消息'],
-  ['No files match your current filters', '没有文件匹配当前筛选器'],
-  ['Clear filters', '清除筛选器'],
-  ['Filter Options', '筛选选项'],
-  ['Adjust the filters to see all', '调整筛选器以查看全部'],
-  ['Hidden changes will be committed.', '隐藏的更改也会被提交。'],
-  ['You have a filter applied. There are', '你已应用筛选器。有'],
   [
     'that will be committed. Are you sure you want to commit these changes?',
     '将被提交。确定要提交这些更改？',
@@ -1300,20 +1224,6 @@ function translateTemplate(value: string): string | null {
   )
   if (removeRepository !== null) {
     return `确定要从 GitHub Desktop 移除仓库“${removeRepository[1]}”？`
-  }
-
-  const deleteWorktree = value.match(
-    /^Are you sure you want to delete the worktree (.+)$/
-  )
-  if (deleteWorktree !== null) {
-    return `确定要删除工作树 ${deleteWorktree[1]}？`
-  }
-
-  const forceDeleteWorktree = value.match(
-    /^Would you like to forcefully delete the worktree (.+)$/
-  )
-  if (forceDeleteWorktree !== null) {
-    return `是否强制删除工作树 ${forceDeleteWorktree[1]}？`
   }
 
   const chooseAlias = value.match(
