@@ -360,33 +360,9 @@ const exactTranslations = new Map<string, string>([
   ['Checking for ability to', '正在检查是否可以'],
   ['automatically…', '自动执行…'],
   [
-    'Unable to start rebase. Check you have chosen a valid branch.',
-    '无法开始变基。请确认选择了有效分支。',
-  ],
-  [
-    'Unable to merge unrelated histories in this repository',
-    '无法合并此仓库中无关联的历史',
-  ],
-  [
     'Unable to display diff when multiple non-consecutive selected.',
     '选择多个非连续提交时无法显示差异。',
   ],
-  [
-    'Select a single commit or a range of consecutive commits to view a diff.',
-    '选择单个提交或连续提交范围以查看差异。',
-  ],
-  [
-    'Right click on multiple commits to see options.',
-    '右键点击多个提交以查看选项。',
-  ],
-  ['Drag the commits to squash or reorder them.', '拖动提交以压缩或重新排序。'],
-  [
-    'Drag the commits to the branch menu to cherry-pick them.',
-    '将提交拖到分支菜单以拣选它们。',
-  ],
-  ['You can:', '你可以：'],
-  ['to choose a new location.', '选择新位置。'],
-  ['to confirm.', '以确认。'],
   ['You will', '你将'],
   ['see changes from the following', '看到来自以下内容的更改'],
   [
