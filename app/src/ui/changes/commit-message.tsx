@@ -1249,11 +1249,12 @@ export class CommitMessage extends React.Component<
     if (commitToAmend !== null) {
       return (
         <CommitWarning icon={CommitWarningIcon.Information}>
-          Your changes will modify your <strong>most recent commit</strong>.{' '}
+          {t('commitMessage.amendNotice.prefix')}{' '}
+          <strong>{t('commitMessage.amendNotice.mostRecentCommit')}</strong>.{' '}
           <LinkButton onClick={this.props.onStopAmending}>
-            Stop amending
+            {t('commitMessage.amendNotice.stopAmending')}
           </LinkButton>{' '}
-          to make these changes as a new commit.
+          {t('commitMessage.amendNotice.suffix')}
         </CommitWarning>
       )
     } else {
