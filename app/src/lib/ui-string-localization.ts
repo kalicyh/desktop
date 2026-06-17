@@ -81,71 +81,14 @@ const exactTranslations = new Map<string, string>([
   ['Server stack with cloud', '带云的服务器堆栈'],
   ['Partially checked check list', '部分勾选的清单'],
   ['Hands clapping', '鼓掌'],
-  ['License and Open Source Notices', '许可和开源声明'],
-  ['Terms and Conditions', '条款和条件'],
-  [
-    'Responsible use of Copilot in GitHub Desktop',
-    '在 GitHub Desktop 中负责任地使用 Copilot',
-  ],
-  ['Supported operating systems', '支持的操作系统'],
-  ['Looking for the latest features?', '想体验最新功能？'],
-  ['Beta Channel', 'Beta 频道'],
-  ['Check out the', '查看'],
-  ['release notes', '发行说明'],
-  ['Quit and Install Update', '退出并安装更新'],
-  ['Checking for updates…', '正在检查更新…'],
-  ['Downloading update…', '正在下载更新…'],
-  [
-    'An update has been downloaded and is ready to be installed.',
-    '更新已下载并准备安装。',
-  ],
-  [
-    'This operating system is no longer supported. Software updates have been disabled.',
-    '此操作系统已不再受支持。软件更新已禁用。',
-  ],
-  [
-    'The application is currently running in development and will not receive any updates.',
-    '应用当前以开发模式运行，不会接收任何更新。',
-  ],
   [
     "Couldn't determine the last time an update check was performed. You may be running an old version. Please try manually checking for updates and contact GitHub Support if the problem persists",
     '无法确定上次检查更新的时间。你可能正在运行旧版本。请尝试手动检查更新；如果问题仍然存在，请联系 GitHub 支持。',
   ],
   [
-    'An optimized version of GitHub Desktop is available for your',
-    '已有适用于你的',
-  ],
-  [
-    'machine and will be installed at the next launch or',
-    '优化版 GitHub Desktop，将在下次启动时安装，或',
-  ],
-  ['restart GitHub Desktop', '重启 GitHub Desktop'],
-  ['Exciting new features have been added', '已添加令人期待的新功能'],
-  ["what's new", '新增内容'],
-  ['This version of GitHub Desktop is missing', '此版本 GitHub Desktop 缺少'],
-  ['important updates', '重要更新'],
-  [
     'An updated version of GitHub Desktop is available and will be installed at the next launch. See',
     '已有新版 GitHub Desktop，将在下次启动时安装。查看',
   ],
-  ['now to install pending updates.', '以立即安装待处理更新。'],
-  [
-    'Do not close GitHub Desktop while the update is in progress. Closing now may break your installation.',
-    '更新过程中请不要关闭 GitHub Desktop。现在关闭可能会损坏安装。',
-  ],
-  [
-    'Move GitHub Desktop to the Applications folder?',
-    '将 GitHub Desktop 移到“应用程序”文件夹？',
-  ],
-  [
-    'Do you want to move GitHub Desktop to the Applications folder now? This will also restart the app.',
-    '是否现在将 GitHub Desktop 移到“应用程序”文件夹？这也会重启应用。',
-  ],
-  [
-    "We've detected that you're not running GitHub Desktop from the Applications folder of your machine. This could cause problems with the app, including impacting your ability to sign in.",
-    '检测到你没有从本机“应用程序”文件夹运行 GitHub Desktop。这可能导致应用出现问题，包括影响登录。',
-  ],
-  ['The command line tool has been installed at', '命令行工具已安装到'],
   [
     'Add a repository to GitHub Desktop to start collaborating',
     '向 GitHub Desktop 添加仓库以开始协作',
