@@ -294,7 +294,7 @@ export class AuthorInput extends React.Component<
     }
 
     let actionDescription = t('authorInput.removedUser', {
-      username: authorToRemove.username,
+      username: authorToRemove.username ?? getFullTextForAuthor(authorToRemove),
     })
     if (isKnownAuthor(authorToRemove)) {
       actionDescription += ` (${authorToRemove.name})`
@@ -399,7 +399,7 @@ export class AuthorInput extends React.Component<
     this.emitAuthorsUpdated(newAuthors)
 
     let actionDescription = t('authorInput.addedUser', {
-      username: authorToAdd.username,
+      username: authorToAdd.username ?? getFullTextForAuthor(authorToAdd),
     })
     if (!isKnownAuthor(authorToAdd)) {
       this.attemptUnknownAuthorSearch(authorToAdd)

@@ -6,7 +6,11 @@ import { getLogDirectoryPath } from '../../lib/logging/get-log-path'
 import { UNSAFE_openDirectory } from '../shell'
 import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { MenuLabelsEvent } from '../../models/menu-labels'
-import { ApplicationLanguage, translate } from '../../lib/i18n'
+import {
+  ApplicationLanguage,
+  ResolvedApplicationLanguage,
+  translate,
+} from '../../lib/i18n'
 import * as ipcWebContents from '../ipc-webcontents'
 import { mkdir } from 'fs/promises'
 import { buildTestMenu } from './build-test-menu'
@@ -615,7 +619,7 @@ export function buildDefaultMenuTemplate({
 function getPushLabel(
   isForcePushForCurrentRepository: boolean,
   askForConfirmationOnForcePush: boolean,
-  currentLanguage: ApplicationLanguage
+  currentLanguage: ResolvedApplicationLanguage
 ): string {
   if (!isForcePushForCurrentRepository) {
     return translate('menu.push', currentLanguage)
@@ -630,7 +634,7 @@ function getPushLabel(
 
 function getStashedChangesLabel(
   isStashedChangesVisible: boolean,
-  currentLanguage: ApplicationLanguage
+  currentLanguage: ResolvedApplicationLanguage
 ): string {
   if (isStashedChangesVisible) {
     return translate('menu.hideStashedChanges', currentLanguage)
