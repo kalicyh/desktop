@@ -453,27 +453,7 @@ const exactTranslations = new Map<string, string>([
     'has been merged, you can also go to GitHub to delete the remote branch.',
     '已合并，你也可以前往 GitHub 删除远程分支。',
   ],
-  ['Delete tag…', '删除标签…'],
-  ['Are you sure you want to delete the tag', '确定要删除标签'],
-  ['A tag named', '名为'],
   ['already exists', '已存在'],
-  ['The tag name cannot be longer than', '标签名称不能长于'],
-  ['Create branch based on…', '基于…创建分支'],
-  ['Your new branch will be based on', '你的新分支将基于'],
-  ["Your new branch will be based on the commit '", "你的新分支将基于提交 '"],
-  [
-    'Your new branch will be based on your currently checked out branch (',
-    '你的新分支将基于当前检出的分支（',
-  ],
-  [
-    'Your current branch is unborn (does not contain any commits). Creating a new branch will rename the current branch.',
-    '当前分支尚未诞生（不包含任何提交）。创建新分支会重命名当前分支。',
-  ],
-  [
-    'You do not currently have any branch checked out (your HEAD reference is detached). As such your new branch will be based on your currently checked out commit (',
-    '你当前没有检出任何分支（HEAD 引用处于分离状态）。因此新分支将基于当前检出的提交（',
-  ],
-  [') from your repository.', '）从你的仓库中。'],
   ['The current branch (', '当前分支（'],
   [
     ") hasn't been published to the remote yet. By publishing it",
@@ -491,28 +471,6 @@ const exactTranslations = new Map<string, string>([
     ') is already published to GitHub. Preview the changes this pull request will have before proposing your changes.',
     '）已发布到 GitHub。在提出更改前预览此拉取请求将包含的更改。',
   ],
-  [
-    'Your branch must be published before opening a pull request.',
-    '打开拉取请求前必须先发布分支。',
-  ],
-  ['Would you like to publish', '是否发布'],
-  ['now and open a pull request?', '并打开拉取请求？'],
-  ['Would you like to push your changes to', '是否将更改推送到'],
-  ['before creating your pull request?', '然后创建拉取请求？'],
-  ["that haven't been pushed to the remote yet.", '个尚未推送到远程的提交。'],
-  ['Publish repository', '发布仓库'],
-  ['Publish branch', '发布分支'],
-  ['Publish your branch', '发布你的分支'],
-  ['Publish your repository to GitHub', '将你的仓库发布到 GitHub'],
-  [
-    'Publish your repository to GitHub. Need help?',
-    '将你的仓库发布到 GitHub。需要帮助？',
-  ],
-  [
-    'This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others.',
-    '此仓库目前仅在本机可用。发布到 GitHub 后，你可以共享它并与他人协作。',
-  ],
-  ['Keep this code private', '保持此代码私有'],
   [
     'This will create a repository on your local machine, and push it to your account',
     '这将在本机创建仓库，并推送到你的账号',
@@ -1402,13 +1360,6 @@ function translateTemplate(value: string): string | null {
     return `确定要从 GitHub Desktop 移除仓库“${removeRepository[1]}”？`
   }
 
-  const deleteTag = value.match(
-    /^Are you sure you want to delete the tag (.+)$/
-  )
-  if (deleteTag !== null) {
-    return `确定要删除标签 ${deleteTag[1]}？`
-  }
-
   const deleteWorktree = value.match(
     /^Are you sure you want to delete the worktree (.+)$/
   )
@@ -1433,20 +1384,6 @@ function translateTemplate(value: string): string | null {
   const missingRepository = value.match(/^Can't find "(.+)"$/)
   if (missingRepository !== null) {
     return `找不到“${missingRepository[1]}”`
-  }
-
-  const createBranchFromCommit = value.match(
-    /^Your new branch will be based on the commit '(.+)' from your repository\.$/
-  )
-  if (createBranchFromCommit !== null) {
-    return `你的新分支将基于仓库中的提交“${createBranchFromCommit[1]}”。`
-  }
-
-  const branchBase = value.match(
-    /^Your new branch will be based on your currently checked out branch \((.+)\)\.$/
-  )
-  if (branchBase !== null) {
-    return `你的新分支将基于当前检出的分支（${branchBase[1]}）。`
   }
 
   const currentBranchPublished = value.match(
@@ -1475,20 +1412,6 @@ function translateTemplate(value: string): string | null {
   )
   if (currentBranchExists !== null) {
     return `当前分支（${currentBranchExists[1]}）在本机有 ${currentBranchExists[2]}。`
-  }
-
-  const publishBranch = value.match(
-    /^Would you like to publish (.+) now and open a pull request\?$/
-  )
-  if (publishBranch !== null) {
-    return `是否现在发布 ${publishBranch[1]} 并打开拉取请求？`
-  }
-
-  const pushChanges = value.match(
-    /^Would you like to push your changes to (.+) before creating your pull request\?$/
-  )
-  if (pushChanges !== null) {
-    return `是否先将更改推送到 ${pushChanges[1]}，再创建拉取请求？`
   }
 
   const compareUpToDate = value.match(
