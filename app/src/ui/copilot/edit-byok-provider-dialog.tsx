@@ -206,7 +206,9 @@ export class EditCopilotBYOKProviderDialog extends React.Component<
             value={this.state.type}
             onChange={this.onTypeChanged}
           >
-            <option value="openai">OpenAI / OpenAI-compatible</option>
+            <option value="openai">
+              {t('copilot.byok.provider.openAICompatible')}
+            </option>
             <option value="azure">Azure</option>
             <option value="anthropic">Anthropic</option>
           </Select>

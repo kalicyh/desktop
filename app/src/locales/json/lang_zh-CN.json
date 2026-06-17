@@ -1671,6 +1671,7 @@
   "copilot.byok.provider.name": "名称",
   "copilot.byok.provider.namePlaceholder": "我的提供商",
   "copilot.byok.provider.type": "类型",
+  "copilot.byok.provider.openAICompatible": "OpenAI / OpenAI 兼容",
   "copilot.byok.provider.baseUrl": "base URL",
   "copilot.byok.provider.apiFormat": "API 格式",
   "copilot.byok.provider.chatCompletions": "聊天补全（默认）",

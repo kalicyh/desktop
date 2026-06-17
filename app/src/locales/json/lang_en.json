@@ -1671,6 +1671,7 @@
   "copilot.byok.provider.name": "Name",
   "copilot.byok.provider.namePlaceholder": "My provider",
   "copilot.byok.provider.type": "Type",
+  "copilot.byok.provider.openAICompatible": "OpenAI / OpenAI-compatible",
   "copilot.byok.provider.baseUrl": "Base URL",
   "copilot.byok.provider.apiFormat": "API Format",
   "copilot.byok.provider.chatCompletions": "Chat completions (default)",
