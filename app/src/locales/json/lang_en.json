@@ -714,6 +714,7 @@
   "changes.commitDescriptionScreenReaderLabel": "Commit description",
   "commitMessage.coAuthors.remove": "Remove co-authors",
   "commitMessage.coAuthors.add": "Add co-authors",
+  "authorInput.coAuthors": "Co-Authors",
   "commitMessage.copilot.generate": "Generate commit message with Copilot",
   "commitMessage.copilot.filesMustBeSelected": ". Files must be selected to generate a commit message.",
   "commitMessage.generatingDetails": "Generating commit details…",

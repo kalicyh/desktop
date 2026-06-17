@@ -714,6 +714,7 @@
   "changes.commitDescriptionScreenReaderLabel": "提交描述",
   "commitMessage.coAuthors.remove": "移除共同作者",
   "commitMessage.coAuthors.add": "添加共同作者",
+  "authorInput.coAuthors": "共同作者",
   "commitMessage.copilot.generate": "用 Copilot 生成提交消息",
   "commitMessage.copilot.filesMustBeSelected": "。必须先选择文件才能生成提交消息。",
   "commitMessage.generatingDetails": "正在生成提交详情…",
