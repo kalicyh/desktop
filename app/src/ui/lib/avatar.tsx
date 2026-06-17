@@ -210,6 +210,15 @@ function getEmailAvatarUrl(ep: string) {
   }
 }
 
+function isGitHubAvatarURL(avatarURL: string) {
+  try {
+    const { hostname } = new URL(avatarURL)
+    return hostname === 'avatars.githubusercontent.com'
+  } catch {
+    return false
+  }
+}
+
 /**
  * Produces an ordered iterable of avatar urls to attempt to load for the
  * given user.
@@ -245,6 +254,10 @@ function getAvatarUrlCandidates(
       // This should never happen since URL#constructor only throws for invalid
       // URLs which we can expect the API to not give us
       candidates.push(avatarURL)
+    }
+
+    if (!isGitHubAvatarURL(avatarURL)) {
+      return candidates
     }
   }
 
