@@ -1,6 +1,17 @@
 import { git } from './core'
 import { Repository } from '../../models/repository'
 import { normalize } from 'path'
+import { homedir } from 'os'
+
+export interface IGitIdentityRule {
+  readonly pattern: string
+  readonly host: string
+  readonly configPath: string
+  readonly name: string
+  readonly email: string
+  readonly login: string | null
+  readonly avatarURL: string | null
+}
 
 /**
  * Look up a config value by name in the repository.
@@ -26,6 +37,203 @@ export function getGlobalConfigValue(
   }
 ): Promise<string | null> {
   return getConfigValueInPath(name, null, false, undefined, env)
+}
+
+export async function getGlobalGitIdentityRules(env?: {
+  HOME: string
+}): Promise<ReadonlyArray<IGitIdentityRule>> {
+  const result = await git(
+    [
+      'config',
+      '--global',
+      '-z',
+      '--get-regexp',
+      '^includeIf\\.hasconfig:remote\\.\\*\\.url:.*\\.path$',
+    ],
+    __dirname,
+    'getGlobalGitIdentityRules',
+    { successExitCodes: new Set([0, 1]), env }
+  )
+
+  if (result.exitCode === 1 || result.stdout.length === 0) {
+    return []
+  }
+
+  const rules = new Array<IGitIdentityRule>()
+
+  for (const entry of result.stdout.split('\0')) {
+    if (entry.length === 0) {
+      continue
+    }
+
+    const lineBreakIndex = entry.indexOf('\n')
+    if (lineBreakIndex === -1) {
+      continue
+    }
+
+    const key = entry.substring(0, lineBreakIndex)
+    const rawConfigPath = entry.substring(lineBreakIndex + 1)
+    const pattern = getGitIdentityRulePattern(key)
+
+    if (pattern === null) {
+      continue
+    }
+
+    const configPath = expandConfigPath(rawConfigPath, env)
+    const identity = await getGitIdentityFromFile(configPath, env)
+
+    if (identity === null) {
+      continue
+    }
+
+    rules.push({
+      pattern,
+      host: getGitIdentityRuleHost(pattern),
+      configPath,
+      name: identity.name,
+      email: identity.email,
+      login: null,
+      avatarURL: null,
+    })
+  }
+
+  return Promise.all(rules.map(rule => withDesktopAccountInfo(rule, env)))
+}
+
+async function withDesktopAccountInfo(
+  rule: IGitIdentityRule,
+  env?: {
+    HOME: string
+  }
+): Promise<IGitIdentityRule> {
+  const login = await getGlobalConfigValue(getDesktopAccountLoginKey(rule), env)
+
+  if (!login) {
+    return rule
+  }
+
+  return {
+    ...rule,
+    login,
+    avatarURL: await getGitIdentityAvatarURL(rule.host, login),
+  }
+}
+
+async function getGitIdentityAvatarURL(
+  host: string,
+  login: string
+): Promise<string | null> {
+  if (!host.startsWith('gitea.')) {
+    return null
+  }
+
+  try {
+    const response = await fetch(
+      `https://${host}/api/v1/users/${encodeURIComponent(login)}`
+    )
+
+    if (!response.ok) {
+      log.warn(`Unable to load Gitea avatar for '${login}' from '${host}'`)
+      return null
+    }
+
+    const user = await response.json()
+    return typeof user.avatar_url === 'string' ? user.avatar_url : null
+  } catch (e) {
+    log.warn(`Unable to load Gitea avatar for '${login}' from '${host}'`, e)
+    return null
+  }
+}
+
+export function getDesktopAccountLoginKey(
+  rule: Pick<IGitIdentityRule, 'host'>
+) {
+  return `desktopAccount.${rule.host}.login`
+}
+
+export async function setGlobalGitIdentityRuleLogin(
+  rule: Pick<IGitIdentityRule, 'host'>,
+  login: string,
+  env?: {
+    HOME: string
+  }
+) {
+  const key = getDesktopAccountLoginKey(rule)
+
+  if (login.length === 0) {
+    if ((await getGlobalConfigValue(key, env)) !== null) {
+      await removeGlobalConfigValue(key, env)
+    }
+  } else {
+    await setGlobalConfigValue(key, login, env)
+  }
+}
+
+async function getGitIdentityFromFile(
+  configPath: string,
+  env?: {
+    HOME: string
+  }
+): Promise<{ readonly name: string; readonly email: string } | null> {
+  try {
+    const [name, email] = await Promise.all([
+      getConfigValueInFile(configPath, 'user.name', env),
+      getConfigValueInFile(configPath, 'user.email', env),
+    ])
+
+    return name && email ? { name, email } : null
+  } catch (e) {
+    log.warn(`Unable to read Git identity config '${configPath}'`, e)
+    return null
+  }
+}
+
+function getGitIdentityRulePattern(key: string): string | null {
+  const match =
+    /^includeif\.hasconfig:remote\.\*\.url:(?<pattern>.*)\.path$/i.exec(key)
+
+  return match?.groups?.pattern ?? null
+}
+
+function getGitIdentityRuleHost(pattern: string): string {
+  try {
+    return new URL(pattern.replace(/\*+$/, '')).hostname || pattern
+  } catch {
+    return pattern
+  }
+}
+
+function expandConfigPath(path: string, env?: { HOME: string }): string {
+  if (path === '~') {
+    return env?.HOME ?? homedir()
+  }
+
+  if (path.startsWith('~/')) {
+    return `${env?.HOME ?? homedir()}${path.substring(1)}`
+  }
+
+  return path
+}
+
+async function getConfigValueInFile(
+  path: string,
+  name: string,
+  env?: {
+    HOME: string
+  }
+): Promise<string | null> {
+  const result = await git(
+    ['config', '-z', '--file', path, name],
+    __dirname,
+    'getConfigValueInFile',
+    { successExitCodes: new Set([0, 1]), env }
+  )
+
+  if (result.exitCode === 1) {
+    return null
+  }
+
+  return result.stdout.split('\0')[0]
 }
 
 /**

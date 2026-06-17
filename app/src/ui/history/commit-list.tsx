@@ -30,6 +30,7 @@ import { Avatar } from '../lib/avatar'
 import { Octicon } from '../octicons'
 import * as octicons from '../octicons/octicons.generated'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 const RowHeight = 50
 
@@ -183,6 +184,8 @@ interface ICommitListProps {
 
   readonly preferAbsoluteDates: boolean
 
+  readonly gitIdentityRules?: ReadonlyArray<IGitIdentityRule>
+
   /** This will make the list semantics friendly to screen reader users in browse mode. */
   readonly isInformationalView?: boolean
 }
@@ -323,6 +326,7 @@ export class CommitList extends React.Component<
         disableSquashing={this.props.disableSquashing}
         accounts={this.props.accounts}
         preferAbsoluteDates={this.props.preferAbsoluteDates}
+        gitIdentityRules={this.props.gitIdentityRules ?? []}
       />
     )
   }
@@ -513,7 +517,8 @@ export class CommitList extends React.Component<
 
     const avatarUsers = getAvatarUsersForCommit(
       this.props.gitHubRepository,
-      commit
+      commit,
+      this.props.gitIdentityRules ?? []
     )
 
     const {

@@ -39,6 +39,7 @@ import { DiffHeader } from '../diff/diff-header'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 interface ISelectedCommitsProps {
   readonly repository: Repository
@@ -92,6 +93,7 @@ interface ISelectedCommitsProps {
   readonly isContiguous: boolean
 
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 
 interface ISelectedCommitsState {
@@ -223,6 +225,7 @@ export class SelectedCommits extends React.Component<
         onHighlightShas={this.onHighlightShas}
         showUnreachableCommits={this.showUnreachableCommits}
         accounts={this.props.accounts}
+        gitIdentityRules={this.props.gitIdentityRules}
       />
     )
   }

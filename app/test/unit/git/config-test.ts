@@ -10,6 +10,8 @@ import {
   getGlobalConfigValue,
   setGlobalConfigValue,
   getGlobalBooleanConfigValue,
+  getGlobalGitIdentityRules,
+  setGlobalGitIdentityRuleLogin,
   git,
 } from '../../../src/lib/git'
 
@@ -180,6 +182,81 @@ describe('git/config', () => {
         await setGlobalConfigValue(key, '1', env)
         const value = await getGlobalBooleanConfigValue(key, env)
         assert.strictEqual(value, true)
+      })
+    })
+
+    describe('getGlobalGitIdentityRules', () => {
+      it('returns includeIf remote URL identity rules', async t => {
+        const { env, baseArgs } = await setup(t)
+        const includePath = Path.join(env.HOME, '.gitconfig-gitea')
+
+        await exec(
+          ['config', '-f', includePath, 'user.name', 'Ethan Cheng'],
+          __dirname
+        )
+        await exec(
+          ['config', '-f', includePath, 'user.email', 'ethan.cheng@n-hop.com'],
+          __dirname
+        )
+
+        await exec(
+          [
+            ...baseArgs,
+            '--add',
+            'includeIf.hasconfig:remote.*.url:https://gitea.nz.com/**.path',
+            includePath,
+          ],
+          __dirname
+        )
+        await exec(
+          [
+            ...baseArgs,
+            '--add',
+            'includeIf.hasconfig:remote.*.url:https://gitlab.app.n-hop.com/**.path',
+            includePath,
+          ],
+          __dirname
+        )
+
+        const rules = await getGlobalGitIdentityRules(env)
+
+        assert.deepEqual(rules, [
+          {
+            pattern: 'https://gitea.nz.com/**',
+            host: 'gitea.nz.com',
+            configPath: includePath,
+            name: 'Ethan Cheng',
+            email: 'ethan.cheng@n-hop.com',
+            login: null,
+            avatarURL: null,
+          },
+          {
+            pattern: 'https://gitlab.app.n-hop.com/**',
+            host: 'gitlab.app.n-hop.com',
+            configPath: includePath,
+            name: 'Ethan Cheng',
+            email: 'ethan.cheng@n-hop.com',
+            login: null,
+            avatarURL: null,
+          },
+        ])
+      })
+
+      it('sets and clears desktop account login mappings', async t => {
+        const { env } = await setup(t)
+        const rule = { host: 'gitea.nz.com' }
+
+        await setGlobalGitIdentityRuleLogin(rule, 'ethan', env)
+        assert.equal(
+          await getGlobalConfigValue('desktopAccount.gitea.nz.com.login', env),
+          'ethan'
+        )
+
+        await setGlobalGitIdentityRuleLogin(rule, '', env)
+        assert.equal(
+          await getGlobalConfigValue('desktopAccount.gitea.nz.com.login', env),
+          null
+        )
       })
     })
   })

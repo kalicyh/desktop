@@ -37,6 +37,10 @@ import { clamp } from '../lib/clamp'
 import { Emoji } from '../lib/emoji'
 import { PopupType } from '../models/popup'
 import { t } from '../lib/i18n'
+import {
+  getGlobalGitIdentityRules,
+  type IGitIdentityRule,
+} from '../lib/git/config'
 
 interface IRepositoryViewProps {
   readonly repository: Repository
@@ -147,6 +151,7 @@ interface IRepositoryViewProps {
 interface IRepositoryViewState {
   readonly changesListScrollTop: number
   readonly compareListScrollTop: number
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 
 const enum Tab {
@@ -177,6 +182,7 @@ export class RepositoryView extends React.Component<
     this.state = {
       changesListScrollTop: 0,
       compareListScrollTop: 0,
+      gitIdentityRules: [],
     }
   }
 
@@ -381,6 +387,7 @@ export class RepositoryView extends React.Component<
         }
         accounts={this.props.accounts}
         preferAbsoluteDates={this.props.preferAbsoluteDates}
+        gitIdentityRules={this.state.gitIdentityRules}
       />
     )
   }
@@ -518,6 +525,7 @@ export class RepositoryView extends React.Component<
         onDiffOptionsOpened={this.onDiffOptionsOpened}
         showDragOverlay={showDragOverlay}
         accounts={this.props.accounts}
+        gitIdentityRules={this.state.gitIdentityRules}
       />
     )
   }
@@ -667,13 +675,18 @@ export class RepositoryView extends React.Component<
 
   public componentDidMount() {
     window.addEventListener('keydown', this.onGlobalKeyDown)
+    this.loadGitIdentityRules()
   }
 
   public componentWillUnmount() {
     window.removeEventListener('keydown', this.onGlobalKeyDown)
   }
 
-  public componentDidUpdate(): void {
+  public componentDidUpdate(prevProps: IRepositoryViewProps): void {
+    if (prevProps.isShowingModal && !this.props.isShowingModal) {
+      this.loadGitIdentityRules()
+    }
+
     if (this.focusChangesNeeded) {
       this.focusChangesNeeded = false
       this.changesSidebarRef.current?.focus()
@@ -683,6 +696,11 @@ export class RepositoryView extends React.Component<
       this.focusHistoryNeeded = false
       this.compareSidebarRef.current?.focusHistory()
     }
+  }
+
+  private loadGitIdentityRules = async () => {
+    const gitIdentityRules = await getGlobalGitIdentityRules()
+    this.setState({ gitIdentityRules })
   }
 
   private onGlobalKeyDown = (event: KeyboardEvent) => {

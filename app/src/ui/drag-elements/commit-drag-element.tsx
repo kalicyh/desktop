@@ -199,6 +199,7 @@ export class CommitDragElement extends React.Component<
             showUnpushedIndicator={false}
             accounts={this.props.accounts}
             preferAbsoluteDates={false}
+            gitIdentityRules={[]}
           />
         </div>
         {this.renderDragToolTip()}

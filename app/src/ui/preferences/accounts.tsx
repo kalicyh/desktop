@@ -14,13 +14,20 @@ import { Avatar } from '../lib/avatar'
 import { CallToAction } from '../lib/call-to-action'
 import { getHTMLURL } from '../../lib/api'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
+import { TextBox } from '../lib/text-box'
 
 interface IAccountsProps {
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 
   readonly onDotComSignIn: () => void
   readonly onEnterpriseSignIn: () => void
   readonly onLogout: (account: Account) => void
+  readonly onGitIdentityRuleLoginChanged: (
+    rule: IGitIdentityRule,
+    login: string
+  ) => void
 }
 
 enum SignInType {
@@ -28,7 +35,19 @@ enum SignInType {
   Enterprise,
 }
 
-export class Accounts extends React.Component<IAccountsProps, {}> {
+interface IAccountsState {
+  readonly failedGitIdentityAvatarURLs: ReadonlySet<string>
+}
+
+export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
+  public constructor(props: IAccountsProps) {
+    super(props)
+
+    this.state = {
+      failedGitIdentityAvatarURLs: new Set(),
+    }
+  }
+
   public render() {
     const { accounts } = this.props
     const dotComAccount = accounts.find(isDotComAccount)
@@ -42,8 +61,125 @@ export class Accounts extends React.Component<IAccountsProps, {}> {
 
         <h2>GitHub Enterprise</h2>
         {this.renderMultipleEnterpriseAccounts()}
+
+        {this.renderGitIdentityRules()}
       </DialogContent>
     )
+  }
+
+  private renderGitIdentityRules() {
+    if (this.props.gitIdentityRules.length === 0) {
+      return null
+    }
+
+    return (
+      <>
+        <h2>{t('preferences.accounts.gitIdentityRules')}</h2>
+        <p className="git-identity-rules-description">
+          {t('preferences.accounts.gitIdentityRulesDescription')}
+        </p>
+        {this.props.gitIdentityRules.map(rule =>
+          this.renderGitIdentityRule(rule)
+        )}
+      </>
+    )
+  }
+
+  private renderGitIdentityRule(rule: IGitIdentityRule) {
+    return (
+      <Row className="account-info git-identity-rule" key={rule.pattern}>
+        <div className="user-info-container">
+          {this.renderGitIdentityAvatar(rule)}
+          <div className="user-info">
+            <div className="account-title">{rule.host}</div>
+            <div className="name">{rule.name}</div>
+            <div className="login">{rule.email}</div>
+            <div className="endpoint">
+              {t('preferences.accounts.gitIdentityRuleSource', {
+                path: rule.configPath,
+              })}
+            </div>
+            {this.renderGitIdentityRuleLogin(rule)}
+          </div>
+        </div>
+      </Row>
+    )
+  }
+
+  private renderGitIdentityAvatar(rule: IGitIdentityRule) {
+    const { avatarURL } = rule
+
+    if (
+      avatarURL !== null &&
+      !this.state.failedGitIdentityAvatarURLs.has(avatarURL)
+    ) {
+      return (
+        <img
+          className="git-identity-avatar"
+          src={avatarURL}
+          alt={t('preferences.accounts.gitIdentityAvatarAlt', {
+            name: rule.name,
+          })}
+          onError={this.onGitIdentityAvatarError}
+        />
+      )
+    }
+
+    return (
+      <div className="git-identity-avatar" aria-hidden="true">
+        {this.getInitials(rule.name)}
+      </div>
+    )
+  }
+
+  private onGitIdentityAvatarError = (
+    event: React.SyntheticEvent<HTMLImageElement>
+  ) => {
+    const failedURL = event.currentTarget.src
+
+    this.setState(state => ({
+      failedGitIdentityAvatarURLs: new Set([
+        ...state.failedGitIdentityAvatarURLs,
+        failedURL,
+      ]),
+    }))
+  }
+
+  private renderGitIdentityRuleLogin(rule: IGitIdentityRule) {
+    if (!this.isGiteaIdentityRule(rule)) {
+      return null
+    }
+
+    return (
+      <TextBox
+        className="git-identity-login"
+        label={t('preferences.accounts.gitIdentityRuleLoginLabel')}
+        value={rule.login ?? ''}
+        placeholder={t('preferences.accounts.gitIdentityRuleLoginPlaceholder')}
+        onValueChanged={this.onGitIdentityRuleLoginChanged(rule)}
+      />
+    )
+  }
+
+  private isGiteaIdentityRule(rule: IGitIdentityRule) {
+    return rule.host.startsWith('gitea.')
+  }
+
+  private onGitIdentityRuleLoginChanged = (rule: IGitIdentityRule) => {
+    return (login: string) => {
+      this.props.onGitIdentityRuleLoginChanged(rule, login.trim())
+    }
+  }
+
+  private getInitials(name: string) {
+    const initials = name
+      .split(/\s+/)
+      .filter(x => x.length > 0)
+      .slice(0, 2)
+      .map(x => x[0])
+      .join('')
+
+    return initials.toLocaleUpperCase()
   }
 
   private renderMultipleEnterpriseAccounts() {

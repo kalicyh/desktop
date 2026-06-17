@@ -35,6 +35,7 @@ import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
 import { formatNumber } from '../../lib/format-number'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 interface ICompareSidebarProps {
   readonly repository: Repository
@@ -63,6 +64,7 @@ interface ICompareSidebarProps {
   readonly shasToHighlight: ReadonlyArray<string>
   readonly accounts: ReadonlyArray<Account>
   readonly preferAbsoluteDates: boolean
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 interface ICompareSidebarState {
   /**
@@ -289,6 +291,7 @@ export class CompareSidebar extends React.Component<
         keyboardReorderData={this.state.keyboardReorderData}
         accounts={this.props.accounts}
         preferAbsoluteDates={this.props.preferAbsoluteDates}
+        gitIdentityRules={this.props.gitIdentityRules}
       />
     )
   }

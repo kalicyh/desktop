@@ -22,6 +22,7 @@ import { CopyButton } from '../copy-button'
 import { Account } from '../../models/account'
 import { Emoji } from '../../lib/emoji'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 interface IExpandableCommitSummaryProps {
   readonly repository: Repository
@@ -48,6 +49,7 @@ interface IExpandableCommitSummaryProps {
   readonly showUnreachableCommits: (tab: UnreachableCommitsTab) => void
 
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 
 interface IExpandableCommitSummaryState {
@@ -113,7 +115,11 @@ function createState(
     selectedCommits.length === 1 && selectedCommits[0].summary.length === 0
 
   const allAvatarUsers = selectedCommits.flatMap(c =>
-    getAvatarUsersForCommit(repository.gitHubRepository, c)
+    getAvatarUsersForCommit(
+      repository.gitHubRepository,
+      c,
+      props.gitIdentityRules
+    )
   )
 
   const avatarUsers = uniqWith(
@@ -292,6 +298,7 @@ export class ExpandableCommitSummary extends React.Component<
   public componentWillUpdate(nextProps: IExpandableCommitSummaryProps) {
     if (
       nextProps.selectedCommits.length !== this.props.selectedCommits.length ||
+      nextProps.gitIdentityRules !== this.props.gitIdentityRules ||
       !nextProps.selectedCommits.every((nextCommit, i) =>
         messageEquals(nextCommit, this.props.selectedCommits[i])
       )

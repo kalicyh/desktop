@@ -9,7 +9,10 @@ import { Git } from './git'
 import { assertNever } from '../../lib/fatal-error'
 import { Dialog, DialogFooter, DialogError } from '../dialog'
 import {
+  IGitIdentityRule,
+  getGlobalGitIdentityRules,
   getGlobalConfigValue,
+  setGlobalGitIdentityRuleLogin,
   setGlobalConfigValue,
 } from '../../lib/git/config'
 import { lookupPreferredEmail } from '../../lib/email'
@@ -172,6 +175,7 @@ interface IPreferencesState {
   readonly initiallySelectedTabSize: number
 
   readonly isLoadingGitConfig: boolean
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 
   readonly underlineLinks: boolean
 
@@ -251,6 +255,7 @@ export class Preferences extends React.Component<
         this.props.selectedApplicationLanguage,
       initiallySelectedTabSize: this.props.selectedTabSize,
       isLoadingGitConfig: true,
+      gitIdentityRules: [],
       underlineLinks: this.props.underlineLinks,
       accessibleListTooltipsEnabled: this.props.accessibleListTooltipsEnabled,
       showDiffCheckMarks: this.props.showDiffCheckMarks,
@@ -272,6 +277,7 @@ export class Preferences extends React.Component<
     const initialCommitterName = await getGlobalConfigValue('user.name')
     const initialCommitterEmail = await getGlobalConfigValue('user.email')
     const initialDefaultBranch = await getDefaultBranch()
+    const gitIdentityRules = await getGlobalGitIdentityRules()
 
     let committerName = initialCommitterName
     let committerEmail = initialCommitterEmail
@@ -339,6 +345,7 @@ export class Preferences extends React.Component<
       useCustomShell: this.props.useCustomShell,
       customShell: this.props.customShell ?? DefaultCustomIntegration,
       isLoadingGitConfig: false,
+      gitIdentityRules,
     })
   }
 
@@ -530,9 +537,11 @@ export class Preferences extends React.Component<
         View = (
           <Accounts
             accounts={this.props.accounts}
+            gitIdentityRules={this.state.gitIdentityRules}
             onDotComSignIn={this.onDotComSignIn}
             onEnterpriseSignIn={this.onEnterpriseSignIn}
             onLogout={this.onLogout}
+            onGitIdentityRuleLoginChanged={this.onGitIdentityRuleLoginChanged}
           />
         )
         break
@@ -978,6 +987,17 @@ export class Preferences extends React.Component<
     this.props.dispatcher.setSelectedTabSize(tabSize)
   }
 
+  private onGitIdentityRuleLoginChanged = (
+    rule: IGitIdentityRule,
+    login: string
+  ) => {
+    this.setState(state => ({
+      gitIdentityRules: state.gitIdentityRules.map(x =>
+        x.pattern === rule.pattern ? { ...x, login, avatarURL: null } : x
+      ),
+    }))
+  }
+
   private renderFooter() {
     const hasDisabledError = this.state.disallowedCharactersMessage != null
 
@@ -1024,6 +1044,14 @@ export class Preferences extends React.Component<
       ) {
         await setDefaultBranch(this.state.defaultBranch)
       }
+
+      await Promise.all(
+        this.state.gitIdentityRules
+          .filter(rule => rule.host.startsWith('gitea.'))
+          .map(rule =>
+            setGlobalGitIdentityRuleLogin(rule, (rule.login ?? '').trim())
+          )
+      )
 
       if (
         this.props.repositoryIndicatorsEnabled !==

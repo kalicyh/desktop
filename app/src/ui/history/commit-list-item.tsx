@@ -28,6 +28,7 @@ import { enableAccessibleListToolTips } from '../../lib/feature-flag'
 import { TooltippedContent } from '../lib/tooltipped-content'
 import { formatDate } from '../../lib/format-date'
 import { t } from '../../lib/i18n'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 interface ICommitProps {
   readonly gitHubRepository: GitHubRepository | null
@@ -51,6 +52,7 @@ interface ICommitProps {
   readonly unpushedIndicatorTitle?: string
   readonly accounts: ReadonlyArray<Account>
   readonly preferAbsoluteDates: boolean
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 
 interface ICommitListItemState {
@@ -68,17 +70,22 @@ export class CommitListItem extends React.PureComponent<
     this.state = {
       avatarUsers: getAvatarUsersForCommit(
         props.gitHubRepository,
-        props.commit
+        props.commit,
+        props.gitIdentityRules
       ),
     }
   }
 
   public componentWillReceiveProps(nextProps: ICommitProps) {
-    if (nextProps.commit !== this.props.commit) {
+    if (
+      nextProps.commit !== this.props.commit ||
+      nextProps.gitIdentityRules !== this.props.gitIdentityRules
+    ) {
       this.setState({
         avatarUsers: getAvatarUsersForCommit(
           nextProps.gitHubRepository,
-          nextProps.commit
+          nextProps.commit,
+          nextProps.gitIdentityRules
         ),
       })
     }

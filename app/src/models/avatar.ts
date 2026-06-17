@@ -4,6 +4,7 @@ import { GitAuthor } from './git-author'
 import { GitHubRepository } from './github-repository'
 import { isWebFlowCommitter } from '../lib/web-flow-committer'
 import { parseStealthEmail } from '../lib/email'
+import type { IGitIdentityRule } from '../lib/git/config'
 
 /** The minimum properties we need in order to display a user's avatar. */
 export interface IAvatarUser {
@@ -28,13 +29,21 @@ export interface IAvatarUser {
 
 export function getAvatarUserFromAuthor(
   author: CommitIdentity | GitAuthor,
-  gitHubRepository: GitHubRepository | null
+  gitHubRepository: GitHubRepository | null,
+  gitIdentityRules: ReadonlyArray<IGitIdentityRule> = []
 ) {
+  const gitIdentityRule = gitIdentityRules.find(
+    rule =>
+      rule.avatarURL !== null &&
+      rule.name === author.name &&
+      rule.email === author.email
+  )
+
   return {
     email: author.email,
     name: author.name,
     endpoint: gitHubRepository === null ? null : gitHubRepository.endpoint,
-    avatarURL: undefined,
+    avatarURL: gitIdentityRule?.avatarURL ?? undefined,
   }
 }
 
@@ -52,13 +61,18 @@ export function getAvatarUserFromAuthor(
  */
 export function getAvatarUsersForCommit(
   gitHubRepository: GitHubRepository | null,
-  commit: Commit
+  commit: Commit,
+  gitIdentityRules: ReadonlyArray<IGitIdentityRule> = []
 ) {
   const avatarUsers = []
 
-  avatarUsers.push(getAvatarUserFromAuthor(commit.author, gitHubRepository))
   avatarUsers.push(
-    ...commit.coAuthors.map(x => getAvatarUserFromAuthor(x, gitHubRepository))
+    getAvatarUserFromAuthor(commit.author, gitHubRepository, gitIdentityRules)
+  )
+  avatarUsers.push(
+    ...commit.coAuthors.map(x =>
+      getAvatarUserFromAuthor(x, gitHubRepository, gitIdentityRules)
+    )
   )
 
   const coAuthoredByCommitter = commit.coAuthors.some(
@@ -74,7 +88,11 @@ export function getAvatarUsersForCommit(
     !coAuthoredByCommitter
   ) {
     avatarUsers.push(
-      getAvatarUserFromAuthor(commit.committer, gitHubRepository)
+      getAvatarUserFromAuthor(
+        commit.committer,
+        gitHubRepository,
+        gitIdentityRules
+      )
     )
   }
 
