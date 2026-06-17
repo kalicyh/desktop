@@ -150,7 +150,9 @@ export class PullRequestList extends React.Component<
   }
 
   private getListAriaLabel = () => {
-    return `Pull requests in ${this.getRepositoryName()}`
+    return t('branches.pullRequests.listHeader', {
+      repository: this.getRepositoryName(),
+    })
   }
 
   public render() {
