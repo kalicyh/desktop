@@ -115,6 +115,7 @@ interface IPreferencesProps {
   readonly repositoryIndicatorsEnabled: boolean
   readonly onEditGlobalGitConfig: () => void
   readonly underlineLinks: boolean
+  readonly accessibleListTooltipsEnabled: boolean
   readonly showDiffCheckMarks: boolean
   readonly selectedCopilotModels: CopilotModelSelections
   readonly copilotModels: ReadonlyArray<Model> | null
@@ -173,6 +174,8 @@ interface IPreferencesState {
   readonly isLoadingGitConfig: boolean
 
   readonly underlineLinks: boolean
+
+  readonly accessibleListTooltipsEnabled: boolean
 
   readonly showDiffCheckMarks: boolean
 
@@ -249,6 +252,7 @@ export class Preferences extends React.Component<
       initiallySelectedTabSize: this.props.selectedTabSize,
       isLoadingGitConfig: true,
       underlineLinks: this.props.underlineLinks,
+      accessibleListTooltipsEnabled: this.props.accessibleListTooltipsEnabled,
       showDiffCheckMarks: this.props.showDiffCheckMarks,
       enableGitHookEnv: getHooksEnvEnabled(),
       cacheGitHookEnv: getCacheHooksEnv(),
@@ -732,9 +736,15 @@ export class Preferences extends React.Component<
         View = (
           <Accessibility
             underlineLinks={this.state.underlineLinks}
+            accessibleListTooltipsEnabled={
+              this.state.accessibleListTooltipsEnabled
+            }
             showDiffCheckMarks={this.state.showDiffCheckMarks}
             onShowDiffCheckMarksChanged={this.onShowDiffCheckMarksChanged}
             onUnderlineLinksChanged={this.onUnderlineLinksChanged}
+            onAccessibleListTooltipsChanged={
+              this.onAccessibleListTooltipsChanged
+            }
           />
         )
         break
@@ -906,6 +916,12 @@ export class Preferences extends React.Component<
 
   private onUnderlineLinksChanged = (underlineLinks: boolean) => {
     this.setState({ underlineLinks })
+  }
+
+  private onAccessibleListTooltipsChanged = (
+    accessibleListTooltipsEnabled: boolean
+  ) => {
+    this.setState({ accessibleListTooltipsEnabled })
   }
 
   private onShowDiffCheckMarksChanged = (showDiffCheckMarks: boolean) => {
@@ -1122,6 +1138,10 @@ export class Preferences extends React.Component<
     )
 
     dispatcher.setUnderlineLinksSetting(this.state.underlineLinks)
+
+    dispatcher.setAccessibleListTooltipsSetting(
+      this.state.accessibleListTooltipsEnabled
+    )
 
     dispatcher.setDiffCheckMarksSetting(this.state.showDiffCheckMarks)
 

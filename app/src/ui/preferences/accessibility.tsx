@@ -7,6 +7,9 @@ interface IAccessibilityPreferencesProps {
   readonly underlineLinks: boolean
   readonly onUnderlineLinksChanged: (value: boolean) => void
 
+  readonly accessibleListTooltipsEnabled: boolean
+  readonly onAccessibleListTooltipsChanged: (value: boolean) => void
+
   readonly showDiffCheckMarks: boolean
   readonly onShowDiffCheckMarksChanged: (value: boolean) => void
 }
@@ -38,6 +41,23 @@ export class Accessibility extends React.Component<
           >
             {t('preferences.accessibility.underlineLinksDescription')}{' '}
             {this.renderExampleLink()}
+          </p>
+
+          <Checkbox
+            label={t('preferences.accessibility.accessibleListTooltips')}
+            value={
+              this.props.accessibleListTooltipsEnabled
+                ? CheckboxValue.On
+                : CheckboxValue.Off
+            }
+            onChange={this.onAccessibleListTooltipsChanged}
+            ariaDescribedBy="accessible-list-tooltips-setting-description"
+          />
+          <p
+            id="accessible-list-tooltips-setting-description"
+            className="settings-description"
+          >
+            {t('preferences.accessibility.accessibleListTooltipsDescription')}
           </p>
 
           <Checkbox
@@ -79,6 +99,12 @@ export class Accessibility extends React.Component<
     event: React.FormEvent<HTMLInputElement>
   ) => {
     this.props.onUnderlineLinksChanged(event.currentTarget.checked)
+  }
+
+  private onAccessibleListTooltipsChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    this.props.onAccessibleListTooltipsChanged(event.currentTarget.checked)
   }
 
   private onShowDiffCheckMarksChanged = (

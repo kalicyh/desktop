@@ -151,6 +151,8 @@
   "preferences.accessibility.underlineLinks": "Underline links",
   "preferences.accessibility.underlineLinksDescription": "When enabled, GitHub Desktop will underline links in commit messages, comments, and other text fields. This can help make links easier to distinguish.",
   "preferences.accessibility.exampleLink": "This is an example link",
+  "preferences.accessibility.accessibleListTooltips": "Show details when list rows are focused",
+  "preferences.accessibility.accessibleListTooltipsDescription": "Display expanded details for list rows, such as commit authors and dates, when hovering or navigating with the keyboard.",
   "preferences.accessibility.showDiffCheckMarks": "Show check marks in the diff",
   "preferences.accessibility.showDiffCheckMarksDescription": "When enabled, check marks will be displayed along side the line numbers and groups of line numbers in the diff when committing. When disabled, the line number controls will be less prominent.",
   "preferences.advanced.backgroundUpdates.heading": "Background updates",

@@ -1,6 +1,10 @@
 import { Account } from '../models/account'
+import { getBoolean } from './local-storage'
 
 const Disable = false
+
+export const accessibleListTooltipsKey = 'accessible-list-tooltips-enabled'
+export const accessibleListTooltipsDefault = false
 
 /**
  * Enables the application to opt-in for preview features based on runtime
@@ -121,7 +125,10 @@ export function enableCopilotConflictResolution(): boolean {
 }
 
 export function enableAccessibleListToolTips(): boolean {
-  return enableBetaFeatures()
+  return (
+    enableBetaFeatures() &&
+    getBoolean(accessibleListTooltipsKey, accessibleListTooltipsDefault)
+  )
 }
 
 export const enableHooksEnvironment = () => true

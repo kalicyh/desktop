@@ -151,6 +151,8 @@
   "preferences.accessibility.underlineLinks": "为链接添加下划线",
   "preferences.accessibility.underlineLinksDescription": "启用后，GitHub Desktop 会为提交信息、评论和其他文本字段中的链接添加下划线。这有助于更容易地区分链接。",
   "preferences.accessibility.exampleLink": "这是一个示例链接",
+  "preferences.accessibility.accessibleListTooltips": "在列表行聚焦时显示详细信息",
+  "preferences.accessibility.accessibleListTooltipsDescription": "鼠标悬停或使用键盘导航时，为列表行显示作者、日期等展开详情。",
   "preferences.accessibility.showDiffCheckMarks": "在差异中显示勾选标记",
   "preferences.accessibility.showDiffCheckMarksDescription": "启用后，提交时会在差异中的行号和行号组旁显示勾选标记。禁用后，行号控件会更加弱化。",
   "preferences.advanced.backgroundUpdates.heading": "后台更新",

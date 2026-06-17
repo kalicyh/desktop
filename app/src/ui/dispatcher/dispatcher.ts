@@ -4203,6 +4203,10 @@ export class Dispatcher {
     return this.appStore._updateUnderlineLinks(underlineLinks)
   }
 
+  public setAccessibleListTooltipsSetting(enabled: boolean) {
+    return this.appStore._updateAccessibleListTooltips(enabled)
+  }
+
   public setDiffCheckMarksSetting(diffCheckMarks: boolean) {
     return this.appStore._updateShowDiffCheckMarks(diffCheckMarks)
   }

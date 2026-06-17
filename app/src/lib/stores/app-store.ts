@@ -292,6 +292,8 @@ import {
 import { ManualConflictResolution } from '../../models/manual-conflict-resolution'
 import { BranchPruner } from './helpers/branch-pruner'
 import {
+  accessibleListTooltipsDefault,
+  accessibleListTooltipsKey,
   enableCopilotConflictResolution,
   enableCopilotSdkCommitMessageGeneration,
   enableCustomIntegration,
@@ -719,6 +721,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private cachedRepoRulesets = new Map<number, IAPIRepoRuleset>()
 
   private underlineLinks: boolean = underlineLinksDefault
+
+  private accessibleListTooltipsEnabled: boolean = accessibleListTooltipsDefault
 
   private commitMessageGenerationDisclaimerLastSeen: number | null = null
   private commitMessageGenerationButtonClicked: boolean = false
@@ -1282,6 +1286,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       resizablePaneActive: this.resizablePaneActive,
       cachedRepoRulesets: this.cachedRepoRulesets,
       underlineLinks: this.underlineLinks,
+      accessibleListTooltipsEnabled: this.accessibleListTooltipsEnabled,
       showDiffCheckMarks: this.showDiffCheckMarks,
       preferAbsoluteDates: this.preferAbsoluteDates,
       updateState: updateStore.state,
@@ -2558,6 +2563,11 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     // Always false if the feature flag is disabled.
     this.underlineLinks = getBoolean(underlineLinksKey, underlineLinksDefault)
+
+    this.accessibleListTooltipsEnabled = getBoolean(
+      accessibleListTooltipsKey,
+      accessibleListTooltipsDefault
+    )
 
     this.showDiffCheckMarks = getBoolean(
       showDiffCheckMarksKey,
@@ -10010,6 +10020,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
     if (underlineLinks !== this.underlineLinks) {
       this.underlineLinks = underlineLinks
       setBoolean(underlineLinksKey, underlineLinks)
+      this.emitUpdate()
+    }
+  }
+
+  public _updateAccessibleListTooltips(enabled: boolean) {
+    if (enabled !== this.accessibleListTooltipsEnabled) {
+      this.accessibleListTooltipsEnabled = enabled
+      setBoolean(accessibleListTooltipsKey, enabled)
       this.emitUpdate()
     }
   }

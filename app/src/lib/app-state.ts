@@ -407,6 +407,9 @@ export interface IAppState {
 
   readonly underlineLinks: boolean
 
+  /** Whether list rows should show expanded details on hover or keyboard focus */
+  readonly accessibleListTooltipsEnabled: boolean
+
   readonly updateState: IUpdateState
 
   readonly commitMessageGenerationDisclaimerLastSeen: number | null
