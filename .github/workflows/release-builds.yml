@@ -123,6 +123,7 @@ jobs:
       - name: Publish release assets
         env:
           GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
           TAG_NAME: ${{ needs.validate-tag.outputs.tag }}
         run: |
           mapfile -d '' ASSETS < <(find release-assets -type f \( -name '*.exe' -o -name '*.msi' \) -print0 | sort -z)
@@ -133,10 +134,11 @@ jobs:
             exit 1
           fi
 
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release upload "$TAG_NAME" "${ASSETS[@]}" --clobber
+          if gh release view "$TAG_NAME" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "${ASSETS[@]}" --repo "$REPOSITORY" --clobber
           else
             gh release create "$TAG_NAME" "${ASSETS[@]}" \
+              --repo "$REPOSITORY" \
               --title "$TAG_NAME" \
               --notes "Automated release builds for $TAG_NAME."
           fi
