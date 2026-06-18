@@ -97,7 +97,13 @@ export async function getGlobalGitIdentityRules(env?: {
     })
   }
 
-  return Promise.all(rules.map(rule => withDesktopAccountInfo(rule, env)))
+  const rulesWithAccountInfo = new Array<IGitIdentityRule>()
+
+  for (const rule of rules) {
+    rulesWithAccountInfo.push(await withDesktopAccountInfo(rule, env))
+  }
+
+  return rulesWithAccountInfo
 }
 
 async function withDesktopAccountInfo(
@@ -106,20 +112,41 @@ async function withDesktopAccountInfo(
     HOME: string
   }
 ): Promise<IGitIdentityRule> {
-  const login = await getGlobalConfigValue(getDesktopAccountLoginKey(rule), env)
+  const [login, cachedAvatarURL, oldCachedAvatarURL] = await Promise.all([
+    getGlobalConfigValue(getDesktopAccountLoginKey(rule), env),
+    getGlobalConfigValue(getDesktopIdentityAvatarURLKey(rule), env),
+    getGlobalConfigValue(getDesktopAccountAvatarURLKey(rule), env),
+  ])
+  const avatarURLFromConfig = cachedAvatarURL ?? oldCachedAvatarURL
 
-  if (!login) {
-    return rule
+  if (avatarURLFromConfig) {
+    return {
+      ...rule,
+      login,
+      avatarURL: avatarURLFromConfig,
+    }
+  }
+
+  const avatarURL = login
+    ? await getGitIdentityAvatarURL(rule.host, login)
+    : null
+
+  if (avatarURL) {
+    await setGlobalConfigValue(
+      getDesktopIdentityAvatarURLKey(rule),
+      avatarURL,
+      env
+    )
   }
 
   return {
     ...rule,
     login,
-    avatarURL: await getGitIdentityAvatarURL(rule.host, login),
+    avatarURL,
   }
 }
 
-async function getGitIdentityAvatarURL(
+export async function getGitIdentityAvatarURL(
   host: string,
   login: string
 ): Promise<string | null> {
@@ -151,22 +178,52 @@ export function getDesktopAccountLoginKey(
   return `desktopAccount.${rule.host}.login`
 }
 
-export async function setGlobalGitIdentityRuleLogin(
-  rule: Pick<IGitIdentityRule, 'host'>,
-  login: string,
+export function getDesktopAccountAvatarURLKey(
+  rule: Pick<IGitIdentityRule, 'host'>
+) {
+  return `desktopAccount.${rule.host}.avatarURL`
+}
+
+export function getDesktopIdentityAvatarURLKey(
+  rule: Pick<IGitIdentityRule, 'email'>
+) {
+  return `desktopIdentity.${rule.email}.avatarURL`
+}
+
+async function setOptionalGlobalConfigValue(
+  key: string,
+  value: string,
   env?: {
     HOME: string
   }
 ) {
-  const key = getDesktopAccountLoginKey(rule)
-
-  if (login.length === 0) {
+  if (value.length === 0) {
     if ((await getGlobalConfigValue(key, env)) !== null) {
       await removeGlobalConfigValue(key, env)
     }
   } else {
-    await setGlobalConfigValue(key, login, env)
+    await setGlobalConfigValue(key, value, env)
   }
+}
+
+export async function setGlobalGitIdentityRuleAccountInfo(
+  rule: Pick<IGitIdentityRule, 'host' | 'email'>,
+  login: string,
+  avatarURL: string,
+  env?: {
+    HOME: string
+  }
+) {
+  await setOptionalGlobalConfigValue(
+    getDesktopAccountLoginKey(rule),
+    login,
+    env
+  )
+  await setOptionalGlobalConfigValue(
+    getDesktopIdentityAvatarURLKey(rule),
+    avatarURL,
+    env
+  )
 }
 
 async function getGitIdentityFromFile(

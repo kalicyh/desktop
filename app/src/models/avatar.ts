@@ -32,11 +32,9 @@ export function getAvatarUserFromAuthor(
   gitHubRepository: GitHubRepository | null,
   gitIdentityRules: ReadonlyArray<IGitIdentityRule> = []
 ) {
+  const email = author.email.toLowerCase()
   const gitIdentityRule = gitIdentityRules.find(
-    rule =>
-      rule.avatarURL !== null &&
-      rule.name === author.name &&
-      rule.email === author.email
+    rule => rule.avatarURL !== null && rule.email.toLowerCase() === email
   )
 
   return {

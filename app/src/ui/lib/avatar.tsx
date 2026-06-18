@@ -242,6 +242,10 @@ function getAvatarUrlCandidates(
   // do the same for GHES/GHAE however since the URLs returned by the API are
   // behind private mode.
   if (!isGHES(ep) && avatarURL !== undefined) {
+    if (!isGitHubAvatarURL(avatarURL)) {
+      return [avatarURL]
+    }
+
     // The avatar urls returned by the API doesn't come with a size parameter,
     // they default to the biggest size we need on GitHub.com which is usually
     // much bigger than what desktop needs so we'll set a size explicitly.
@@ -254,10 +258,6 @@ function getAvatarUrlCandidates(
       // This should never happen since URL#constructor only throws for invalid
       // URLs which we can expect the API to not give us
       candidates.push(avatarURL)
-    }
-
-    if (!isGitHubAvatarURL(avatarURL)) {
-      return candidates
     }
   }
 

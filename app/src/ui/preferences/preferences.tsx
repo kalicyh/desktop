@@ -12,7 +12,7 @@ import {
   IGitIdentityRule,
   getGlobalGitIdentityRules,
   getGlobalConfigValue,
-  setGlobalGitIdentityRuleLogin,
+  setGlobalGitIdentityRuleAccountInfo,
   setGlobalConfigValue,
 } from '../../lib/git/config'
 import { lookupPreferredEmail } from '../../lib/email'
@@ -541,7 +541,9 @@ export class Preferences extends React.Component<
             onDotComSignIn={this.onDotComSignIn}
             onEnterpriseSignIn={this.onEnterpriseSignIn}
             onLogout={this.onLogout}
-            onGitIdentityRuleLoginChanged={this.onGitIdentityRuleLoginChanged}
+            onGitIdentityRuleAvatarURLChanged={
+              this.onGitIdentityRuleAvatarURLChanged
+            }
           />
         )
         break
@@ -987,13 +989,15 @@ export class Preferences extends React.Component<
     this.props.dispatcher.setSelectedTabSize(tabSize)
   }
 
-  private onGitIdentityRuleLoginChanged = (
+  private onGitIdentityRuleAvatarURLChanged = (
     rule: IGitIdentityRule,
-    login: string
+    avatarURL: string
   ) => {
+    const email = rule.email.toLowerCase()
+
     this.setState(state => ({
       gitIdentityRules: state.gitIdentityRules.map(x =>
-        x.pattern === rule.pattern ? { ...x, login, avatarURL: null } : x
+        x.email.toLowerCase() === email ? { ...x, avatarURL } : x
       ),
     }))
   }
@@ -1049,7 +1053,11 @@ export class Preferences extends React.Component<
         this.state.gitIdentityRules
           .filter(rule => rule.host.startsWith('gitea.'))
           .map(rule =>
-            setGlobalGitIdentityRuleLogin(rule, (rule.login ?? '').trim())
+            setGlobalGitIdentityRuleAccountInfo(
+              rule,
+              (rule.login ?? '').trim(),
+              (rule.avatarURL ?? '').trim()
+            )
           )
       )
 

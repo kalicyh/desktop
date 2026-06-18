@@ -33,6 +33,7 @@ import { IAheadBehind } from '../../models/branch'
 import { Emoji } from '../../lib/emoji'
 import { FilterChangesList } from './filter-changes-list'
 import { HookProgress } from '../../lib/git'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 /**
  * The timeout for the animation of the enter/leave animation for Undo.
@@ -69,6 +70,7 @@ interface IChangesSidebarProps {
   readonly askForConfirmationOnDiscardChanges: boolean
   readonly askForConfirmationOnCommitFilteredChanges: boolean
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
   readonly isShowingModal: boolean
   readonly isShowingFoldout: boolean
   /** The name of the currently selected external editor */
@@ -440,6 +442,7 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           askForConfirmationOnCommitFilteredChanges={
             this.props.askForConfirmationOnCommitFilteredChanges
           }
+          gitIdentityRules={this.props.gitIdentityRules}
           onDiscardChangesFromFiles={this.onDiscardChangesFromFiles}
           onOpenItem={this.onOpenItem}
           onRowClick={this.onChangedItemClick}

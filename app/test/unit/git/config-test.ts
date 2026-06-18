@@ -11,7 +11,7 @@ import {
   setGlobalConfigValue,
   getGlobalBooleanConfigValue,
   getGlobalGitIdentityRules,
-  setGlobalGitIdentityRuleLogin,
+  setGlobalGitIdentityRuleAccountInfo,
   git,
 } from '../../../src/lib/git'
 
@@ -217,6 +217,14 @@ describe('git/config', () => {
           ],
           __dirname
         )
+        await exec(
+          [
+            ...baseArgs,
+            'desktopIdentity.ethan.cheng@n-hop.com.avatarURL',
+            'https://gitea.nz.com/avatars/ethan',
+          ],
+          __dirname
+        )
 
         const rules = await getGlobalGitIdentityRules(env)
 
@@ -228,7 +236,7 @@ describe('git/config', () => {
             name: 'Ethan Cheng',
             email: 'ethan.cheng@n-hop.com',
             login: null,
-            avatarURL: null,
+            avatarURL: 'https://gitea.nz.com/avatars/ethan',
           },
           {
             pattern: 'https://gitlab.app.n-hop.com/**',
@@ -237,24 +245,43 @@ describe('git/config', () => {
             name: 'Ethan Cheng',
             email: 'ethan.cheng@n-hop.com',
             login: null,
-            avatarURL: null,
+            avatarURL: 'https://gitea.nz.com/avatars/ethan',
           },
         ])
       })
 
-      it('sets and clears desktop account login mappings', async t => {
+      it('sets and clears desktop account mappings', async t => {
         const { env } = await setup(t)
-        const rule = { host: 'gitea.nz.com' }
+        const rule = { host: 'gitea.nz.com', email: 'ethan.cheng@n-hop.com' }
 
-        await setGlobalGitIdentityRuleLogin(rule, 'ethan', env)
+        await setGlobalGitIdentityRuleAccountInfo(
+          rule,
+          'ethan',
+          'https://gitea.nz.com/avatars/ethan',
+          env
+        )
         assert.equal(
           await getGlobalConfigValue('desktopAccount.gitea.nz.com.login', env),
           'ethan'
         )
+        assert.equal(
+          await getGlobalConfigValue(
+            'desktopIdentity.ethan.cheng@n-hop.com.avatarURL',
+            env
+          ),
+          'https://gitea.nz.com/avatars/ethan'
+        )
 
-        await setGlobalGitIdentityRuleLogin(rule, '', env)
+        await setGlobalGitIdentityRuleAccountInfo(rule, '', '', env)
         assert.equal(
           await getGlobalConfigValue('desktopAccount.gitea.nz.com.login', env),
+          null
+        )
+        assert.equal(
+          await getGlobalConfigValue(
+            'desktopIdentity.ethan.cheng@n-hop.com.avatarURL',
+            env
+          ),
           null
         )
       })

@@ -75,6 +75,7 @@ import {
 import { ChangesListFilterOptions } from './changes-list-filter-options'
 import { HookProgress } from '../../lib/git'
 import { formatNumber } from '../../lib/format-number'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 export interface IChangesListItem extends IFilterListItem {
   readonly id: string
@@ -217,6 +218,7 @@ interface IFilterChangesListProps {
   readonly showCommitLengthWarning: boolean
 
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 
   /** The file list filter state containing all filter options */
   readonly fileListFilter: IFileListFilterState
@@ -996,6 +998,7 @@ export class FilterChangesList extends React.Component<
         onShowCreateForkDialog={this.onShowCreateForkDialog}
         onFilesToCommitNotVisible={this.onFilesToCommitNotVisible}
         accounts={this.props.accounts}
+        gitIdentityRules={this.props.gitIdentityRules}
         onSuccessfulCommitCreated={this.onSuccessfulCommitCreated}
         submitButtonAriaDescribedBy={'hidden-changes-warning'}
         skipCommitHooks={this.props.skipCommitHooks}

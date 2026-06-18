@@ -14,8 +14,20 @@ import { Avatar } from '../lib/avatar'
 import { CallToAction } from '../lib/call-to-action'
 import { getHTMLURL } from '../../lib/api'
 import { t } from '../../lib/i18n'
+import { showOpenDialog } from '../main-process-proxy'
+import { encodePathAsUrl } from '../../lib/path'
+import { Octicon } from '../octicons'
+import * as octicons from '../octicons/octicons.generated'
+import { getGitIdentityAvatarURL } from '../../lib/git/config'
 import type { IGitIdentityRule } from '../../lib/git/config'
-import { TextBox } from '../lib/text-box'
+
+interface IGitIdentityRuleGroup {
+  readonly key: string
+  readonly name: string
+  readonly email: string
+  readonly avatarURL: string | null
+  readonly rules: ReadonlyArray<IGitIdentityRule>
+}
 
 interface IAccountsProps {
   readonly accounts: ReadonlyArray<Account>
@@ -24,9 +36,9 @@ interface IAccountsProps {
   readonly onDotComSignIn: () => void
   readonly onEnterpriseSignIn: () => void
   readonly onLogout: (account: Account) => void
-  readonly onGitIdentityRuleLoginChanged: (
+  readonly onGitIdentityRuleAvatarURLChanged: (
     rule: IGitIdentityRule,
-    login: string
+    avatarURL: string
   ) => void
 }
 
@@ -37,6 +49,7 @@ enum SignInType {
 
 interface IAccountsState {
   readonly failedGitIdentityAvatarURLs: ReadonlySet<string>
+  readonly selectedGitIdentityKey: string | null
 }
 
 export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
@@ -45,6 +58,7 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
 
     this.state = {
       failedGitIdentityAvatarURLs: new Set(),
+      selectedGitIdentityKey: null,
     }
   }
 
@@ -68,7 +82,9 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
   }
 
   private renderGitIdentityRules() {
-    if (this.props.gitIdentityRules.length === 0) {
+    const groups = this.getGitIdentityRuleGroups()
+
+    if (groups.length === 0) {
       return null
     }
 
@@ -78,36 +94,39 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
         <p className="git-identity-rules-description">
           {t('preferences.accounts.gitIdentityRulesDescription')}
         </p>
-        {this.props.gitIdentityRules.map(rule =>
-          this.renderGitIdentityRule(rule)
-        )}
+        {groups.map(group => this.renderGitIdentityRuleGroup(group))}
+        {this.renderGitIdentityAvatarDialog(groups)}
       </>
     )
   }
 
-  private renderGitIdentityRule(rule: IGitIdentityRule) {
+  private renderGitIdentityRuleGroup(group: IGitIdentityRuleGroup) {
     return (
-      <Row className="account-info git-identity-rule" key={rule.pattern}>
+      <Row className="account-info git-identity-rule" key={group.key}>
         <div className="user-info-container">
-          {this.renderGitIdentityAvatar(rule)}
+          {this.renderGitIdentityAvatar(group)}
           <div className="user-info">
-            <div className="account-title">{rule.host}</div>
-            <div className="name">{rule.name}</div>
-            <div className="login">{rule.email}</div>
-            <div className="endpoint">
-              {t('preferences.accounts.gitIdentityRuleSource', {
-                path: rule.configPath,
-              })}
-            </div>
-            {this.renderGitIdentityRuleLogin(rule)}
+            <div className="name">{group.name}</div>
+            <div className="login">{group.email}</div>
           </div>
         </div>
+        <Button
+          className="git-identity-settings-button"
+          ariaLabel={t('preferences.accounts.gitIdentityAvatarSettings')}
+          tooltip={t('preferences.accounts.gitIdentityAvatarSettings')}
+          onClick={this.onGitIdentitySettingsClicked(group.key)}
+        >
+          <Octicon symbol={octicons.gear} />
+        </Button>
       </Row>
     )
   }
 
-  private renderGitIdentityAvatar(rule: IGitIdentityRule) {
-    const { avatarURL } = rule
+  private renderGitIdentityAvatar(
+    identity: Pick<IGitIdentityRuleGroup, 'name' | 'avatarURL'>,
+    className = 'git-identity-avatar'
+  ) {
+    const { avatarURL } = identity
 
     if (
       avatarURL !== null &&
@@ -115,10 +134,10 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
     ) {
       return (
         <img
-          className="git-identity-avatar"
+          className={className}
           src={avatarURL}
           alt={t('preferences.accounts.gitIdentityAvatarAlt', {
-            name: rule.name,
+            name: identity.name,
           })}
           onError={this.onGitIdentityAvatarError}
         />
@@ -126,8 +145,8 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
     }
 
     return (
-      <div className="git-identity-avatar" aria-hidden="true">
-        {this.getInitials(rule.name)}
+      <div className={className} aria-hidden="true">
+        {this.getInitials(identity.name)}
       </div>
     )
   }
@@ -145,29 +164,148 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
     }))
   }
 
-  private renderGitIdentityRuleLogin(rule: IGitIdentityRule) {
-    if (!this.isGiteaIdentityRule(rule)) {
+  private renderGitIdentityAvatarDialog(
+    groups: ReadonlyArray<IGitIdentityRuleGroup>
+  ) {
+    const group = groups.find(x => x.key === this.state.selectedGitIdentityKey)
+
+    if (group === undefined) {
       return null
     }
 
+    const giteaRule = group.rules.find(rule => this.isGiteaIdentityRule(rule))
+    const canUseGiteaAvatar =
+      giteaRule !== undefined && (giteaRule.login ?? '').length > 0
+
     return (
-      <TextBox
-        className="git-identity-login"
-        label={t('preferences.accounts.gitIdentityRuleLoginLabel')}
-        value={rule.login ?? ''}
-        placeholder={t('preferences.accounts.gitIdentityRuleLoginPlaceholder')}
-        onValueChanged={this.onGitIdentityRuleLoginChanged(rule)}
-      />
+      <div className="git-identity-avatar-dialog-backdrop">
+        <div
+          className="git-identity-avatar-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('preferences.accounts.gitIdentityAvatarSettings')}
+        >
+          <div className="git-identity-avatar-dialog-title">
+            <div className="name">{group.name}</div>
+            <div className="login">{group.email}</div>
+          </div>
+          <div className="git-identity-avatar-options">
+            <div className="git-identity-avatar-option">
+              {this.renderGitIdentityAvatar(group, 'git-identity-avatar-large')}
+              <Button
+                disabled={!canUseGiteaAvatar}
+                onClick={this.onUseGiteaAvatar(group)}
+              >
+                {t('preferences.accounts.gitIdentityUseGiteaAvatar')}
+              </Button>
+            </div>
+            <div className="git-identity-avatar-divider" />
+            <div className="git-identity-avatar-option">
+              {this.renderGitIdentityAvatar(group, 'git-identity-avatar-large')}
+              <Button onClick={this.onUploadGitIdentityAvatar(group)}>
+                {t('preferences.accounts.gitIdentityUploadAvatar')}
+              </Button>
+            </div>
+          </div>
+          <div className="git-identity-avatar-dialog-footer">
+            <Button onClick={this.onCloseGitIdentitySettings}>
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
+      </div>
     )
+  }
+
+  private getGitIdentityRuleGroups() {
+    const rulesByEmail = new Map<string, Array<IGitIdentityRule>>()
+
+    for (const rule of this.props.gitIdentityRules) {
+      const key = rule.email.toLowerCase()
+      const rules = rulesByEmail.get(key)
+
+      if (rules === undefined) {
+        rulesByEmail.set(key, [rule])
+      } else {
+        rules.push(rule)
+      }
+    }
+
+    const groups = new Array<IGitIdentityRuleGroup>()
+
+    for (const [key, rules] of rulesByEmail) {
+      const preferredRule = this.getPreferredGitIdentityRule(rules)
+      const avatarRule = rules.find(rule => rule.avatarURL !== null)
+
+      groups.push({
+        key,
+        rules,
+        name: preferredRule.name,
+        email: preferredRule.email,
+        avatarURL: avatarRule?.avatarURL ?? null,
+      })
+    }
+
+    return groups
+  }
+
+  private getPreferredGitIdentityRule(
+    rules: ReadonlyArray<IGitIdentityRule>
+  ): IGitIdentityRule {
+    return rules.find(rule => this.isGiteaIdentityRule(rule)) ?? rules[0]
   }
 
   private isGiteaIdentityRule(rule: IGitIdentityRule) {
     return rule.host.startsWith('gitea.')
   }
 
-  private onGitIdentityRuleLoginChanged = (rule: IGitIdentityRule) => {
-    return (login: string) => {
-      this.props.onGitIdentityRuleLoginChanged(rule, login.trim())
+  private onGitIdentitySettingsClicked = (key: string) => {
+    return () => {
+      this.setState({ selectedGitIdentityKey: key })
+    }
+  }
+
+  private onCloseGitIdentitySettings = () => {
+    this.setState({ selectedGitIdentityKey: null })
+  }
+
+  private onUseGiteaAvatar = (group: IGitIdentityRuleGroup) => {
+    return async () => {
+      const rule = group.rules.find(x => this.isGiteaIdentityRule(x))
+      const login = rule?.login ?? ''
+
+      if (rule === undefined || login.length === 0) {
+        return
+      }
+
+      const avatarURL = await getGitIdentityAvatarURL(rule.host, login)
+
+      if (avatarURL !== null) {
+        this.props.onGitIdentityRuleAvatarURLChanged(rule, avatarURL)
+      }
+    }
+  }
+
+  private onUploadGitIdentityAvatar = (group: IGitIdentityRuleGroup) => {
+    return async () => {
+      const path = await showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+          {
+            name: t('preferences.accounts.gitIdentityAvatarImageFilter'),
+            extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+          },
+        ],
+      })
+
+      if (path === null) {
+        return
+      }
+
+      this.props.onGitIdentityRuleAvatarURLChanged(
+        this.getPreferredGitIdentityRule(group.rules),
+        encodePathAsUrl(path)
+      )
     }
   }
 

@@ -73,6 +73,7 @@ import { HookProgress } from '../../lib/git'
 import { assertNever } from '../../lib/fatal-error'
 import { t } from '../../lib/i18n'
 import { formatNumber } from '../../lib/format-number'
+import type { IGitIdentityRule } from '../../lib/git/config'
 
 const addAuthorIcon: OcticonSymbolVariant = {
   w: 18,
@@ -203,6 +204,7 @@ interface ICommitMessageProps {
   readonly onFilesToCommitNotVisible?: (onCommitAnyway: () => {}) => void
   readonly onSuccessfulCommitCreated?: () => void
   readonly accounts: ReadonlyArray<Account>
+  readonly gitIdentityRules?: ReadonlyArray<IGitIdentityRule>
 
   /** Optional to add an id to a message that should be provided as an aria
    * description of the submit button */
@@ -732,7 +734,11 @@ export class CommitMessage extends React.Component<
     const { gitHubRepository } = repository
     const avatarUser: IAvatarUser | undefined =
       commitAuthor !== null
-        ? getAvatarUserFromAuthor(commitAuthor, gitHubRepository)
+        ? getAvatarUserFromAuthor(
+            commitAuthor,
+            gitHubRepository,
+            this.props.gitIdentityRules
+          )
         : undefined
 
     const repositoryAccount = this.props.repositoryAccount

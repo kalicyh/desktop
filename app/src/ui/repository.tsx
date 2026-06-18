@@ -315,6 +315,7 @@ export class RepositoryView extends React.Component<
           this.props.askForConfirmationOnCommitFilteredChanges
         }
         accounts={this.props.accounts}
+        gitIdentityRules={this.state.gitIdentityRules}
         isShowingModal={this.props.isShowingModal}
         isShowingFoldout={this.props.isShowingFoldout}
         externalEditorLabel={this.props.externalEditorLabel}
