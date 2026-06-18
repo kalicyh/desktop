@@ -1161,6 +1161,7 @@
   "tag.nameLabel": "名称",
   "tag.create.title": "创建标签",
   "tag.create.button": "创建标签",
+  "tag.suggestedVersion.title": "推荐",
   "tag.previous.title": "已有标签",
   "tag.previous.noMatches": "没有找到匹配“{tagName}”的标签",
   "tag.error.tooLong": "标签名称不能超过 {count} 个字符",

@@ -1161,6 +1161,7 @@
   "tag.nameLabel": "Name",
   "tag.create.title": "Create a tag",
   "tag.create.button": "Create tag",
+  "tag.suggestedVersion.title": "Recommended",
   "tag.previous.title": "Previous tags",
   "tag.previous.noMatches": "No matches found for '{tagName}'",
   "tag.error.tooLong": "The tag name cannot be longer than {count} characters",

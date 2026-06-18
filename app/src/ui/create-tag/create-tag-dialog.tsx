@@ -22,6 +22,7 @@ interface ICreateTagProps {
 
 interface ICreateTagState {
   readonly tagName: string
+  readonly tagNameInputKey: number
 
   /**
    * Note: once tag creation has been initiated this value stays at true
@@ -35,6 +36,54 @@ interface ICreateTagState {
 
 const MaxTagNameLength = 245
 
+export function getNextVersionTag(
+  localTags: Map<string, string> | null
+): string | null {
+  if (localTags === null) {
+    return null
+  }
+
+  let latestVersion: {
+    readonly prefix: string
+    readonly major: number
+    readonly minor: number
+    readonly patch: number
+  } | null = null
+
+  for (const tagName of localTags.keys()) {
+    const match = /^(v?)(\d+)\.(\d+)\.(\d+)$/.exec(tagName)
+
+    if (match === null) {
+      continue
+    }
+
+    const version = {
+      prefix: match[1],
+      major: Number(match[2]),
+      minor: Number(match[3]),
+      patch: Number(match[4]),
+    }
+
+    if (
+      latestVersion === null ||
+      version.major > latestVersion.major ||
+      (version.major === latestVersion.major &&
+        version.minor > latestVersion.minor) ||
+      (version.major === latestVersion.major &&
+        version.minor === latestVersion.minor &&
+        version.patch > latestVersion.patch)
+    ) {
+      latestVersion = version
+    }
+  }
+
+  return latestVersion === null
+    ? null
+    : `${latestVersion.prefix}${latestVersion.major}.${latestVersion.minor}.${
+        latestVersion.patch + 1
+      }`
+}
+
 /** The Create Tag component. */
 export class CreateTag extends React.Component<
   ICreateTagProps,
@@ -45,6 +94,7 @@ export class CreateTag extends React.Component<
 
     this.state = {
       tagName: props.initialName || '',
+      tagNameInputKey: 0,
       isCreatingTag: false,
       previousTags: this.getExistingTagsFiltered(),
     }
@@ -67,11 +117,13 @@ export class CreateTag extends React.Component<
 
         <DialogContent>
           <RefNameTextBox
+            key={this.state.tagNameInputKey}
             label={t('tag.nameLabel')}
-            initialValue={this.props.initialName}
+            initialValue={this.state.tagName}
             onValueChange={this.updateTagName}
           />
 
+          {this.renderSuggestedVersionTag()}
           {this.renderPreviousTags()}
         </DialogContent>
 
@@ -85,31 +137,50 @@ export class CreateTag extends React.Component<
     )
   }
 
+  private renderSuggestedVersionTag() {
+    const nextVersionTag = getNextVersionTag(this.props.localTags)
+
+    if (nextVersionTag === null) {
+      return null
+    }
+
+    return (
+      <>
+        <p>{t('tag.suggestedVersion.title')}</p>
+        <button
+          className="ref-component tag-suggestion-button"
+          type="button"
+          onClick={this.onSuggestedTagClick(nextVersionTag)}
+        >
+          {nextVersionTag}
+        </button>
+      </>
+    )
+  }
+
   private renderPreviousTags() {
     if (!enablePreviousTagSuggestions()) {
       return null
     }
 
     const { localTags } = this.props
-    const { previousTags, tagName } = this.state
+    const { previousTags } = this.state
 
     if (previousTags === null || localTags === null || localTags.size === 0) {
       return null
     }
 
     const title = t('tag.previous.title')
-    const lastThreeTags = previousTags.slice(-3)
+    const tagsToShow =
+      previousTags.length > 0 ? previousTags : Array.from(localTags.keys())
+    const lastThreeTags = tagsToShow.slice(-3)
 
     return (
       <>
         <p>{title}</p>
-        {lastThreeTags.length === 0 ? (
-          <p>{t('tag.previous.noMatches', { tagName })}</p>
-        ) : (
-          lastThreeTags.map((item: string, index: number) => (
-            <Ref key={index}>{item}</Ref>
-          ))
-        )}
+        {lastThreeTags.map((item: string, index: number) => (
+          <Ref key={index}>{item}</Ref>
+        ))}
       </>
     )
   }
@@ -146,6 +217,16 @@ export class CreateTag extends React.Component<
       tagName,
       previousTags: this.getExistingTagsFiltered(tagName),
     })
+  }
+
+  private onSuggestedTagClick = (tagName: string) => {
+    return () => {
+      this.setState(state => ({
+        tagName,
+        tagNameInputKey: state.tagNameInputKey + 1,
+        previousTags: this.getExistingTagsFiltered(tagName),
+      }))
+    }
   }
 
   private createTag = async () => {

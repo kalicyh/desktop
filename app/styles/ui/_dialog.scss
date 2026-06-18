@@ -586,6 +586,13 @@ dialog {
     .ref-component {
       margin-right: var(--spacing-half);
     }
+
+    .tag-suggestion-button {
+      appearance: none;
+      cursor: pointer;
+      font-size: var(--font-size);
+      color: inherit;
+    }
   }
 
   &#confirm-remove-repository,

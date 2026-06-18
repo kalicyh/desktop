@@ -815,6 +815,7 @@ const ignoredAncestorSelectors = [
   '.cm-editor',
   '.diff-line',
   '.blob-code',
+  '.side-by-side-diff .content-wrapper',
 ]
 
 const translatableAttributes = ['aria-label', 'alt', 'placeholder', 'title']
@@ -837,7 +838,7 @@ export function installUIStringLocalization() {
 
     for (const mutation of mutations) {
       if (mutation.type === 'characterData') {
-        localizeTextNode(mutation.target as Text)
+        localizeTextNodeIfAllowed(mutation.target as Text)
         continue
       }
 
@@ -865,7 +866,7 @@ export function installUIStringLocalization() {
 
 function localizeNode(node: Node) {
   if (node.nodeType === Node.TEXT_NODE) {
-    localizeTextNode(node as Text)
+    localizeTextNodeIfAllowed(node as Text)
     return
   }
 
@@ -896,6 +897,14 @@ function localizeNode(node: Node) {
   for (const element of node.querySelectorAll('*')) {
     localizeElementAttributes(element)
   }
+}
+
+function localizeTextNodeIfAllowed(node: Text) {
+  if (shouldIgnoreTextNode(node)) {
+    return
+  }
+
+  localizeTextNode(node)
 }
 
 function localizeTextNode(node: Text) {
@@ -1090,6 +1099,10 @@ function shouldIgnoreElement(element: Element): boolean {
   }
 
   return ignoredAncestorSelectors.some(selector => element.closest(selector))
+}
+
+function shouldIgnoreTextNode(node: Text): boolean {
+  return node.parentElement !== null && shouldIgnoreElement(node.parentElement)
 }
 
 function applyTextChange(change: () => void) {
