@@ -4,6 +4,7 @@ import { GitAuthor } from './git-author'
 import { GitHubRepository } from './github-repository'
 import { isWebFlowCommitter } from '../lib/web-flow-committer'
 import { parseStealthEmail } from '../lib/email'
+import { getCachedGitIdentityAvatarURL } from '../lib/git-identity-avatar-cache'
 import type { IGitIdentityRule } from '../lib/git/config'
 
 /** The minimum properties we need in order to display a user's avatar. */
@@ -41,7 +42,8 @@ export function getAvatarUserFromAuthor(
     email: author.email,
     name: author.name,
     endpoint: gitHubRepository === null ? null : gitHubRepository.endpoint,
-    avatarURL: gitIdentityRule?.avatarURL ?? undefined,
+    avatarURL:
+      gitIdentityRule?.avatarURL ?? getCachedGitIdentityAvatarURL(author.email),
   }
 }
 

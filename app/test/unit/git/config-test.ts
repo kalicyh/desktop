@@ -4,6 +4,7 @@ import { exec } from 'dugite'
 import * as Path from 'path'
 
 import { Repository } from '../../../src/models/repository'
+import { getAvatarUserFromAuthor } from '../../../src/models/avatar'
 import {
   getConfigValue,
   getGlobalConfigPath,
@@ -284,6 +285,25 @@ describe('git/config', () => {
           ),
           null
         )
+      })
+
+      it('updates the email avatar cache', async t => {
+        const { env } = await setup(t)
+        const avatarURL = 'https://gitea.nz.com/avatars/cached'
+
+        await setGlobalGitIdentityRuleAccountInfo(
+          { host: 'gitea.nz.com', email: 'cached@example.com' },
+          'cached',
+          avatarURL,
+          env
+        )
+
+        const avatarUser = getAvatarUserFromAuthor(
+          { name: 'Cached User', email: 'cached@example.com' },
+          null
+        )
+
+        assert.equal(avatarUser.avatarURL, avatarURL)
       })
     })
   })

@@ -2,6 +2,10 @@ import { git } from './core'
 import { Repository } from '../../models/repository'
 import { normalize } from 'path'
 import { homedir } from 'os'
+import {
+  cacheGitIdentityAvatarURLs,
+  setCachedGitIdentityAvatarURL,
+} from '../git-identity-avatar-cache'
 
 export interface IGitIdentityRule {
   readonly pattern: string
@@ -102,6 +106,8 @@ export async function getGlobalGitIdentityRules(env?: {
   for (const rule of rules) {
     rulesWithAccountInfo.push(await withDesktopAccountInfo(rule, env))
   }
+
+  cacheGitIdentityAvatarURLs(rulesWithAccountInfo)
 
   return rulesWithAccountInfo
 }
@@ -224,6 +230,7 @@ export async function setGlobalGitIdentityRuleAccountInfo(
     avatarURL,
     env
   )
+  setCachedGitIdentityAvatarURL(rule.email, avatarURL || null)
 }
 
 async function getGitIdentityFromFile(
