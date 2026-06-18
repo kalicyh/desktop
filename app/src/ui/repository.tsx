@@ -154,6 +154,8 @@ interface IRepositoryViewState {
   readonly gitIdentityRules: ReadonlyArray<IGitIdentityRule>
 }
 
+let cachedGitIdentityRules: ReadonlyArray<IGitIdentityRule> = []
+
 const enum Tab {
   Changes = 0,
   History = 1,
@@ -175,6 +177,7 @@ export class RepositoryView extends React.Component<
 
   private focusHistoryNeeded: boolean = false
   private focusChangesNeeded: boolean = false
+  private isUnmounted: boolean = false
 
   public constructor(props: IRepositoryViewProps) {
     super(props)
@@ -182,7 +185,7 @@ export class RepositoryView extends React.Component<
     this.state = {
       changesListScrollTop: 0,
       compareListScrollTop: 0,
-      gitIdentityRules: [],
+      gitIdentityRules: cachedGitIdentityRules,
     }
   }
 
@@ -680,6 +683,7 @@ export class RepositoryView extends React.Component<
   }
 
   public componentWillUnmount() {
+    this.isUnmounted = true
     window.removeEventListener('keydown', this.onGlobalKeyDown)
   }
 
@@ -701,6 +705,12 @@ export class RepositoryView extends React.Component<
 
   private loadGitIdentityRules = async () => {
     const gitIdentityRules = await getGlobalGitIdentityRules()
+    cachedGitIdentityRules = gitIdentityRules
+
+    if (this.isUnmounted) {
+      return
+    }
+
     this.setState({ gitIdentityRules })
   }
 
