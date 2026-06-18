@@ -171,6 +171,7 @@ interface IAvatarProps {
 
 interface IAvatarState {
   readonly user?: IAvatarUser
+  readonly propAvatarURL?: string
   readonly candidates: ReadonlyArray<string>
   readonly imageError: boolean
   readonly avatarToken?: string | Promise<void>
@@ -293,7 +294,12 @@ const getInitialStateForUser = (
   accounts: ReadonlyArray<Account>,
   size: number | undefined,
   avatarToken?: string
-): Pick<IAvatarState, 'user' | 'candidates' | 'avatarToken'> => {
+): Pick<
+  IAvatarState,
+  'user' | 'propAvatarURL' | 'candidates' | 'avatarToken'
+> => {
+  const propAvatarURL = user?.avatarURL
+
   if (user && !user.avatarURL) {
     user = botAvatarCache.tryGet({ user, accounts }) ?? user
   }
@@ -304,7 +310,7 @@ const getInitialStateForUser = (
       : undefined
   const candidates = getAvatarUrlCandidates(user, avatarToken, size)
 
-  return { user, candidates, avatarToken }
+  return { user, propAvatarURL, candidates, avatarToken }
 }
 
 /** A component for displaying a user avatar. */
@@ -318,7 +324,8 @@ export class Avatar extends React.Component<IAvatarProps, IAvatarState> {
     if (
       props.user?.email !== state.user?.email ||
       props.user?.endpoint !== state.user?.endpoint ||
-      props.user?.name !== state.user?.name
+      props.user?.name !== state.user?.name ||
+      props.user?.avatarURL !== state.propAvatarURL
     ) {
       return getInitialStateForUser(props.user, props.accounts, props.size)
     }
