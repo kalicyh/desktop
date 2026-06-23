@@ -10,6 +10,7 @@ import { CloneableRepositoryFilterList } from './cloneable-repository-filter-lis
 import { ClickSource } from '../lib/list'
 import { AccountPicker } from '../account-picker'
 import { t } from '../../lib/i18n'
+import { Checkbox, CheckboxValue } from '../lib/checkbox'
 
 interface ICloneGithubRepositoryProps {
   /** The account to clone from. */
@@ -84,6 +85,10 @@ interface ICloneGithubRepositoryProps {
   ) => void
 
   readonly onSelectedAccountChanged: (account: Account) => void
+
+  readonly useGitCredentialHelper: boolean
+
+  readonly onUseGitCredentialHelperChanged: (value: boolean) => void
 }
 
 export class CloneGithubRepository extends React.PureComponent<ICloneGithubRepositoryProps> {
@@ -129,7 +134,25 @@ export class CloneGithubRepository extends React.PureComponent<ICloneGithubRepos
             {t('clone.choose')}
           </Button>
         </Row>
+
+        <Row>
+          <Checkbox
+            label={t('clone.useGitCredentialHelper')}
+            value={
+              this.props.useGitCredentialHelper
+                ? CheckboxValue.On
+                : CheckboxValue.Off
+            }
+            onChange={this.onUseGitCredentialHelperChanged}
+          />
+        </Row>
       </DialogContent>
     )
+  }
+
+  private onUseGitCredentialHelperChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    this.props.onUseGitCredentialHelperChanged(event.currentTarget.checked)
   }
 }

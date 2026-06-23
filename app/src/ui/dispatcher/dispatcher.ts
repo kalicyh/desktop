@@ -65,6 +65,7 @@ import { Branch, IAheadBehind } from '../../models/branch'
 import { BranchesTab } from '../../models/branches-tab'
 import { CloneRepositoryTab } from '../../models/clone-repository-tab'
 import { CloningRepository } from '../../models/cloning-repository'
+import { CloneOptions } from '../../models/clone-options'
 import { Commit, ICommitContext, CommitOneLine } from '../../models/commit'
 import { ICommitMessage } from '../../models/commit-message'
 import { DiffSelection, ImageDiffType, ITextDiff } from '../../models/diff'
@@ -834,7 +835,7 @@ export class Dispatcher {
   public async clone(
     url: string,
     path: string,
-    options?: { branch?: string; defaultBranch?: string }
+    options?: CloneOptions
   ): Promise<Repository | null> {
     return this.appStore._completeOpenInDesktop(async () => {
       const { promise, repository } = this.appStore._clone(url, path, options)

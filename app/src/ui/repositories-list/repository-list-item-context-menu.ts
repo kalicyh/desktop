@@ -4,6 +4,10 @@ import { Repositoryish } from './group-repositories'
 import { RepositoryGroup } from '../../models/repository-group'
 import { clipboard } from 'electron'
 import { t } from '../../lib/i18n'
+import {
+  getUseGitCredentialHelperForRepository,
+  setUseGitCredentialHelperForRepository,
+} from '../../lib/use-git-credential-helper'
 
 interface IRepositoryListItemContextMenuConfig {
   repository: Repositoryish
@@ -44,6 +48,7 @@ export const generateRepositoryListContextMenu = (
     ...buildFavoriteMenuItems(config),
     ...buildGroupMenuItems(config),
     ...buildWorktreeMenuItems(config),
+    ...buildCredentialHelperMenuItems(config),
     {
       label: t('repositoryContext.copyRepoName'),
       action: () => clipboard.writeText(repository.name),
@@ -83,6 +88,32 @@ export const generateRepositoryListContextMenu = (
   ]
 
   return items
+}
+
+const buildCredentialHelperMenuItems = (
+  config: IRepositoryListItemContextMenuConfig
+): ReadonlyArray<IMenuItem> => {
+  const { repository } = config
+
+  if (!(repository instanceof Repository)) {
+    return []
+  }
+
+  const useGitCredentialHelper =
+    getUseGitCredentialHelperForRepository(repository)
+
+  return [
+    {
+      label: t('repositoryContext.useGitCredentialHelper'),
+      type: 'checkbox',
+      checked: useGitCredentialHelper,
+      action: () =>
+        setUseGitCredentialHelperForRepository(
+          repository,
+          !useGitCredentialHelper
+        ),
+    },
+  ]
 }
 
 const buildFavoriteMenuItems = (

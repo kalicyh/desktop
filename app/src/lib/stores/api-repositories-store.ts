@@ -3,6 +3,7 @@ import { AccountsStore } from './accounts-store'
 import { IAPIRepository, API } from '../api'
 import { Account, accountEquals } from '../../models/account'
 import { merge } from '../merge'
+import { getRepositoriesFromGh } from '../gh-repositories'
 
 /**
  * Attempt to look up an existing account in the account state
@@ -223,6 +224,8 @@ export class ApiRepositoriesStore extends BaseStore {
         return false
       },
     })
+
+    addPage(await getRepositoriesFromGh(account))
 
     if (missing.size) {
       missing.forEach((_, clone_url) => repositories.delete(clone_url))

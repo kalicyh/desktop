@@ -126,6 +126,8 @@ interface IBaseTabState {
   readonly url: string
 
   readonly selectedAccount: Account | null
+
+  readonly useGitCredentialHelper: boolean
 }
 
 interface IUrlTabState extends IBaseTabState {
@@ -188,6 +190,7 @@ export class CloneRepository extends React.Component<
       path: defaultDirectory,
       url: this.props.initialURL || '',
       selectedAccount: null,
+      useGitCredentialHelper: false,
     }
 
     this.state = {
@@ -342,6 +345,9 @@ export class CloneRepository extends React.Component<
     this.setSelectedTabState({ path }, this.validatePath)
   }
 
+  private onUseGitCredentialHelperChanged = (useGitCredentialHelper: boolean) =>
+    this.setSelectedTabState({ useGitCredentialHelper })
+
   private renderActiveTab() {
     const tab = this.props.selectedTab
 
@@ -355,6 +361,10 @@ export class CloneRepository extends React.Component<
             onPathChanged={this.onPathChanged}
             onUrlChanged={this.updateUrl}
             onChooseDirectory={this.onChooseDirectory}
+            useGitCredentialHelper={tabState.useGitCredentialHelper}
+            onUseGitCredentialHelperChanged={
+              this.onUseGitCredentialHelperChanged
+            }
           />
         )
 
@@ -389,6 +399,10 @@ export class CloneRepository extends React.Component<
               onFilterTextChanged={this.onFilterTextChanged}
               onItemClicked={this.onItemClicked}
               onSelectedAccountChanged={this.onSelectedAccountChanged}
+              useGitCredentialHelper={tabState.useGitCredentialHelper}
+              onUseGitCredentialHelperChanged={
+                this.onUseGitCredentialHelperChanged
+              }
             />
           )
         }
@@ -751,7 +765,7 @@ export class CloneRepository extends React.Component<
     this.setState({ loading: true })
 
     const cloneInfo = await this.resolveCloneInfo()
-    const { path } = this.getSelectedTabState()
+    const { path, useGitCredentialHelper } = this.getSelectedTabState()
 
     if (path == null) {
       const error = new Error(t('clone.error.directoryCouldNotBeCreated'))
@@ -771,7 +785,7 @@ export class CloneRepository extends React.Component<
 
     this.props.dispatcher.closeFoldout(FoldoutType.Repository)
     try {
-      this.cloneImpl(url.trim(), path, defaultBranch)
+      this.cloneImpl(url.trim(), path, defaultBranch, useGitCredentialHelper)
     } catch (e) {
       log.error(`CloneRepository: clone failed to complete to ${path}`, e)
       this.setState({ loading: false })
@@ -779,8 +793,16 @@ export class CloneRepository extends React.Component<
     }
   }
 
-  private cloneImpl(url: string, path: string, defaultBranch?: string) {
-    this.props.dispatcher.clone(url, path, { defaultBranch })
+  private cloneImpl(
+    url: string,
+    path: string,
+    defaultBranch?: string,
+    useGitCredentialHelper?: boolean
+  ) {
+    this.props.dispatcher.clone(url, path, {
+      defaultBranch,
+      useGitCredentialHelper,
+    })
     this.props.onDismissed()
 
     setDefaultDir(Path.resolve(path, '..'))

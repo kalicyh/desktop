@@ -1,6 +1,7 @@
 import { envForAuthentication } from './authentication'
 import { resolveGitProxy } from '../resolve-git-proxy'
 import { getHTMLURL } from '../api'
+import { useGitCredentialHelperEnvKey } from '../use-git-credential-helper'
 import {
   Repository,
   isRepositoryWithGitHubRepository,
@@ -73,10 +74,14 @@ export function getFallbackUrlForProxyResolve(
  *                  pointing to another host entirely. Used to resolve which
  *                  proxy (if any) should be used for the operation.
  */
-export async function envForRemoteOperation(remoteUrl: string) {
+export async function envForRemoteOperation(
+  remoteUrl: string,
+  useGitCredentialHelper = false
+) {
   return {
     ...envForAuthentication(),
     ...(await envForProxy(remoteUrl)),
+    ...(useGitCredentialHelper ? { [useGitCredentialHelperEnvKey]: '1' } : {}),
   }
 }
 

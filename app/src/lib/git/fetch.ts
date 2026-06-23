@@ -5,6 +5,7 @@ import { FetchProgressParser, executionOptionsWithProgress } from '../progress'
 import { IRemote } from '../../models/remote'
 import { ITrackingBranch } from '../../models/branch'
 import { envForRemoteOperation } from './environment'
+import { getUseGitCredentialHelperForRepository } from '../use-git-credential-helper'
 
 async function getFetchArgs(
   remote: string,
@@ -44,7 +45,10 @@ export async function fetch(
 ): Promise<void> {
   let opts: IGitStringExecutionOptions = {
     successExitCodes: new Set([0]),
-    env: await envForRemoteOperation(remote.url),
+    env: await envForRemoteOperation(
+      remote.url,
+      getUseGitCredentialHelperForRepository(repository)
+    ),
   }
 
   if (progressCallback) {
@@ -96,7 +100,10 @@ export async function fetchRefspec(
 ): Promise<void> {
   await git(['fetch', remote.name, refspec], repository.path, 'fetchRefspec', {
     successExitCodes: new Set([0, 128]),
-    env: await envForRemoteOperation(remote.url),
+    env: await envForRemoteOperation(
+      remote.url,
+      getUseGitCredentialHelperForRepository(repository)
+    ),
   })
 }
 

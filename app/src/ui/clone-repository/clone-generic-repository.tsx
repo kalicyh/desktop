@@ -5,6 +5,7 @@ import { Row } from '../lib/row'
 import { DialogContent } from '../dialog'
 import { Ref } from '../lib/ref'
 import { t } from '../../lib/i18n'
+import { Checkbox, CheckboxValue } from '../lib/checkbox'
 
 interface ICloneGenericRepositoryProps {
   /** The URL to clone. */
@@ -23,6 +24,10 @@ interface ICloneGenericRepositoryProps {
    * Called when the user should be prompted to choose a directory to clone to.
    */
   readonly onChooseDirectory: () => Promise<string | undefined>
+
+  readonly useGitCredentialHelper: boolean
+
+  readonly onUseGitCredentialHelperChanged: (value: boolean) => void
 }
 
 /** The component for cloning a repository. */
@@ -61,11 +66,29 @@ export class CloneGenericRepository extends React.Component<
             {t('clone.choose')}
           </Button>
         </Row>
+
+        <Row>
+          <Checkbox
+            label={t('clone.useGitCredentialHelper')}
+            value={
+              this.props.useGitCredentialHelper
+                ? CheckboxValue.On
+                : CheckboxValue.Off
+            }
+            onChange={this.onUseGitCredentialHelperChanged}
+          />
+        </Row>
       </DialogContent>
     )
   }
 
   private onUrlChanged = (url: string) => {
     this.props.onUrlChanged(url)
+  }
+
+  private onUseGitCredentialHelperChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    this.props.onUseGitCredentialHelperChanged(event.currentTarget.checked)
   }
 }

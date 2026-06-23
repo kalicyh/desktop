@@ -1,5 +1,7 @@
 import { exec as git } from 'dugite'
 
+type CredentialHelper = 'manager' | 'configured'
+
 export const parseCredential = (value: string) => {
   const cred = new Map<string, string>()
 
@@ -50,14 +52,19 @@ export const formatCredential = (credential: Map<string, string>) => {
 // Can't use git() as that will call withTrampolineEnv which calls this method
 const exec = (
   cmd: string,
+  helper: CredentialHelper,
   cred: Map<string, string>,
   path: string,
   env: Record<string, string | undefined> = {}
 ) =>
   git(
     [
-      ...['-c', 'credential.helper='],
-      ...['-c', `credential.helper=manager`],
+      ...(helper === 'manager'
+        ? [
+            ...['-c', 'credential.helper='],
+            ...['-c', `credential.helper=manager`],
+          ]
+        : []),
       'credential',
       cmd,
     ],
@@ -67,6 +74,7 @@ const exec = (
       env: {
         GIT_TERMINAL_PROMPT: '0',
         GIT_ASKPASS: '',
+        GIT_CONFIG_PARAMETERS: undefined,
         TERM: 'dumb',
         ...env,
       },
@@ -78,6 +86,17 @@ const exec = (
     return parseCredential(stdout)
   })
 
-export const fillCredential = exec.bind(null, 'fill')
-export const approveCredential = exec.bind(null, 'approve')
-export const rejectCredential = exec.bind(null, 'reject')
+export const fillCredential = exec.bind(null, 'fill', 'manager')
+export const approveCredential = exec.bind(null, 'approve', 'manager')
+export const rejectCredential = exec.bind(null, 'reject', 'manager')
+export const fillConfiguredCredential = exec.bind(null, 'fill', 'configured')
+export const approveConfiguredCredential = exec.bind(
+  null,
+  'approve',
+  'configured'
+)
+export const rejectConfiguredCredential = exec.bind(
+  null,
+  'reject',
+  'configured'
+)
