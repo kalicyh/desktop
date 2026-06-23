@@ -4,6 +4,6 @@ export type CloneOptions = {
   readonly branch?: string
   /** The default branch name in case we're cloning an empty repository. */
   readonly defaultBranch?: string
-  /** Use the configured Git credential helper instead of Desktop credentials. */
-  readonly useGitCredentialHelper?: boolean
+  /** Use GitHub CLI credentials instead of Desktop credentials. */
+  readonly useGh?: boolean
 }

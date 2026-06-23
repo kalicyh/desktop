@@ -6,7 +6,7 @@ import { RetryAction, RetryActionType } from '../../models/retry-actions'
 import { clone as cloneRepo } from '../git'
 import { ErrorWithMetadata } from '../error-with-metadata'
 import { BaseStore } from './base-store'
-import { setUseGitCredentialHelperForPath } from '../use-git-credential-helper'
+import { setUseGhForPath } from '../use-gh'
 
 /** The store in charge of repository currently being cloned. */
 export class CloningRepositoriesStore extends BaseStore {
@@ -37,8 +37,8 @@ export class CloningRepositoriesStore extends BaseStore {
         this.stateByID.set(repository.id, progress)
         this.emitUpdate()
       })
-      if (options.useGitCredentialHelper) {
-        setUseGitCredentialHelperForPath(path, true)
+      if (options.useGh) {
+        setUseGhForPath(path, true)
       }
     } catch (e) {
       success = false

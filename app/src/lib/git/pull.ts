@@ -12,7 +12,7 @@ import { PullProgressParser, executionOptionsWithProgress } from '../progress'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
 import { getConfigValue } from './config'
-import { getUseGitCredentialHelperForRepository } from '../use-git-credential-helper'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * Pull from the specified remote.
@@ -44,7 +44,7 @@ export async function pull(
   let opts: IGitStringExecutionOptions = {
     env: await envForRemoteOperation(
       remote.url,
-      getUseGitCredentialHelperForRepository(repository)
+      getUseGhForRepository(repository)
     ),
     // git pull triggers merge or rebase hooks depending on config, instead of
     // trying to check pull.rebase and friends we'll just intercept all possible

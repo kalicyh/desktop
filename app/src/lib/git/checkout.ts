@@ -17,6 +17,7 @@ import { CommitOneLine, shortenSHA } from '../../models/commit'
 import { IRemote } from '../../models/remote'
 import { updateSubmodulesAfterOperation } from './submodule'
 import { t } from '../i18n'
+import { getUseGhForRepository } from '../use-gh'
 
 export type ProgressCallback = (progress: ICheckoutProgress) => void
 
@@ -46,7 +47,8 @@ async function getCheckoutOpts(
 ): Promise<IGitStringExecutionOptions> {
   const opts: IGitStringExecutionOptions = {
     env: await envForRemoteOperation(
-      getFallbackUrlForProxyResolve(repository, currentRemote)
+      getFallbackUrlForProxyResolve(repository, currentRemote),
+      getUseGhForRepository(repository)
     ),
     expectedErrors: AuthenticationErrors,
   }

@@ -8,6 +8,7 @@ import { envForRemoteOperation } from './environment'
 import { createForEachRefParser } from './git-delimiter-parser'
 import { IRemote } from '../../models/remote'
 import { coerceToString } from './coerce-to-string'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * Create a new branch from the given start point.
@@ -122,7 +123,10 @@ export async function deleteRemoteBranch(
   // If the user is not authenticated, the push is going to fail
   // Let this propagate and leave it to the caller to handle
   const result = await git(args, repository.path, 'deleteRemoteBranch', {
-    env: await envForRemoteOperation(remote.url),
+    env: await envForRemoteOperation(
+      remote.url,
+      getUseGhForRepository(repository)
+    ),
     expectedErrors: new Set<DugiteError>([DugiteError.BranchDeletionFailed]),
   })
 

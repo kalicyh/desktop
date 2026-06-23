@@ -2,6 +2,7 @@ import { git } from './core'
 import { Repository } from '../../models/repository'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * Create a new tag on the given target commit.
@@ -99,7 +100,10 @@ export async function fetchTagsToPush(
   ]
 
   const result = await git(args, repository.path, 'fetchTagsToPush', {
-    env: await envForRemoteOperation(remote.url),
+    env: await envForRemoteOperation(
+      remote.url,
+      getUseGhForRepository(repository)
+    ),
     successExitCodes: new Set([0, 1, 128]),
   })
 

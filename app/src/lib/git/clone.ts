@@ -31,7 +31,7 @@ export async function clone(
   progressCallback?: (progress: ICloneProgress) => void
 ): Promise<void> {
   const env = {
-    ...(await envForRemoteOperation(url, options.useGitCredentialHelper)),
+    ...(await envForRemoteOperation(url, options.useGh)),
     GIT_CLONE_PROTECTION_ACTIVE: 'false',
   }
 

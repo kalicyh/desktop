@@ -13,6 +13,7 @@ import { Progress } from '../../models/progress'
 import { join, resolve } from 'path'
 import { readFile } from 'fs/promises'
 import { t } from '../i18n'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * Update submodules after a git operation.
@@ -38,7 +39,8 @@ export async function updateSubmodulesAfterOperation<T extends Progress>(
 ): Promise<void> {
   const opts: IGitStringExecutionOptions = {
     env: await envForRemoteOperation(
-      getFallbackUrlForProxyResolve(repository, remote)
+      getFallbackUrlForProxyResolve(repository, remote),
+      getUseGhForRepository(repository)
     ),
     expectedErrors: AuthenticationErrors,
   }

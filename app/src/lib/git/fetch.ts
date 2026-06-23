@@ -5,7 +5,7 @@ import { FetchProgressParser, executionOptionsWithProgress } from '../progress'
 import { IRemote } from '../../models/remote'
 import { ITrackingBranch } from '../../models/branch'
 import { envForRemoteOperation } from './environment'
-import { getUseGitCredentialHelperForRepository } from '../use-git-credential-helper'
+import { getUseGhForRepository } from '../use-gh'
 
 async function getFetchArgs(
   remote: string,
@@ -47,7 +47,7 @@ export async function fetch(
     successExitCodes: new Set([0]),
     env: await envForRemoteOperation(
       remote.url,
-      getUseGitCredentialHelperForRepository(repository)
+      getUseGhForRepository(repository)
     ),
   }
 
@@ -102,7 +102,7 @@ export async function fetchRefspec(
     successExitCodes: new Set([0, 128]),
     env: await envForRemoteOperation(
       remote.url,
-      getUseGitCredentialHelperForRepository(repository)
+      getUseGhForRepository(repository)
     ),
   })
 }

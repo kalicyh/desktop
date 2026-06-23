@@ -5,6 +5,7 @@ import { Repository } from '../../models/repository'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
 import { getSymbolicRef } from './refs'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * List the remotes, sorted alphabetically by `name`, for a repository.
@@ -99,7 +100,10 @@ export async function updateRemoteHEAD(
 ): Promise<void> {
   const options = {
     successExitCodes: new Set([0, 1, 128]),
-    env: await envForRemoteOperation(remote.url),
+    env: await envForRemoteOperation(
+      remote.url,
+      getUseGhForRepository(repository)
+    ),
     isBackgroundTask,
   }
 

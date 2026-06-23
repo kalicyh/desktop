@@ -380,7 +380,7 @@ export async function git(
         },
         path,
         options?.isBackgroundTask ?? false,
-        hooksEnv
+        { ...opts.env, ...hooksEnv }
       ),
     path,
     options

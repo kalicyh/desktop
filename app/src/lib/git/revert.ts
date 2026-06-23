@@ -11,6 +11,7 @@ import {
   getFallbackUrlForProxyResolve,
 } from './environment'
 import { IRemote } from '../../models/remote'
+import { getUseGhForRepository } from '../use-gh'
 
 /**
  * Creates a new commit that reverts the changes of a previous commit
@@ -35,7 +36,8 @@ export async function revertCommit(
   let opts: IGitStringExecutionOptions = {}
   if (progressCallback) {
     const env = await envForRemoteOperation(
-      getFallbackUrlForProxyResolve(repository, currentRemote)
+      getFallbackUrlForProxyResolve(repository, currentRemote),
+      getUseGhForRepository(repository)
     )
     opts = await executionOptionsWithProgress(
       { env, trackLFSProgress: true },

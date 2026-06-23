@@ -86,9 +86,9 @@ interface ICloneGithubRepositoryProps {
 
   readonly onSelectedAccountChanged: (account: Account) => void
 
-  readonly useGitCredentialHelper: boolean
+  readonly useGh: boolean
 
-  readonly onUseGitCredentialHelperChanged: (value: boolean) => void
+  readonly onUseGhChanged: (value: boolean) => void
 }
 
 export class CloneGithubRepository extends React.PureComponent<ICloneGithubRepositoryProps> {
@@ -137,22 +137,16 @@ export class CloneGithubRepository extends React.PureComponent<ICloneGithubRepos
 
         <Row>
           <Checkbox
-            label={t('clone.useGitCredentialHelper')}
-            value={
-              this.props.useGitCredentialHelper
-                ? CheckboxValue.On
-                : CheckboxValue.Off
-            }
-            onChange={this.onUseGitCredentialHelperChanged}
+            label={t('clone.useGh')}
+            value={this.props.useGh ? CheckboxValue.On : CheckboxValue.Off}
+            onChange={this.onUseGhChanged}
           />
         </Row>
       </DialogContent>
     )
   }
 
-  private onUseGitCredentialHelperChanged = (
-    event: React.FormEvent<HTMLInputElement>
-  ) => {
-    this.props.onUseGitCredentialHelperChanged(event.currentTarget.checked)
+  private onUseGhChanged = (event: React.FormEvent<HTMLInputElement>) => {
+    this.props.onUseGhChanged(event.currentTarget.checked)
   }
 }

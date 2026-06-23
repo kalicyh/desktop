@@ -1,7 +1,8 @@
 import { envForAuthentication } from './authentication'
 import { resolveGitProxy } from '../resolve-git-proxy'
 import { getHTMLURL } from '../api'
-import { useGitCredentialHelperEnvKey } from '../use-git-credential-helper'
+import { useGhEnvKey } from '../use-gh'
+import { delimiter } from 'path'
 import {
   Repository,
   isRepositoryWithGitHubRepository,
@@ -74,14 +75,51 @@ export function getFallbackUrlForProxyResolve(
  *                  pointing to another host entirely. Used to resolve which
  *                  proxy (if any) should be used for the operation.
  */
-export async function envForRemoteOperation(
-  remoteUrl: string,
-  useGitCredentialHelper = false
-) {
+export async function envForRemoteOperation(remoteUrl: string, useGh = false) {
   return {
     ...envForAuthentication(),
     ...(await envForProxy(remoteUrl)),
-    ...(useGitCredentialHelper ? { [useGitCredentialHelperEnvKey]: '1' } : {}),
+    ...(useGh ? envForGh(remoteUrl) : {}),
+  }
+}
+
+function envForGh(remoteUrl: string) {
+  const gitConfigParameters = gitConfigParametersForGh(remoteUrl)
+  return {
+    [useGhEnvKey]: '1',
+    ...(gitConfigParameters !== undefined
+      ? { GIT_CONFIG_PARAMETERS: gitConfigParameters }
+      : {}),
+    PATH: ['/opt/homebrew/bin', '/usr/local/bin', process.env.PATH]
+      .filter(Boolean)
+      .join(delimiter),
+  }
+}
+
+function gitConfigParametersForGh(remoteUrl: string) {
+  const host = getGitHost(remoteUrl)
+  if (host === null) {
+    return undefined
+  }
+
+  const httpsPrefix = `https://${host}/`
+  return [
+    `'url.${httpsPrefix}.insteadOf=git@${host}:'`,
+    `'url.${httpsPrefix}.insteadOf=ssh://git@${host}/'`,
+  ].join(' ')
+}
+
+function getGitHost(remoteUrl: string) {
+  const scpLike = /^git@([^:]+):/.exec(remoteUrl)
+  if (scpLike) {
+    return scpLike[1]
+  }
+
+  try {
+    const url = new URL(remoteUrl)
+    return url.protocol === 'ssh:' && url.username === 'git' ? url.host : null
+  } catch {
+    return null
   }
 }
 

@@ -10,6 +10,7 @@ import { GitError as DugiteError, exec } from 'dugite'
 import memoizeOne from 'memoize-one'
 import { GitError, getDescriptionForError } from '../git/core'
 import { getDesktopAskpassTrampolineFilename } from 'desktop-trampoline'
+import { useGhEnvKey } from '../use-gh'
 
 const hasRejectedCredentialsForEndpoint = new Map<string, Set<string>>()
 
@@ -109,6 +110,10 @@ export async function withTrampolineEnv<T>(
 
     const gitEnvConfigPrefix =
       existingGitEnvConfig.length > 0 ? `${existingGitEnvConfig} ` : ''
+    const gitCredentialHelper =
+      customEnv?.[useGhEnvKey] === '1'
+        ? "'credential.helper=' 'credential.helper=!gh auth git-credential'"
+        : "'credential.helper=' 'credential.helper=desktop'"
 
     // The code below assumes a few things in order to manage SSH key passphrases
     // correctly:
@@ -140,7 +145,7 @@ export async function withTrampolineEnv<T>(
         //
         // See https://github.com/desktop/desktop/issues/18945
         // See https://github.com/git/git/blob/ed155187b429a/config.c#L664
-        GIT_CONFIG_PARAMETERS: `${gitEnvConfigPrefix}'credential.helper=' 'credential.helper=desktop'`,
+        GIT_CONFIG_PARAMETERS: `${gitEnvConfigPrefix}${gitCredentialHelper}`,
 
         GIT_USER_AGENT: await GitUserAgent(),
         ...sshEnv,

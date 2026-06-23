@@ -5,7 +5,7 @@ import { PushProgressParser, executionOptionsWithProgress } from '../progress'
 import { IRemote } from '../../models/remote'
 import { envForRemoteOperation } from './environment'
 import { Branch } from '../../models/branch'
-import { getUseGitCredentialHelperForRepository } from '../use-git-credential-helper'
+import { getUseGhForRepository } from '../use-gh'
 
 export type PushOptions = {
   /**
@@ -77,7 +77,7 @@ export async function push(
   let opts: IGitStringExecutionOptions = {
     env: await envForRemoteOperation(
       remote.url,
-      getUseGitCredentialHelperForRepository(repository)
+      getUseGhForRepository(repository)
     ),
     interceptHooks: ['pre-push'],
     onHookProgress: options?.onHookProgress,
