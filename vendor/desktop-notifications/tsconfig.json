@@ -12,6 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "sourceMap": true,
+    "skipLibCheck": true,
     "strict": true,
     "outDir": "./dist",
     "useUnknownInCatchVariables": false,

@@ -7,6 +7,7 @@ import glob from 'glob'
 import { forceUnwrap } from '../app/src/lib/fatal-error'
 
 const root = Path.dirname(__dirname)
+const isPnpm = process.env.npm_config_user_agent?.startsWith('pnpm/')
 
 const options: SpawnSyncOptions = {
   cwd: root,
@@ -42,14 +43,18 @@ function findYarnVersion(callback: (path: string) => void) {
 }
 
 findYarnVersion(path => {
-  let result = spawnSync(
-    'node',
-    [path, '--cwd', 'app', 'install', '--force'],
-    options
-  )
+  let result
 
-  if (result.status !== 0) {
-    process.exit(result.status || 1)
+  if (!isPnpm) {
+    result = spawnSync(
+      'node',
+      [path, '--cwd', 'app', 'install', '--force'],
+      options
+    )
+
+    if (result.status !== 0) {
+      process.exit(result.status || 1)
+    }
   }
 
   // Electron >= 42 no longer downloads its prebuilt binary in its own
@@ -72,7 +77,9 @@ findYarnVersion(path => {
     process.exit(result.status || 1)
   }
 
-  result = spawnSync('node', [path, 'compile:script'], options)
+  result = isPnpm
+    ? spawnSync('pnpm', ['run', 'compile:script'], options)
+    : spawnSync('node', [path, 'compile:script'], options)
 
   if (result.status !== 0) {
     process.exit(result.status || 1)

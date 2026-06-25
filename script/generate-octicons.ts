@@ -125,6 +125,5 @@ export type OcticonSymbol = OcticonSymbolVariant | OcticonSymbolVariants\n\n`)
 
   console.log('Ensuring generated file is formatted correctly...')
   const root = Path.dirname(__dirname)
-  const yarnExecutable = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
-  return cp.spawn(yarnExecutable, ['lint:fix'], { cwd: root, stdio: 'inherit' })
+  return cp.spawn('pnpm', ['run', 'lint:fix'], { cwd: root, stdio: 'inherit' })
 })
