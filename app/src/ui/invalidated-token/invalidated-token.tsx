@@ -2,13 +2,12 @@ import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../dialog'
 import { Dispatcher } from '../dispatcher'
 import { OkCancelButtonGroup } from '../dialog/ok-cancel-button-group'
-import { Account, isEnterpriseAccount } from '../../models/account'
-import { getHTMLURL } from '../../lib/api'
+import { Account } from '../../models/account'
 import { Ref } from '../lib/ref'
 import { t } from '../../lib/i18n'
 
 interface IInvalidatedTokenProps {
-  readonly dispatcher: Dispatcher
+  readonly dispatcher: Pick<Dispatcher, 'showAccountSignInDialog'>
   readonly account: Account
   readonly onDismissed: () => void
 }
@@ -31,6 +30,8 @@ export class InvalidatedToken extends React.Component<IInvalidatedTokenProps> {
       >
         <DialogContent>
           {t('invalidatedToken.bodyPrefix')}
+          <Ref>{account.login}</Ref>
+          {t('invalidatedToken.bodyAccountOnHost')}
           <Ref>{account.friendlyEndpoint}</Ref>
           {t('invalidatedToken.bodySuffix')}
         </DialogContent>
@@ -49,12 +50,8 @@ export class InvalidatedToken extends React.Component<IInvalidatedTokenProps> {
 
     onDismissed()
 
-    if (isEnterpriseAccount(account)) {
-      dispatcher.showEnterpriseSignInDialog(
-        getHTMLURL(this.props.account.endpoint)
-      )
-    } else {
-      dispatcher.showDotComSignInDialog()
-    }
+    // Other accounts may still be signed in to the same endpoint, so sign
+    // back in to this specific account rather than any account.
+    dispatcher.showAccountSignInDialog(account.endpoint, account.login)
   }
 }

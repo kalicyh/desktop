@@ -71,7 +71,10 @@ export class StashAndSwitchBranch extends React.Component<
           {this.renderStashOverwriteWarning()}
         </DialogContent>
         <DialogFooter>
-          <OkCancelButtonGroup okButtonText={t('stash.switchBranch.button')} />
+          <OkCancelButtonGroup
+            okButtonText={t('stash.switchBranch.button')}
+            okButtonDisabled={isStashingChanges}
+          />
         </DialogFooter>
       </Dialog>
     )

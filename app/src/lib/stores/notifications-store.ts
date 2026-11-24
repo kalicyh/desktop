@@ -1,6 +1,5 @@
 import { NotificationCallback } from 'desktop-notifications/dist/notification-callback'
 import { Commit, shortenSHA } from '../../models/commit'
-import { GitHubRepository } from '../../models/github-repository'
 import { PullRequest, getPullRequestCommitRef } from '../../models/pull-request'
 import {
   Repository,
@@ -20,6 +19,7 @@ import {
   getLatestCheckRunsById,
 } from '../ci-checks/ci-checks'
 import { getCommit } from '../git'
+import { getAccountForRepository } from '../get-account-for-repository'
 import { getBoolean, setBoolean } from '../local-storage'
 import { showNotification } from '../notifications/show-notification'
 import { StatsStore } from '../stats'
@@ -37,6 +37,7 @@ import {
   IDesktopPullRequestReviewSubmitAliveEvent,
 } from './alive-store'
 import { PullRequestCoordinator } from './pull-request-coordinator'
+import { RepositoriesStore } from './repositories-store'
 import { t } from '../i18n'
 
 export type OnChecksFailedCallback = (
@@ -88,10 +89,22 @@ export class NotificationsStore {
     private readonly accountsStore: AccountsStore,
     private readonly aliveStore: AliveStore,
     private readonly pullRequestCoordinator: PullRequestCoordinator,
-    private readonly statsStore: StatsStore
+    private readonly statsStore: StatsStore,
+    repositoriesStore: RepositoriesStore
   ) {
     this.aliveStore.setEnabled(getNotificationsEnabled())
     this.aliveStore.onAliveEventReceived(this.onAliveEventReceived)
+    repositoriesStore.onDidUpdate(repositories => {
+      const selected = repositories.find(r => r.id === this.repository?.id)
+      if (selected !== undefined) {
+        this.selectRepository(selected)
+      } else {
+        this.repository = null
+        this.resetCache()
+      }
+      const recentIds = new Set(this.recentRepositories.map(r => r.id))
+      this.recentRepositories = repositories.filter(r => recentIds.has(r.id))
+    })
   }
 
   /** Enables or disables high-signal notifications entirely. */
@@ -163,13 +176,13 @@ export class NotificationsStore {
 
     // If the PR is not in cache, it probably means the user didn't work on it
     // recently, so we don't want to show a notification.
-    if (pullRequest === undefined) {
+    if (pullRequest === undefined || repository !== this.repository) {
       return
     }
 
     // Fetch comment from API depending on event subtype
-    const api = await this.getAPIForRepository(repository.gitHubRepository)
-    if (api === null) {
+    const api = await this.getAPIForRepository(repository)
+    if (api === null || repository !== this.repository) {
       return
     }
 
@@ -182,7 +195,7 @@ export class NotificationsStore {
             event.comment_id
           )
 
-    if (comment === null) {
+    if (comment === null || repository !== this.repository) {
       return
     }
 
@@ -201,14 +214,20 @@ export class NotificationsStore {
       return
     }
 
-    showNotification({
+    this.statsStore.increment('pullRequestCommentNotificationCount')
+
+    const shown = await showNotification({
       title,
       body,
       userInfo: event,
       onClick,
     })
 
-    this.statsStore.increment('pullRequestCommentNotificationCount')
+    if (shown) {
+      await this.statsStore.increment(
+        'pullRequestCommentNotificationShownCount'
+      )
+    }
   }
 
   private async handlePullRequestReviewSubmitEvent(
@@ -242,15 +261,15 @@ export class NotificationsStore {
 
     // If the PR is not in cache, it probably means the user didn't work on it
     // from Desktop, so we can maybe ignore it?
-    if (pullRequest === undefined) {
+    if (pullRequest === undefined || repository !== this.repository) {
       return
     }
 
     // PR reviews must be retrieved from the repository the PR belongs to
     const pullsRepository = this.getContributingRepository(repository)
-    const api = await this.getAPIForRepository(pullsRepository)
+    const api = await this.getAPIForRepository(repository)
 
-    if (api === null) {
+    if (api === null || repository !== this.repository) {
       return
     }
 
@@ -261,7 +280,11 @@ export class NotificationsStore {
       event.review_id
     )
 
-    if (review === null || !isValidNotificationPullRequestReview(review)) {
+    if (
+      repository !== this.repository ||
+      review === null ||
+      !isValidNotificationPullRequestReview(review)
+    ) {
       return
     }
 
@@ -281,14 +304,20 @@ export class NotificationsStore {
       return
     }
 
-    showNotification({
+    this.statsStore.recordPullRequestReviewNotification(review.state)
+
+    const shown = await showNotification({
       title,
       body,
       userInfo: event,
       onClick,
     })
 
-    this.statsStore.recordPullRequestReviewNotificationShown(review.state)
+    if (shown) {
+      await this.statsStore.recordPullRequestReviewNotificationShown(
+        review.state
+      )
+    }
   }
 
   private async handleChecksFailedEvent(
@@ -320,15 +349,13 @@ export class NotificationsStore {
 
     // If the PR is not in cache, it probably means it the checks weren't
     // triggered by a push from Desktop, so we can maybe ignore it?
-    if (pullRequest === undefined) {
+    if (pullRequest === undefined || repository !== this.repository) {
       return
     }
 
-    const account = await this.getAccountForRepository(
-      repository.gitHubRepository
-    )
+    const account = await this.getAccountForRepository(repository)
 
-    if (account === null) {
+    if (account === null || repository !== this.repository) {
       return
     }
 
@@ -341,6 +368,9 @@ export class NotificationsStore {
     const commit =
       this.cachedCommits.get(commitSHA) ??
       (await getCommit(repository, commitSHA))
+    if (repository !== this.repository) {
+      return
+    }
     if (commit === null) {
       this.skipCommitShas.add(commitSHA)
       return
@@ -353,14 +383,11 @@ export class NotificationsStore {
       return
     }
 
-    // Checks must be retrieved from the repository the PR belongs to
-    const checksRepository = this.getContributingRepository(repository)
-
     const checks = await this.getChecksForRef(
-      checksRepository,
+      repository,
       getPullRequestCommitRef(pullRequest.pullRequestNumber)
     )
-    if (checks === null) {
+    if (checks === null || repository !== this.repository) {
       return
     }
 
@@ -417,14 +444,18 @@ export class NotificationsStore {
       return
     }
 
-    showNotification({
+    this.statsStore.increment('checksFailedNotificationCount')
+
+    const shown = await showNotification({
       title,
       body,
       userInfo: event,
       onClick,
     })
 
-    this.statsStore.increment('checksFailedNotificationCount')
+    if (shown) {
+      await this.statsStore.increment('checksFailedNotificationShownCount')
+    }
   }
 
   private getContributingRepository(
@@ -501,14 +532,12 @@ export class NotificationsStore {
     this.recentRepositories = repositories
   }
 
-  private async getAccountForRepository(repository: GitHubRepository) {
-    const { endpoint } = repository
-
+  private async getAccountForRepository(repository: Repository) {
     const accounts = await this.accountsStore.getAll()
-    return accounts.find(a => a.endpoint === endpoint) ?? null
+    return getAccountForRepository(accounts, repository)
   }
 
-  private async getAPIForRepository(repository: GitHubRepository) {
+  private async getAPIForRepository(repository: Repository) {
     const account = await this.getAccountForRepository(repository)
 
     if (account === null) {
@@ -518,8 +547,12 @@ export class NotificationsStore {
     return API.fromAccount(account)
   }
 
-  public async getChecksForRef(repository: GitHubRepository, ref: string) {
-    const { owner, name } = repository
+  /** Fetch checks using the local assignment, targeting its contribution repository. */
+  public async getChecksForRef(
+    repository: RepositoryWithGitHubRepository,
+    ref: string
+  ) {
+    const { owner, name } = this.getContributingRepository(repository)
 
     const api = await this.getAPIForRepository(repository)
 

@@ -59,7 +59,7 @@ describe('tutorial welcome surfaces', () => {
     )
     assert.equal(definitions.length, 3)
     assert.deepEqual(images, [
-      'Html syntax icon',
+      'HTML syntax icon',
       'People with discussion bubbles overhead',
       'Server stack with cloud',
     ])
@@ -151,19 +151,14 @@ describe('tutorial welcome surfaces', () => {
     )
 
     const heading = screen.getByRole('heading', { name: "You're done!" })
-    const openExploreLabel = __DARWIN__ ? 'Open in Browser' : 'Open in browser'
-    const createRepositoryLabel = __DARWIN__
-      ? 'Create Repository'
-      : 'Create repository'
-    const addRepositoryLabel = __DARWIN__ ? 'Add Repository' : 'Add repository'
 
     assert.equal(document.activeElement, heading)
     assert.equal(announcements, 1)
     assert.ok(screen.getByRole('img', { name: 'Hands clapping' }))
 
-    screen.getByRole('button', { name: openExploreLabel }).click()
-    screen.getByRole('button', { name: createRepositoryLabel }).click()
-    screen.getByRole('button', { name: addRepositoryLabel }).click()
+    screen.getByRole('button', { name: 'Open in browser' }).click()
+    screen.getByRole('button', { name: 'Create repository' }).click()
+    screen.getByRole('button', { name: 'Add repository' }).click()
 
     assert.deepEqual(dispatcher.exploreRepositories, [repository])
     assert.deepEqual(dispatcher.shownPopups, [

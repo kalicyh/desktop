@@ -35,7 +35,7 @@ describe('branch empty states', () => {
     const { createCalls } = renderNoBranches()
 
     const button = screen.getByRole('button', {
-      name: __DARWIN__ ? 'Create New Branch' : 'Create new branch',
+      name: 'Create new branch',
     })
     const image = document.querySelector('.no-branches .blankslate-image')
     const protip = document.querySelector('.no-branches .protip')
@@ -61,7 +61,7 @@ describe('branch empty states', () => {
     assert.ok(screen.getByText('No matching branches were found.'))
     assert.equal(
       screen.queryByRole('button', {
-        name: __DARWIN__ ? 'Create New Branch' : 'Create new branch',
+        name: 'Create new branch',
       }),
       null
     )

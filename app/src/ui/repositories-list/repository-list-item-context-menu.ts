@@ -1,8 +1,12 @@
-import { Repository } from '../../models/repository'
+import {
+  Repository,
+  getRepositoryAccountIdentity,
+} from '../../models/repository'
+import { Account, isSameAccount } from '../../models/account'
 import { IMenuItem } from '../../lib/menu-item'
 import { Repositoryish } from './group-repositories'
 import { RepositoryGroup } from '../../models/repository-group'
-import { clipboard } from 'electron'
+import { writeClipboardText } from '../main-process-proxy'
 import { t } from '../../lib/i18n'
 import { getUseGhForRepository, setUseGhForRepository } from '../../lib/use-gh'
 
@@ -12,6 +16,8 @@ interface IRepositoryListItemContextMenuConfig {
   externalEditorLabel: string | undefined
   askForConfirmationOnRemoveRepository: boolean
   repositoryGroups: ReadonlyArray<RepositoryGroup>
+  /** The signed-in accounts. */
+  accounts: ReadonlyArray<Account>
   onViewOnGitHub: (repository: Repositoryish) => void
   onOpenInShell: (repository: Repositoryish) => void
   onShowRepository: (repository: Repositoryish) => void
@@ -24,6 +30,8 @@ interface IRepositoryListItemContextMenuConfig {
   onCreateRepositoryGroupForRepository: (repository: Repository) => void
   onCreateWorktree?: (repository: Repository) => void
   onShowWorktrees?: (repository: Repository) => void
+  onChangeRepositoryAccount: (repository: Repository, login: string) => void
+  onShowRepositorySettings: (repository: Repository) => void
 }
 
 export const generateRepositoryListContextMenu = (
@@ -46,13 +54,15 @@ export const generateRepositoryListContextMenu = (
     ...buildGroupMenuItems(config),
     ...buildWorktreeMenuItems(config),
     ...buildGhMenuItems(config),
+    ...buildAccountMenuItems(config),
+    ...buildRepositorySettingsMenuItems(config),
     {
       label: t('repositoryContext.copyRepoName'),
-      action: () => clipboard.writeText(repository.name),
+      action: () => writeClipboardText(repository.name),
     },
     {
       label: t('repositoryContext.copyRepoPath'),
-      action: () => clipboard.writeText(repository.path),
+      action: () => writeClipboardText(repository.path),
     },
     { type: 'separator' },
     {
@@ -244,4 +254,80 @@ const getRevealInFileManagerLabel = () => {
   }
 
   return t('repositoryContext.showInFileManager')
+}
+
+/**
+ * Build the Account submenu used to reassign a repository to another
+ * signed-in account on its endpoint.
+ *
+ * The submenu is omitted when there is nothing to choose between: when the
+ * repository is assigned and its endpoint has only one retained account
+ * identity, or when it's unassigned and no account is signed in on its
+ * endpoint. An assigned account that has been signed out is still listed
+ * (checked and disabled) so users can see the current association.
+ */
+const buildAccountMenuItems = (
+  config: IRepositoryListItemContextMenuConfig
+): ReadonlyArray<IMenuItem> => {
+  const { repository } = config
+
+  if (
+    !(repository instanceof Repository) ||
+    repository.gitHubRepository === null
+  ) {
+    return []
+  }
+
+  const { endpoint } = repository.gitHubRepository
+  const assigned = getRepositoryAccountIdentity(repository)
+  const eligible = config.accounts.filter(a => a.endpoint === endpoint)
+  const signedOut =
+    assigned !== null && !eligible.some(a => isSameAccount(a, assigned))
+  const retainedCount = eligible.length + (signedOut ? 1 : 0)
+
+  if (assigned === null ? eligible.length === 0 : retainedCount <= 1) {
+    return []
+  }
+
+  const submenu: Array<IMenuItem> = []
+
+  if (signedOut) {
+    submenu.push({
+      label: t('repositoryContext.accountSignedOut', { login: assigned.login }),
+      type: 'checkbox',
+      checked: true,
+      enabled: false,
+    })
+  }
+
+  for (const account of eligible) {
+    const checked = isSameAccount(account, assigned)
+    submenu.push({
+      label: `@${account.login}`,
+      type: 'checkbox',
+      checked,
+      action: checked
+        ? undefined
+        : () => config.onChangeRepositoryAccount(repository, account.login),
+    })
+  }
+
+  return [{ label: t('repositoryContext.account'), submenu }]
+}
+
+const buildRepositorySettingsMenuItems = (
+  config: IRepositoryListItemContextMenuConfig
+): ReadonlyArray<IMenuItem> => {
+  const { repository } = config
+
+  if (!(repository instanceof Repository) || repository.missing) {
+    return []
+  }
+
+  return [
+    {
+      label: t('repositoryContext.settings'),
+      action: () => config.onShowRepositorySettings(repository),
+    },
+  ]
 }

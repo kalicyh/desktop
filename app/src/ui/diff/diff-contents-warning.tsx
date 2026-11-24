@@ -79,8 +79,13 @@ export class DiffContentsWarning extends React.Component<IDiffContentsWarningPro
         const { lineEndingsChange } = item
         return (
           <>
-            {t('diff.contentsWarning.lineEndingsChange', {
+            {t('diff.contentsWarning.lineEndingsChangePrefix', {
               from: lineEndingsChange.from,
+            })}
+            <LinkButton uri="https://docs.github.com/get-started/git-basics/configuring-git-to-handle-line-endings">
+              {t('diff.contentsWarning.lineEndingsChangeLink')}
+            </LinkButton>
+            {t('diff.contentsWarning.lineEndingsChangeSuffix', {
               to: lineEndingsChange.to,
             })}
           </>

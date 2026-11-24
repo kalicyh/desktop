@@ -7,6 +7,12 @@ export const accessibleListTooltipsKey = 'accessible-list-tooltips-enabled'
 export const accessibleListTooltipsDefault = false
 
 /**
+ * Opt in new OAuth authorizations for beta and development features.
+ * Other builds use Central's rollout; existing credentials keep renewing.
+ */
+export const enableShortLivedTokens = () => enableBetaFeatures()
+
+/**
  * Enables the application to opt-in for preview features based on runtime
  * checks. This is backed by the GITHUB_DESKTOP_PREVIEW_FEATURES environment
  * variable, which is checked for non-development environments.
@@ -88,41 +94,15 @@ export function enableImagePreviewsForDDSFiles(): boolean {
   return enableBetaFeatures()
 }
 
-export const enableCustomIntegration = () => true
-
-export const enableResizingToolbarButtons = () => true
-
-export const enableCommitMessageGeneration = (account: Account) => {
-  return (
-    (account.features ?? []).includes(
-      'desktop_copilot_generate_commit_message'
-    ) &&
-    // IMPORTANT: Do not remove this feature flag without replacing its usages
-    // with a check for the `isCopilotDesktopEnabled` property on the account.
-    account.isCopilotDesktopEnabled
-  )
-}
-
-export const enableCopilotSdkCommitMessageGeneration = (account: Account) => {
-  return enableBetaFeatures()
-  // IMPORTANT: Leaving this here for now. When the feature is enabled in prod,
-  // we will rely on the `desktop_enable_copilot_sdk_commit_message_generation`
-  // feature flag to control the rollout, but we want to be able to enable it in
-  // beta and other non-production builds regardless of the feature flag.
-  // Remember to also update build.ts to get Copilot bundled in the production
-  // build when this happens.
-  // return (
-  //   enableBetaFeatures() &&
-  //   (account.features ?? []).includes(
-  //     'desktop_enable_copilot_sdk_commit_message_generation'
-  //   )
-  // )
-}
-
-/** Should we enable Copilot-powered merge conflict resolution? */
-export function enableCopilotConflictResolution(): boolean {
-  return enableBetaFeatures()
-}
+/**
+ * Should we offer the Copilot-assisted commit mode, where Copilot splits the
+ * selected changes into commits and writes their messages?
+ *
+ * Enabled in development/preview or through the account rollout.
+ */
+export const enableCopilotAssistedCommit = (account: Account) =>
+  enableDevelopmentFeatures() ||
+  (account.features ?? []).includes('desktop_copilot_assisted_commits')
 
 export function enableAccessibleListToolTips(): boolean {
   return (
@@ -131,18 +111,4 @@ export function enableAccessibleListToolTips(): boolean {
   )
 }
 
-export const enableHooksEnvironment = () => true
-
 export const enableHooksByDefault = enableBetaFeatures
-
-export const enableFormattingPreferences = () => true
-
-/** Should the app enable worktree support? */
-export function enableWorktreeSupport(): boolean {
-  return enableBetaFeatures()
-}
-
-/** Should we show the Changes tab in the Copilot conflict resolution dialog? */
-export function enableCopilotConflictResolutionChangesTab(): boolean {
-  return enableDevelopmentFeatures()
-}

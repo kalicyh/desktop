@@ -29,7 +29,6 @@ import { FoldoutType, IConstrainedValue } from '../../lib/app-state'
 import { ForcePushBranchState } from '../../lib/rebase'
 import { PushPullButtonDropDown } from './push-pull-button-dropdown'
 import { AriaLiveContainer } from '../accessibility/aria-live-container'
-import { enableResizingToolbarButtons } from '../../lib/feature-flag'
 import { formatCompactNumber } from '../../lib/format-number'
 import { t } from '../../lib/i18n'
 
@@ -47,6 +46,7 @@ interface IPushPullButtonProps {
 
   /** Is a push/pull/fetch in progress? */
   readonly networkActionInProgress: boolean
+  readonly disabled?: boolean
 
   /** The date of the last fetch. */
   readonly lastFetched: Date | null
@@ -405,17 +405,6 @@ export class PushPullButton extends React.Component<
   }
 
   public render() {
-    if (!enableResizingToolbarButtons()) {
-      return (
-        <>
-          {this.renderButton()}
-          <span id="push-pull-button-state">
-            <AriaLiveContainer message={this.state.screenReaderStateMessage} />
-          </span>
-        </>
-      )
-    }
-
     return (
       <>
         <Resizable
@@ -436,6 +425,17 @@ export class PushPullButton extends React.Component<
   }
 
   private renderButton() {
+    if (this.props.disabled) {
+      return (
+        <ToolbarButton
+          {...this.defaultButtonProps()}
+          icon={octicons.gitCommit}
+          title="Local commit run"
+          description="Finish or cancel before syncing"
+          disabled={true}
+        />
+      )
+    }
     const {
       progress,
       networkActionInProgress,

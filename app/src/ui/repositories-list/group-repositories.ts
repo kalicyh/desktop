@@ -4,6 +4,7 @@ import {
   nameOf,
   isRepositoryWithGitHubRepository,
   RepositoryWithGitHubRepository,
+  getRepositoryAccountIdentity,
 } from '../../models/repository'
 import { CloningRepository } from '../../models/cloning-repository'
 import { getHTMLURL } from '../../lib/api'
@@ -13,31 +14,27 @@ import { IAheadBehind } from '../../models/branch'
 import { assertNever } from '../../lib/fatal-error'
 import { isDotCom } from '../../lib/endpoint-capabilities'
 import { Owner } from '../../models/owner'
+import { IAccountIdentity } from '../../models/account'
 import { RepositoryGroup } from '../../models/repository-group'
 
 export type RepositoryListGroup =
   | {
-      kind: 'recent' | 'other'
+      kind: 'recent'
     }
   | {
       kind: 'group'
       group: RepositoryGroup
     }
-  | {
-      kind: 'dotcom'
-      owner: Owner
-    }
-  | {
-      kind: 'enterprise'
-      host: string
-    }
+  | ({
+      /** Undefined preserves the old heading; null labels it Unassociated. */
+      readonly accountLogin?: string | null
+    } & (
+      | { kind: 'other' }
+      | { kind: 'dotcom'; owner: Owner }
+      | { kind: 'enterprise'; host: string }
+    ))
 
-/**
- * Returns a unique grouping key (string) for a repository group. Doubles as a
- * case sensitive sorting key (i.e the case sensitive sort order of the keys is
- * the order in which the groups will be displayed in the repository list).
- */
-export const getGroupKey = (group: RepositoryListGroup) => {
+const getBaseGroupKey = (group: RepositoryListGroup) => {
   const { kind } = group
   switch (kind) {
     case 'recent':
@@ -74,6 +71,17 @@ export const getRepositoryListGroupFavoriteKey = (
       assertNever(group, `Unknown repository group kind ${kind}`)
   }
 }
+
+/** Returns a unique grouping key, comparing account logins case-insensitively. */
+export const getGroupKey = (group: RepositoryListGroup) => {
+  const key = getBaseGroupKey(group)
+  return group.kind === 'recent' ||
+    group.kind === 'group' ||
+    group.accountLogin === undefined
+    ? key
+    : `${key}:${JSON.stringify(group.accountLogin?.toLowerCase() ?? null)}`
+}
+
 export type Repositoryish = Repository | CloningRepository
 
 export interface IRepositoryListItem extends IFilterListItem {
@@ -92,7 +100,8 @@ const getHostForRepository = (repo: RepositoryWithGitHubRepository) =>
 
 const getGroupForRepository = (
   repo: Repositoryish,
-  repositoryGroupLookup: ReadonlyMap<number, RepositoryGroup>
+  repositoryGroupLookup: ReadonlyMap<number, RepositoryGroup>,
+  multiAccountEndpoints: ReadonlySet<string>
 ): RepositoryListGroup => {
   if (repo instanceof Repository && repo.groupId !== null) {
     const group = repositoryGroupLookup.get(repo.groupId)
@@ -102,25 +111,67 @@ const getGroupForRepository = (
   }
 
   if (repo instanceof Repository && isRepositoryWithGitHubRepository(repo)) {
+    const accountLogin = multiAccountEndpoints.has(
+      repo.gitHubRepository.endpoint.toLowerCase()
+    )
+      ? repo.login
+      : undefined
     return isDotCom(repo.gitHubRepository.endpoint)
-      ? { kind: 'dotcom', owner: repo.gitHubRepository.owner }
-      : { kind: 'enterprise', host: getHostForRepository(repo) }
+      ? { kind: 'dotcom', owner: repo.gitHubRepository.owner, accountLogin }
+      : { kind: 'enterprise', host: getHostForRepository(repo), accountLogin }
   }
-  return { kind: 'other' }
+  return {
+    kind: 'other',
+    accountLogin:
+      repo instanceof Repository ? repo.login ?? undefined : undefined,
+  }
 }
 
 type RepoGroupItem = { group: RepositoryListGroup; repos: Repositoryish[] }
 
+function getMultiAccountEndpoints(
+  repositories: ReadonlyArray<Repositoryish>,
+  accounts: ReadonlyArray<IAccountIdentity>
+): ReadonlySet<string> {
+  const loginsByEndpoint = new Map<string, Set<string>>()
+  const retain = ({ endpoint, login }: IAccountIdentity) => {
+    const key = endpoint.toLowerCase()
+    const logins = loginsByEndpoint.get(key) ?? new Set<string>()
+    logins.add(login.toLowerCase())
+    loginsByEndpoint.set(key, logins)
+  }
+
+  accounts.forEach(retain)
+  for (const repository of repositories) {
+    const identity =
+      repository instanceof Repository
+        ? getRepositoryAccountIdentity(repository)
+        : null
+    if (identity !== null) {
+      retain(identity)
+    }
+  }
+
+  return new Set(
+    Array.from(loginsByEndpoint)
+      .filter(([, logins]) => logins.size > 1)
+      .map(([endpoint]) => endpoint)
+  )
+}
+
+/** Group repositories by owner or host, qualifying groups by account when needed. */
 export function groupRepositories(
   repositories: ReadonlyArray<Repositoryish>,
   repositoryGroups: ReadonlyArray<RepositoryGroup>,
   localRepositoryStateLookup: ReadonlyMap<number, ILocalRepositoryState>,
-  recentRepositories: ReadonlyArray<number>
+  recentRepositories: ReadonlyArray<number>,
+  accounts: ReadonlyArray<IAccountIdentity> = []
 ): ReadonlyArray<IFilterListGroup<IRepositoryListItem, RepositoryListGroup>> {
   const includeRecentGroup = repositories.length > recentRepositoriesThreshold
   const recentSet = includeRecentGroup ? new Set(recentRepositories) : undefined
   const repositoryGroupLookup = new Map(repositoryGroups.map(g => [g.id, g]))
   const groups = new Map<string, RepoGroupItem>()
+  const multiAccountEndpoints = getMultiAccountEndpoints(repositories, accounts)
 
   const addToGroup = (group: RepositoryListGroup, repo: Repositoryish) => {
     const key = getGroupKey(group)
@@ -138,11 +189,18 @@ export function groupRepositories(
       addToGroup({ kind: 'recent' }, repo)
     }
 
-    addToGroup(getGroupForRepository(repo, repositoryGroupLookup), repo)
+    addToGroup(
+      getGroupForRepository(repo, repositoryGroupLookup, multiAccountEndpoints),
+      repo
+    )
   }
 
   return Array.from(groups)
-    .sort(([xKey], [yKey]) => compare(xKey, yKey))
+    .sort(
+      ([xKey, x], [yKey, y]) =>
+        compare(getBaseGroupKey(x.group), getBaseGroupKey(y.group)) ||
+        compare(xKey, yKey)
+    )
     .map(([, { group, repos }]) => ({
       identifier: group,
       items: toSortedListItems(

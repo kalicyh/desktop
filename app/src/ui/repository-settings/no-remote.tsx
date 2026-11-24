@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { DialogContent } from '../dialog'
 import { LinkButton } from '../lib/link-button'
 import { CallToAction } from '../lib/call-to-action'
 import { t } from '../../lib/i18n'
@@ -15,19 +14,17 @@ interface INoRemoteProps {
 export class NoRemote extends React.Component<INoRemoteProps, {}> {
   public render() {
     return (
-      <DialogContent>
-        <CallToAction
-          actionTitle={t('repositorySettings.remote.publish')}
-          onAction={this.props.onPublish}
-        >
-          <div className="no-remote-publish-message">
-            {t('repositorySettings.remote.publishMessage')}{' '}
-            <LinkButton uri={HelpURL}>
-              {t('repositorySettings.remote.learnMore')}
-            </LinkButton>
-          </div>
-        </CallToAction>
-      </DialogContent>
+      <CallToAction
+        actionTitle={t('repositorySettings.remote.publish')}
+        onAction={this.props.onPublish}
+      >
+        <div className="no-remote-publish-message">
+          {t('repositorySettings.remote.publishMessage')}{' '}
+          <LinkButton uri={HelpURL}>
+            {t('repositorySettings.remote.learnMore')}
+          </LinkButton>
+        </div>
+      </CallToAction>
     )
   }
 }

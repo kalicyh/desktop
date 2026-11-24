@@ -19,7 +19,7 @@ export async function installCLI(): Promise<void> {
 
   try {
     await symlinkCLI(false)
-  } catch (e) {
+  } catch {
     // If we error without running as an admin, try again as an admin.
     await symlinkCLI(true)
   }

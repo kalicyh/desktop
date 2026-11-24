@@ -13,6 +13,7 @@ import { IFilterListGroup } from '../lib/filter-list'
 import { IMatches } from '../../lib/fuzzy-find'
 import { ILocalRepositoryState, Repository } from '../../models/repository'
 import { RepositoryGroup } from '../../models/repository-group'
+import { Account } from '../../models/account'
 import { Dispatcher } from '../dispatcher'
 import { Button } from '../lib/button'
 import { Octicon } from '../octicons'
@@ -25,7 +26,6 @@ import { TooltippedContent } from '../lib/tooltipped-content'
 import memoizeOne from 'memoize-one'
 import { KeyboardShortcut } from '../keyboard-shortcut/keyboard-shortcut'
 import { generateRepositoryListContextMenu } from '../repositories-list/repository-list-item-context-menu'
-import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { SectionFilterList } from '../lib/section-filter-list'
 import { IAheadBehind } from '../../models/branch'
 import { t } from '../../lib/i18n'
@@ -79,6 +79,18 @@ interface IRepositoriesListProps {
   /** The text entered by the user to filter their repository list */
   readonly filterText: string
 
+  /** The signed-in accounts, used to offer repository account choices. */
+  readonly accounts: ReadonlyArray<Account>
+
+  /** Called when the repository should be assigned to another account. */
+  readonly onChangeRepositoryAccount: (
+    repository: Repository,
+    login: string
+  ) => void
+
+  /** Called when the repository's settings should be shown. */
+  readonly onShowRepositorySettings: (repository: Repository) => void
+
   readonly dispatcher: Dispatcher
 }
 
@@ -119,16 +131,16 @@ export class RepositoriesList extends React.Component<
 > {
   /**
    * A memoized function for grouping repositories for display
-   * in the FilterList. The group will not be recomputed as long
-   * as the provided list of repositories is equal to the last
-   * time the method was called (reference equality).
+   * in the FilterList. The groups will not be recomputed while the repositories,
+   * local state, recent repositories, and accounts have the same references.
    */
   private getRepositoryGroups = memoizeOne(
     (
       repositories: ReadonlyArray<Repositoryish> | null,
       repositoryGroups: ReadonlyArray<RepositoryGroup>,
       localRepositoryStateLookup: ReadonlyMap<number, ILocalRepositoryState>,
-      recentRepositories: ReadonlyArray<number>
+      recentRepositories: ReadonlyArray<number>,
+      accounts: ReadonlyArray<Account>
     ) =>
       repositories === null
         ? []
@@ -136,7 +148,8 @@ export class RepositoriesList extends React.Component<
             repositories,
             repositoryGroups,
             localRepositoryStateLookup,
-            recentRepositories
+            recentRepositories,
+            accounts
           )
   )
 
@@ -296,7 +309,8 @@ export class RepositoriesList extends React.Component<
       this.props.repositories,
       this.props.repositoryGroups,
       this.props.localRepositoryStateLookup,
-      this.props.recentRepositories
+      this.props.recentRepositories,
+      this.props.accounts
     )
     const match = groups.find(g => getGroupKey(g.identifier) === groupKey)
 
@@ -494,6 +508,9 @@ export class RepositoriesList extends React.Component<
       onOpenInExternalEditor: this.props.onOpenInExternalEditor,
       askForConfirmationOnRemoveRepository:
         this.props.askForConfirmationOnRemoveRepository,
+      accounts: this.props.accounts,
+      onChangeRepositoryAccount: this.props.onChangeRepositoryAccount,
+      onShowRepositorySettings: this.props.onShowRepositorySettings,
       externalEditorLabel: this.props.externalEditorLabel,
       onChangeRepositoryAlias: this.onChangeRepositoryAlias,
       onRemoveRepositoryAlias: this.onRemoveRepositoryAlias,
@@ -502,12 +519,8 @@ export class RepositoriesList extends React.Component<
       onCreateRepositoryGroupForRepository:
         this.onCreateRepositoryGroupForRepository,
       onViewOnGitHub: this.props.onViewOnGitHub,
-      onCreateWorktree: enableWorktreeSupport()
-        ? this.onCreateWorktree
-        : undefined,
-      onShowWorktrees: enableWorktreeSupport()
-        ? this.onShowWorktrees
-        : undefined,
+      onCreateWorktree: this.onCreateWorktree,
+      onShowWorktrees: this.onShowWorktrees,
       repository: item.repository,
       repositoryGroups: this.props.repositoryGroups,
       shellLabel: this.props.shellLabel,
@@ -531,7 +544,8 @@ export class RepositoriesList extends React.Component<
       this.props.repositories,
       this.props.repositoryGroups,
       this.props.localRepositoryStateLookup,
-      this.props.recentRepositories
+      this.props.recentRepositories,
+      this.props.accounts
     )
 
     // So there's two types of selection at play here. There's the repository
@@ -561,6 +575,7 @@ export class RepositoriesList extends React.Component<
           invalidationProps={{
             repositories: this.props.repositories,
             filterText: this.props.filterText,
+            accounts: this.props.accounts,
           }}
           onItemContextMenu={this.onItemContextMenu}
           getGroupAriaLabel={this.getGroupAriaLabelGetter(groups)}

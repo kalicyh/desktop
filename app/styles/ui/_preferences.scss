@@ -67,7 +67,15 @@
     }
   }
 
+  .always-show-worktree-list {
+    margin-top: var(--spacing);
+  }
+
   .accounts-tab {
+    .accounts-section:not(:last-child) {
+      margin-bottom: var(--spacing);
+    }
+
     .account-info {
       .user-info-container {
         display: flex;
@@ -104,7 +112,6 @@
         align-self: flex-start;
         min-width: 0;
 
-        .account-title,
         .name {
           font-weight: var(--font-weight-semibold);
           // Tighten it up a little so that the real name and
@@ -191,6 +198,15 @@
       display: flex;
       justify-content: flex-end;
       margin-top: var(--spacing);
+    }
+
+    .enterprise-host {
+      margin-bottom: var(--spacing);
+
+      h3 {
+        color: var(--text-secondary-color);
+        margin-bottom: var(--spacing-half);
+      }
     }
 
     @media (max-width: 600px) {

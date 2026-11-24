@@ -34,6 +34,12 @@ import { Emoji } from '../../lib/emoji'
 import { FilterChangesList } from './filter-changes-list'
 import { HookProgress } from '../../lib/git'
 import type { IGitIdentityRule } from '../../lib/git/config'
+import { ICopilotAssistedCommitRequest } from '../../models/copilot-assisted-commit'
+import {
+  isAssistedCommitRepositoryLocked,
+  isAssistedCommitRunBusy,
+} from '../../models/assisted-commit-run'
+import { isRepositoryAffectedByAssistedCommit } from '../../lib/git/repository-operation'
 
 /**
  * The timeout for the animation of the enter/leave animation for Undo.
@@ -222,11 +228,35 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
     )
   }
 
+  private onCreateCopilotAssistedCommits = (
+    request: ICopilotAssistedCommitRequest
+  ) =>
+    this.props.dispatcher.createCopilotAssistedCommits(
+      this.props.repository,
+      request
+    )
+
+  private onPrepareCopilotAssistedCommitRequest = (
+    request: ICopilotAssistedCommitRequest
+  ) =>
+    this.props.dispatcher.prepareCopilotAssistedCommitRequest(
+      this.props.repository,
+      request
+    )
+
   private onFileSelectionChanged = (rows: ReadonlyArray<number>) => {
     const files = rows.map(i => this.props.changes.workingDirectory.files[i])
     this.props.dispatcher.selectWorkingDirectoryFiles(
       this.props.repository,
       files
+    )
+  }
+
+  private get isSelectionDisabled(): boolean {
+    return (
+      this.props.isCommitting ||
+      isRepositoryAffectedByAssistedCommit(this.props.repository.path) ||
+      isAssistedCommitRepositoryLocked(this.props.changes.assistedCommit)
     )
   }
 
@@ -236,6 +266,9 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
       | ReadonlyArray<WorkingDirectoryFileChange>,
     include: boolean
   ) => {
+    if (this.isSelectionDisabled) {
+      return
+    }
     this.props.dispatcher.changeFileIncluded(
       this.props.repository,
       file,
@@ -268,12 +301,25 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
     })
   }
 
-  private onIgnoreFile = (file: string | string[]) => {
-    this.props.dispatcher.appendIgnoreFile(this.props.repository, file)
+  private onIgnoreFile = async (file: string | string[]) => {
+    try {
+      await this.props.dispatcher.appendIgnoreFile(this.props.repository, file)
+    } catch (error) {
+      log.error('Failed to ignore file(s)', error)
+      await this.props.dispatcher.postError(error)
+    }
   }
 
-  private onIgnorePattern = (pattern: string | string[]) => {
-    this.props.dispatcher.appendIgnoreRule(this.props.repository, pattern)
+  private onIgnorePattern = async (pattern: string | string[]) => {
+    try {
+      await this.props.dispatcher.appendIgnoreRule(
+        this.props.repository,
+        pattern
+      )
+    } catch (error) {
+      log.error('Failed to ignore pattern(s)', error)
+      await this.props.dispatcher.postError(error)
+    }
   }
 
   /**
@@ -301,6 +347,10 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
    * checkbox.
    */
   private onToggleInclude(row: number) {
+    if (this.isSelectionDisabled) {
+      return
+    }
+
     const workingDirectory = this.props.changes.workingDirectory
     const file = workingDirectory.files[row]
 
@@ -395,6 +445,10 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
     const {
       workingDirectory,
       commitMessage,
+      commitMode,
+      pushAfterCommit,
+      assistedCommit,
+      assistedCommitAvailable,
       showCoAuthoredBy,
       coAuthors,
       conflictState,
@@ -449,6 +503,24 @@ export class ChangesSidebar extends React.Component<IChangesSidebarProps, {}> {
           commitAuthor={this.props.commitAuthor}
           branch={this.props.branch}
           commitMessage={commitMessage}
+          commitMode={commitMode}
+          pushAfterCommit={pushAfterCommit}
+          assistedCommitState={assistedCommit}
+          repositoryMutationBlocked={
+            isRepositoryAffectedByAssistedCommit(this.props.repository.path) &&
+            !isAssistedCommitRunBusy(assistedCommit)
+          }
+          onPrepareCopilotAssistedCommitRequest={
+            this.onPrepareCopilotAssistedCommitRequest
+          }
+          onCreateCopilotAssistedCommits={
+            assistedCommitAvailable || assistedCommit.kind !== 'idle'
+              ? this.onCreateCopilotAssistedCommits
+              : undefined
+          }
+          isCreatingCopilotAssistedCommits={isAssistedCommitRunBusy(
+            assistedCommit
+          )}
           focusCommitMessage={this.props.focusCommitMessage}
           isShowingModal={this.props.isShowingModal}
           isShowingFoldout={this.props.isShowingFoldout}

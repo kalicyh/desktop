@@ -1,5 +1,5 @@
 import { IMenuItem } from '../../lib/menu-item'
-import { clipboard } from 'electron'
+import { writeClipboardText } from '../main-process-proxy'
 import { Branch, BranchType } from '../../models/branch'
 import { t } from '../../lib/i18n'
 
@@ -35,7 +35,7 @@ export function generateBranchContextMenuItems(
 
   items.push({
     label: t('branches.context.copyBranchName'),
-    action: () => clipboard.writeText(branch.name),
+    action: () => writeClipboardText(branch.name),
   })
 
   if (onViewBranchOnGitHub !== undefined) {

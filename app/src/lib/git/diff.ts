@@ -162,12 +162,14 @@ export async function getBranchMergeBaseDiff(
   const args = [
     'diff',
     '--merge-base',
-    baseBranchName,
-    comparisonBranchName,
     ...(hideWhitespaceInDiff ? ['-w'] : []),
+    '--no-ext-diff',
     '--patch-with-raw',
     '-z',
     '--no-color',
+    '--end-of-options',
+    baseBranchName,
+    comparisonBranchName,
     '--',
     ensureRelativePath(file.path),
   ]
@@ -209,6 +211,7 @@ export async function getCommitRangeDiff(
     oldestCommitRef,
     latestCommit,
     ...(hideWhitespaceInDiff ? ['-w'] : []),
+    '--no-ext-diff',
     '--patch-with-raw',
     '--format=',
     '-z',
@@ -258,13 +261,14 @@ export async function getBranchMergeBaseChangedFiles(
   const baseArgs = [
     'diff',
     '--merge-base',
-    baseBranchName,
-    comparisonBranchName,
     '-C',
     '-M',
     '-z',
     '--raw',
     '--numstat',
+    '--end-of-options',
+    baseBranchName,
+    comparisonBranchName,
     '--',
   ]
 
@@ -342,12 +346,14 @@ export async function getCommitRangeChangedFiles(
 export async function getWorkingDirectoryDiff(
   repository: Repository,
   file: WorkingDirectoryFileChange,
-  hideWhitespaceInDiff: boolean = false
+  hideWhitespaceInDiff: boolean = false,
+  options: { readonly noTextconv?: boolean } = {}
 ): Promise<IDiff> {
   // `--no-ext-diff` should be provided wherever we invoke `git diff` so that any
   // diff.external program configured by the user is ignored
   const args = [
     'diff',
+    ...(options.noTextconv === true ? ['--no-textconv'] : []),
     ...(hideWhitespaceInDiff ? ['-w'] : []),
     '--no-ext-diff',
     '--patch-with-raw',
@@ -401,40 +407,96 @@ export async function getWorkingDirectoryDiff(
 }
 
 /**
- * Compute a diff between the merge base version of a file and Copilot's
- * resolved content string.
+ * The result of {@link getResolutionDiff}: the computed diff together with the
+ * exact old (base) and new (target) content strings it was generated from.
+ */
+export interface IResolutionDiff {
+  readonly diff: IDiff
+  /** The full content of the base (old) side the diff was generated from. */
+  readonly oldContents: string
+  /** The full content of the target (new) side the diff was generated from. */
+  readonly newContents: string
+}
+
+/**
+ * Compute a diff between the working-tree file and either Copilot's
+ * resolved content string or the content from a specific merge index stage.
  *
- * During an active merge, git stores the common ancestor at index stage 1
- * (`:1:path`). We diff that against the resolved content so the user sees
- * what changed relative to the last clean version — no conflict markers.
+ * The baseline is always the on-disk file (which still has conflict markers
+ * during an active merge). This gives a consistent view across all three
+ * resolution options (Copilot, current, incoming) — the user sees exactly
+ * what each choice changes relative to the file's current state.
  *
- * Uses `git diff --no-index` with temp files, following the same pattern as
- * getWorkingDirectoryDiff for new/untracked files.
+ * Two calling conventions:
+ *
+ * 1. **Content mode** — pass a `content` string (e.g. Copilot's resolved
+ *    text) to diff directly against the working-tree file.
+ * 2. **Stage mode** — pass `stage: 'ours' | 'theirs'` to read from the
+ *    merge index (`git show :2:<path>` or `git show :3:<path>`).
+ *    These always refer to git's definition: `ours` = stage 2 (HEAD at
+ *    merge time), `theirs` = stage 3 (the commit being merged in). Note
+ *    that during a rebase, git swaps these — the upstream branch is "ours"
+ *    and the rebased commit is "theirs". The caller is responsible for
+ *    mapping user-facing labels to the correct git side.
+ *
+ * If the requested stage blob doesn't exist (e.g. file deleted on that
+ * side in a modify/delete conflict), the target content is empty, showing
+ * the on-disk content as entirely deleted.
+ *
+ * Uses `git diff --no-index` with temp files.
+ *
+ * Returns the computed diff alongside the exact old (base) and new (target)
+ * content strings the diff was generated from. Callers can use these to feed
+ * syntax highlighting and context expansion, since the diff sides don't
+ * correspond to any addressable git revision.
  */
 export async function getResolutionDiff(
   repository: Repository,
   filePath: string,
-  resolvedContent: string,
+  options: { content: string } | { stage: 'ours' | 'theirs' },
   hideWhitespaceInDiff: boolean = false
-): Promise<IDiff> {
-  // Read merge base (stage 1) from the index — the common ancestor before
-  // the conflict. Falls back to on-disk content if not in a merge.
-  let baseContent: string
-  try {
-    const buffer = await getBlobContents(repository, ':1', filePath)
-    baseContent = buffer.toString('utf-8')
-  } catch {
-    // Not in a merge or file doesn't exist at stage 1 — fall back to
-    // reading the on-disk file (which may have conflict markers).
-    baseContent = await readFile(Path.join(repository.path, filePath), 'utf8')
+): Promise<IResolutionDiff> {
+  const gitStage =
+    'stage' in options ? (options.stage === 'ours' ? ':2' : ':3') : undefined
+
+  // Always diff against the working-tree file (which still has conflict
+  // markers). This gives a consistent baseline for all three resolution
+  // choices (Copilot, current, incoming) so the user sees exactly what each
+  // option changes relative to the file's current state on disk.
+  const baseContent = await readFile(
+    Path.join(repository.path, filePath),
+    'utf8'
+  )
+  let targetContent: string
+
+  if (gitStage === undefined) {
+    // Direct content mode (e.g. Copilot's resolved text).
+    if (!('content' in options)) {
+      return {
+        diff: { kind: DiffType.Unrenderable },
+        oldContents: baseContent,
+        newContents: '',
+      }
+    }
+    targetContent = options.content
+  } else {
+    // Stage mode — read the chosen side from the merge index.
+    // If the blob doesn't exist (e.g. file deleted on that side in a
+    // modify/delete conflict), use empty content to show full deletion.
+    try {
+      const buffer = await getBlobContents(repository, gitStage, filePath)
+      targetContent = buffer.toString('utf-8')
+    } catch {
+      targetContent = ''
+    }
   }
 
-  const tempBase = getTempFilePath('conflict-base')
-  const tempResolved = getTempFilePath('conflict-resolved')
+  const tempBase = getTempFilePath('resolution-diff-base')
+  const tempTarget = getTempFilePath('resolution-diff-target')
 
   try {
     await writeFile(tempBase, baseContent, 'utf8')
-    await writeFile(tempResolved, resolvedContent, 'utf8')
+    await writeFile(tempTarget, targetContent, 'utf8')
 
     const args = [
       'diff',
@@ -446,7 +508,7 @@ export async function getResolutionDiff(
       '--no-index',
       '--',
       tempBase,
-      tempResolved,
+      tempTarget,
     ]
 
     const { stdout } = await git(args, repository.path, 'getResolutionDiff', {
@@ -455,31 +517,43 @@ export async function getResolutionDiff(
     })
 
     if (!isValidBuffer(stdout)) {
-      return { kind: DiffType.Unrenderable }
+      return {
+        diff: { kind: DiffType.Unrenderable },
+        oldContents: baseContent,
+        newContents: targetContent,
+      }
     }
 
     const diff = diffFromRawDiffOutput(stdout)
 
     if (isDiffTooLarge(diff)) {
       return {
-        kind: DiffType.LargeText,
-        text: diff.contents,
-        hunks: diff.hunks,
-        maxLineNumber: diff.maxLineNumber,
-        hasHiddenBidiChars: diff.hasHiddenBidiChars,
+        diff: {
+          kind: DiffType.LargeText,
+          text: diff.contents,
+          hunks: diff.hunks,
+          maxLineNumber: diff.maxLineNumber,
+          hasHiddenBidiChars: diff.hasHiddenBidiChars,
+        },
+        oldContents: baseContent,
+        newContents: targetContent,
       }
     }
 
     return {
-      kind: DiffType.Text,
-      text: diff.contents,
-      hunks: diff.hunks,
-      maxLineNumber: diff.maxLineNumber,
-      hasHiddenBidiChars: diff.hasHiddenBidiChars,
+      diff: {
+        kind: DiffType.Text,
+        text: diff.contents,
+        hunks: diff.hunks,
+        maxLineNumber: diff.maxLineNumber,
+        hasHiddenBidiChars: diff.hasHiddenBidiChars,
+      },
+      oldContents: baseContent,
+      newContents: targetContent,
     }
   } finally {
     await unlink(tempBase).catch(() => {})
-    await unlink(tempResolved).catch(() => {})
+    await unlink(tempTarget).catch(() => {})
   }
 }
 
@@ -928,9 +1002,8 @@ async function getFilesUsingBinaryMergeDriver(
     .map(x => x.path)
 }
 
-// Prefix absolute path with `:(top,literal)` to ensure that git treats it as a
-// literal path. This is important for paths that appear to be absolute paths on
-// some platforms and not others. See
+// Treat filenames literally, retaining the top prefix for paths that appear
+// absolute on some platforms and not others. See
 // https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-top
 const ensureRelativePath = (path: string) =>
-  isAbsolute(path) ? `:(top,literal)${path}` : path
+  isAbsolute(path) ? `:(top,literal)${path}` : `:(literal)${path}`

@@ -12,7 +12,7 @@ import { Row } from '../lib/row'
 import { DialogContent, DialogPreferredFocusClassName } from '../dialog'
 import { Avatar } from '../lib/avatar'
 import { CallToAction } from '../lib/call-to-action'
-import { getHTMLURL } from '../../lib/api'
+import { groupAccountsByHost } from '../../lib/group-accounts-by-host'
 import { t } from '../../lib/i18n'
 import { showOpenDialog } from '../main-process-proxy'
 import { encodePathAsUrl } from '../../lib/path'
@@ -64,17 +64,28 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
 
   public render() {
     const { accounts } = this.props
-    const dotComAccount = accounts.find(isDotComAccount)
+    const dotComAccounts = accounts.filter(isDotComAccount)
 
     return (
       <DialogContent className="accounts-tab">
-        <h2>GitHub.com</h2>
-        {dotComAccount
-          ? this.renderAccount(dotComAccount, SignInType.DotCom)
-          : this.renderSignIn(SignInType.DotCom)}
+        <div className="accounts-section">
+          <h2>GitHub.com</h2>
+          {dotComAccounts.map(account =>
+            this.renderAccount(account, SignInType.DotCom)
+          )}
+          {dotComAccounts.length === 0 ? (
+            this.renderSignIn(SignInType.DotCom)
+          ) : (
+            <Button onClick={this.props.onDotComSignIn}>
+              {t('preferences.accounts.addDotComAccount')}
+            </Button>
+          )}
+        </div>
 
-        <h2>GitHub Enterprise</h2>
-        {this.renderMultipleEnterpriseAccounts()}
+        <div className="accounts-section">
+          <h2>GitHub Enterprise</h2>
+          {this.renderMultipleEnterpriseAccounts()}
+        </div>
 
         {this.renderGitIdentityRules()}
       </DialogContent>
@@ -323,18 +334,30 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
   private renderMultipleEnterpriseAccounts() {
     const enterpriseAccounts = this.props.accounts.filter(isEnterpriseAccount)
 
+    if (enterpriseAccounts.length === 0) {
+      return this.renderSignIn(SignInType.Enterprise)
+    }
+
     return (
       <>
-        {enterpriseAccounts.map(account => {
-          return this.renderAccount(account, SignInType.Enterprise)
+        {groupAccountsByHost(enterpriseAccounts).map(([host, accounts]) => {
+          const headingId = `enterprise-accounts-${host}`
+          return (
+            <section
+              key={host}
+              className="enterprise-host"
+              aria-labelledby={headingId}
+            >
+              <h3 id={headingId}>{host}</h3>
+              {accounts.map(account =>
+                this.renderAccount(account, SignInType.Enterprise)
+              )}
+            </section>
+          )
         })}
-        {enterpriseAccounts.length === 0 ? (
-          this.renderSignIn(SignInType.Enterprise)
-        ) : (
-          <Button onClick={this.props.onEnterpriseSignIn}>
-            {t('preferences.accounts.addEnterpriseAccount')}
-          </Button>
-        )}
+        <Button onClick={this.props.onEnterpriseSignIn}>
+          {t('preferences.accounts.addEnterpriseAccount')}
+        </Button>
       </>
     )
   }
@@ -353,25 +376,18 @@ export class Accounts extends React.Component<IAccountsProps, IAccountsState> {
       type === SignInType.DotCom ? DialogPreferredFocusClassName : undefined
 
     return (
-      <Row className="account-info">
+      <Row
+        key={JSON.stringify([
+          account.endpoint.toLowerCase(),
+          account.login.toLowerCase(),
+        ])}
+        className="account-info"
+      >
         <div className="user-info-container">
           <Avatar accounts={this.props.accounts} user={avatarUser} />
           <div className="user-info">
-            {isEnterpriseAccount(account) ? (
-              <>
-                <div className="account-title">
-                  {account.name === account.login
-                    ? `@${account.login}`
-                    : `@${account.login} (${account.name})`}
-                </div>
-                <div className="endpoint">{getHTMLURL(account.endpoint)}</div>
-              </>
-            ) : (
-              <>
-                <div className="name">{account.name}</div>
-                <div className="login">@{account.login}</div>
-              </>
-            )}
+            <div className="name">{account.name}</div>
+            <div className="login">@{account.login}</div>
           </div>
         </div>
         <Button onClick={this.logout(account)} className={className}>

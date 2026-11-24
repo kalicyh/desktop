@@ -174,7 +174,7 @@ export class FavoritesSidebar extends React.Component<
       this.props.localRepositoryStateLookup,
       this.props.recentRepositories
     )
-    const sections: IFavoriteGroupSection[] = []
+    const sections = new Map<string, IFavoriteGroupSection>()
 
     for (const group of repositoryListGroups) {
       const favoriteGroupKey = getRepositoryListGroupFavoriteKey(
@@ -196,18 +196,23 @@ export class FavoritesSidebar extends React.Component<
         continue
       }
 
-      sections.push({
+      // Account-qualified repository sections share the existing favorite key.
+      const members = [
+        ...(sections.get(favoriteGroupKey)?.repositories ?? []),
+        ...repositories,
+      ]
+      sections.set(favoriteGroupKey, {
         id: `list-group:${favoriteGroupKey}`,
-        name: getRepositoryListGroupLabel(group.identifier),
+        name: getRepositoryListGroupLabel(group.identifier, false),
         group:
           group.identifier.kind === 'group' ? group.identifier.group : null,
         favoriteGroupKey,
-        repositories: this.sortRepositories(repositories),
-        memberCount: repositories.length,
+        repositories: this.sortRepositories(members),
+        memberCount: members.length,
       })
     }
 
-    return sections
+    return Array.from(sections.values())
   }
 
   private sortRepositories(repositories: ReadonlyArray<Repository>) {
@@ -359,7 +364,7 @@ export class FavoritesSidebar extends React.Component<
             groupName: group.name,
             memberCount: section.memberCount,
           }),
-      },
+      }
     )
 
     showContextualMenu(items)

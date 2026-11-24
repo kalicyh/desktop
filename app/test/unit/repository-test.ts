@@ -29,6 +29,8 @@ describe('Repository', () => {
         {},
         false,
         undefined,
+        undefined,
+        undefined,
         1
       )
 
@@ -45,6 +47,8 @@ describe('Repository', () => {
         null,
         {},
         false,
+        undefined,
+        undefined,
         undefined,
         null,
         true

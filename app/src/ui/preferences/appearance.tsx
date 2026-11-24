@@ -11,7 +11,6 @@ import { Select } from '../lib/select'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { encodePathAsUrl } from '../../lib/path'
 import { tabSizeDefault } from '../../lib/stores/app-store'
-import { enableFormattingPreferences } from '../../lib/feature-flag'
 import {
   DateFormat,
   TimeFormat,
@@ -33,6 +32,8 @@ interface IAppearanceProps {
   ) => void
   readonly selectedTabSize: number
   readonly onSelectedTabSizeChanged: (tabSize: number) => void
+  readonly alwaysShowWorktreeList: boolean
+  readonly onAlwaysShowWorktreeListChanged: (value: boolean) => void
   readonly selectedDateFormat: DateFormat
   readonly onSelectedDateFormatChanged: (format: DateFormat) => void
   readonly selectedTimeFormat: TimeFormat
@@ -149,6 +150,12 @@ export class Appearance extends React.Component<
     this.props.onPreferAbsoluteDatesChanged(event.currentTarget.checked)
   }
 
+  private onAlwaysShowWorktreeListChanged = (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    this.props.onAlwaysShowWorktreeListChanged(event.currentTarget.checked)
+  }
+
   public renderThemeSwatch = (theme: ApplicationTheme) => {
     const darkThemeImage = encodePathAsUrl(__dirname, 'static/ghd_dark.svg')
     const lightThemeImage = encodePathAsUrl(__dirname, 'static/ghd_light.svg')
@@ -222,10 +229,6 @@ export class Appearance extends React.Component<
   }
 
   private renderFormatting() {
-    if (!enableFormattingPreferences()) {
-      return null
-    }
-
     return (
       <div className="appearance-section formatting-section">
         <h2 id="formatting-heading">
@@ -313,16 +316,18 @@ export class Appearance extends React.Component<
     )
   }
 
-  private renderSelectedTabSize() {
+  private renderMiscellaneous() {
     const availableTabSizes: number[] = [1, 2, 3, 4, 5, 6, 8, 10, 12]
 
     return (
       <div className="appearance-section">
-        <h2 id="diff-heading">{t('preferences.appearance.diff.heading')}</h2>
+        <h2 id="miscellaneous-heading">
+          {t('preferences.appearance.miscellaneous')}
+        </h2>
 
         <Select
           value={this.state.selectedTabSize.toString()}
-          label={t('preferences.appearance.diff.tabSize')}
+          label={t('preferences.appearance.diff.tabSizeLabel')}
           onChange={this.onSelectedTabSizeChanged}
         >
           {availableTabSizes.map(n => (
@@ -335,6 +340,17 @@ export class Appearance extends React.Component<
             </option>
           ))}
         </Select>
+
+        <Checkbox
+          className="always-show-worktree-list"
+          label={t('preferences.appearance.alwaysShowWorktreeList')}
+          value={
+            this.props.alwaysShowWorktreeList
+              ? CheckboxValue.On
+              : CheckboxValue.Off
+          }
+          onChange={this.onAlwaysShowWorktreeListChanged}
+        />
       </div>
     )
   }
@@ -345,7 +361,7 @@ export class Appearance extends React.Component<
         {this.renderSelectedTheme()}
         {this.renderSelectedLanguage()}
         {this.renderFormatting()}
-        {this.renderSelectedTabSize()}
+        {this.renderMiscellaneous()}
       </DialogContent>
     )
   }

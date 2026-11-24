@@ -30,6 +30,9 @@ interface IAuthorHandleProps {
   /** Whether the input element has the focus */
   readonly isInputFocused: boolean
 
+  /** Whether the author may be removed. */
+  readonly readOnly: boolean
+
   /** Callback to invoke when the user presses a key */
   readonly onKeyDown: (
     index: number,
@@ -59,22 +62,25 @@ export class AuthorHandle extends React.Component<IAuthorHandleProps> {
   private readonly containerRef = createObservableRef<HTMLDivElement>()
 
   private getAriaLabel() {
-    const { author } = this.props
+    const { author, readOnly } = this.props
     if (isKnownAuthor(author)) {
-      return t('authorInput.authorAriaLabel', {
-        author: getFullTextForAuthor(author),
-      })
+      const label = getFullTextForAuthor(author)
+      return readOnly
+        ? label
+        : t('authorInput.authorAriaLabel', { author: label })
     }
 
-    const isError = author.state === 'error'
-    const stateAriaLabel = isError
-      ? t('authorInput.stateUserNotFound')
-      : t('authorInput.stateSearching')
-
-    return t('authorInput.pendingAuthorAriaLabel', {
-      username: author.username,
-      state: stateAriaLabel,
-    })
+    const state = t(
+      author.state === 'error'
+        ? 'authorInput.stateUserNotFound'
+        : 'authorInput.stateSearching'
+    )
+    return t(
+      readOnly
+        ? 'authorInput.pendingReadOnlyAuthorAriaLabel'
+        : 'authorInput.pendingAuthorAriaLabel',
+      { username: author.username, state }
+    )
   }
 
   private getClassName() {
@@ -133,6 +139,7 @@ export class AuthorHandle extends React.Component<IAuthorHandleProps> {
         role="option"
         aria-label={this.getAriaLabel()}
         aria-selected={isFocused}
+        aria-disabled={this.props.readOnly || undefined}
         onKeyDown={this.onKeyDown}
         onClick={this.onHandleClick}
         tabIndex={this.getTabIndex()}
@@ -149,7 +156,12 @@ export class AuthorHandle extends React.Component<IAuthorHandleProps> {
             symbol={author.state === 'error' ? octicons.stop : syncClockwise}
           />
         )}
-        <button onClick={this.onRemoveClick} tabIndex={-1}>
+        <button
+          onClick={this.onRemoveClick}
+          tabIndex={-1}
+          disabled={this.props.readOnly}
+          aria-label={`Remove ${getDisplayTextForAuthor(author)}`}
+        >
           <Octicon className="delete" symbol={octicons.x} />
         </button>
       </div>

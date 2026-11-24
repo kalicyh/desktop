@@ -309,7 +309,7 @@ export class TestNotifications extends React.Component<
         }
 
         this.props.notificationsDebugStore.simulatePullRequestReviewNotification(
-          this.props.repository.gitHubRepository,
+          this.props.repository,
           pullRequestNumber,
           review
         )
@@ -326,7 +326,7 @@ export class TestNotifications extends React.Component<
         const { comment, isIssueComment } = commentInfo
 
         this.props.notificationsDebugStore.simulatePullRequestCommentNotification(
-          this.props.repository.gitHubRepository,
+          this.props.repository,
           pullRequest,
           comment,
           isIssueComment

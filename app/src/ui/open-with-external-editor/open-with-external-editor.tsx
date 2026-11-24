@@ -10,7 +10,6 @@ import {
   TargetPathArgument,
 } from '../../lib/custom-integration'
 import { getAvailableEditors } from '../../lib/editors/lookup'
-import { enableCustomIntegration } from '../../lib/feature-flag'
 import { t } from '../../lib/i18n'
 
 const CustomIntegrationValue = 'other'
@@ -50,12 +49,11 @@ export class OpenWithExternalEditor extends React.Component<
     const availableEditors = editors.map(e => e.editor)
     const selectedEditor =
       availableEditors.length > 0 ? availableEditors[0] : null
-    const allowCustomIntegration = enableCustomIntegration()
 
     this.setState({
       availableEditors,
       selectedEditor,
-      useCustomEditor: availableEditors.length === 0 && allowCustomIntegration,
+      useCustomEditor: availableEditors.length === 0,
     })
   }
 
@@ -119,17 +117,15 @@ export class OpenWithExternalEditor extends React.Component<
             {n}
           </option>
         ))}
-        {enableCustomIntegration() && (
-          <option key={CustomIntegrationValue} value={CustomIntegrationValue}>
-            {t('openWithExternalEditor.configureCustomEditor')}
-          </option>
-        )}
+        <option key={CustomIntegrationValue} value={CustomIntegrationValue}>
+          {t('openWithExternalEditor.configureCustomEditor')}
+        </option>
       </Select>
     )
   }
 
   private renderCustomEditor() {
-    if (!this.state.useCustomEditor || !enableCustomIntegration()) {
+    if (!this.state.useCustomEditor) {
       return null
     }
 

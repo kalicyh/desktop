@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as Path from 'path'
 
 import { Dispatcher } from '../dispatcher'
+import { recordAssistedCommitMetric } from '../../lib/assisted-commit/metrics'
 import { IMenuItem } from '../../lib/menu-item'
 import { revealInFileManager } from '../../lib/app-shell'
 import { encodePathAsUrl } from '../../lib/path'
@@ -13,6 +14,12 @@ import {
 import { DiffSelectionType } from '../../models/diff'
 import { CommitIdentity } from '../../models/commit-identity'
 import { ICommitMessage } from '../../models/commit-message'
+import { CommitMode } from '../../models/commit-mode'
+import { ICopilotAssistedCommitRequest } from '../../models/copilot-assisted-commit'
+import {
+  AssistedCommitRunState,
+  isAssistedCommitRepositoryLocked,
+} from '../../models/assisted-commit-run'
 import {
   isRepositoryWithGitHubRepository,
   Repository,
@@ -36,7 +43,7 @@ import { ChangedFile } from './changed-file'
 import { IAutocompletionProvider } from '../autocompletion'
 import { showContextualMenu } from '../../lib/menu-item'
 import { arrayEquals } from '../../lib/equality'
-import { clipboard } from 'electron'
+import { writeClipboardText } from '../main-process-proxy'
 import { basename } from 'path'
 import { Commit, ICommitContext } from '../../models/commit'
 import {
@@ -175,6 +182,22 @@ interface IFilterChangesListProps {
    */
   readonly onRowClick?: (row: number, source: ClickSource) => void
   readonly commitMessage: ICommitMessage
+  readonly commitMode: CommitMode
+  readonly pushAfterCommit?: boolean
+
+  /** Provided only when a real Desktop-owned assisted commit executor is available. */
+  readonly onCreateCopilotAssistedCommits?: (
+    request: ICopilotAssistedCommitRequest
+  ) => void
+
+  /** Assisted operation progress, separate from manual message generation. */
+  readonly isCreatingCopilotAssistedCommits?: boolean
+  readonly repositoryMutationBlocked?: boolean
+
+  readonly assistedCommitState?: AssistedCommitRunState
+  readonly onPrepareCopilotAssistedCommitRequest?: (
+    request: ICopilotAssistedCommitRequest
+  ) => Promise<ICopilotAssistedCommitRequest>
 
   /** The autocompletion providers available to the repository. */
   readonly autocompletionProviders: ReadonlyArray<IAutocompletionProvider<any>>
@@ -404,7 +427,19 @@ export class FilterChangesList extends React.Component<
     }
   }
 
+  private get isSelectionDisabled(): boolean {
+    return (
+      this.props.isCommitting ||
+      this.props.repositoryMutationBlocked === true ||
+      (this.props.assistedCommitState !== undefined &&
+        isAssistedCommitRepositoryLocked(this.props.assistedCommitState))
+    )
+  }
+
   private onIncludeAllChanged = (event: React.FormEvent<HTMLInputElement>) => {
+    if (this.isSelectionDisabled || this.props.rebaseConflictState !== null) {
+      return
+    }
     const include = event.currentTarget.checked
     const filteredItemPaths = Array.from(
       this.state.filteredItems,
@@ -417,12 +452,7 @@ export class FilterChangesList extends React.Component<
     changeListItem: IChangesListItem,
     matches: IMatches
   ): JSX.Element | null => {
-    const {
-      rebaseConflictState,
-      isCommitting,
-      onIncludeChanged,
-      availableWidth,
-    } = this.props
+    const { rebaseConflictState, onIncludeChanged, availableWidth } = this.props
 
     const file = changeListItem.change
     const selection = file.selection.getSelectionType()
@@ -453,7 +483,9 @@ export class FilterChangesList extends React.Component<
       : includeAll
 
     const disableSelection =
-      isCommitting || rebaseConflictState !== null || isUncommittableSubmodule
+      this.isSelectionDisabled ||
+      rebaseConflictState !== null ||
+      isUncommittableSubmodule
 
     const checkboxTooltip = isUncommittableSubmodule
       ? t('changes.submodule.uncommittableTooltip')
@@ -536,7 +568,7 @@ export class FilterChangesList extends React.Component<
     event.preventDefault()
 
     // need to preserve the working directory state while dealing with conflicts
-    if (this.props.rebaseConflictState !== null || this.props.isCommitting) {
+    if (this.props.rebaseConflictState !== null || this.isSelectionDisabled) {
       return
     }
 
@@ -583,7 +615,7 @@ export class FilterChangesList extends React.Component<
       label: getCopyFilePathLabel(),
       action: () => {
         const fullPath = Path.join(this.props.repository.path, file.path)
-        clipboard.writeText(fullPath)
+        writeClipboardText(fullPath)
       },
     }
   }
@@ -593,7 +625,7 @@ export class FilterChangesList extends React.Component<
   ): IMenuItem => {
     return {
       label: getCopyRelativeFilePathLabel(),
-      action: () => clipboard.writeText(Path.normalize(file.path)),
+      action: () => writeClipboardText(Path.normalize(file.path)),
     }
   }
 
@@ -606,7 +638,7 @@ export class FilterChangesList extends React.Component<
         const fullPaths = files.map(file =>
           Path.join(this.props.repository.path, file.path)
         )
-        clipboard.writeText(fullPaths.join(EOL))
+        writeClipboardText(fullPaths.join(EOL))
       },
     }
   }
@@ -618,7 +650,7 @@ export class FilterChangesList extends React.Component<
       label: getCopySelectedRelativePathsLabel(),
       action: () => {
         const paths = files.map(file => Path.normalize(file.path))
-        clipboard.writeText(paths.join(EOL))
+        writeClipboardText(paths.join(EOL))
       },
     }
   }
@@ -830,7 +862,7 @@ export class FilterChangesList extends React.Component<
   ) => {
     const file = item.change
 
-    if (this.props.isCommitting) {
+    if (this.isSelectionDisabled) {
       return
     }
 
@@ -956,6 +988,12 @@ export class FilterChangesList extends React.Component<
         repository={repository}
         repositoryAccount={repositoryAccount}
         commitMessage={this.props.commitMessage}
+        commitMode={this.props.commitMode}
+        onCommitModeChanged={this.onCommitModeChanged}
+        onCommitModeDropdownOpened={this.onCommitModeDropdownOpened}
+        pushAfterCommit={this.props.pushAfterCommit}
+        canPushAfterCommit={this.props.conflictState === null}
+        onPushAfterCommitChanged={this.onPushAfterCommitChanged}
         focusCommitMessage={this.props.focusCommitMessage}
         autocompletionProviders={this.props.autocompletionProviders}
         isCommitting={isCommitting}
@@ -1006,6 +1044,25 @@ export class FilterChangesList extends React.Component<
         allowEmptyCommit={this.props.allowEmptyCommit}
         showAllowEmptyCommitOption={true}
         onUpdateCommitOptions={this.props.onUpdateCommitOptions}
+        onCreateCopilotAssistedCommits={
+          this.props.onCreateCopilotAssistedCommits
+        }
+        isCreatingCopilotAssistedCommits={
+          this.props.isCreatingCopilotAssistedCommits
+        }
+        repositoryMutationBlocked={this.props.repositoryMutationBlocked}
+        assistedCommitState={this.props.assistedCommitState}
+        onPrepareCopilotAssistedCommitRequest={
+          this.props.onPrepareCopilotAssistedCommitRequest
+        }
+        onCancelCopilotAssistedCommits={this.onCancelCopilotAssistedCommits}
+        onRetryCopilotAssistedCommitRecovery={
+          this.onRetryCopilotAssistedCommitRecovery
+        }
+        onDismissCopilotAssistedCommitError={
+          this.onDismissCopilotAssistedCommitError
+        }
+        onAssistedCommitErrorDetails={this.onAssistedCommitErrorDetails}
       />
     )
   }
@@ -1039,6 +1096,32 @@ export class FilterChangesList extends React.Component<
   private onPersistCommitMessage = (message: ICommitMessage) =>
     this.props.dispatcher.setCommitMessage(this.props.repository, message)
 
+  private onCommitModeChanged = (commitMode: CommitMode) => {
+    if (this.isSelectionDisabled) {
+      return
+    }
+    this.props.dispatcher.setCommitMode(this.props.repository, commitMode)
+    recordAssistedCommitMetric(
+      this.props.dispatcher.incrementMetric,
+      commitMode === 'copilot'
+        ? 'commitModeSwitchedToCopilotCount'
+        : 'commitModeSwitchedToManualCount'
+    )
+  }
+
+  private onCommitModeDropdownOpened = () =>
+    recordAssistedCommitMetric(
+      this.props.dispatcher.incrementMetric,
+      'commitModeDropdownOpenedCount'
+    )
+
+  private onPushAfterCommitChanged = (enabled: boolean) => {
+    if (this.isSelectionDisabled) {
+      return
+    }
+    this.props.dispatcher.setPushAfterCommit(this.props.repository, enabled)
+  }
+
   private onGenerateCommitMessage = (
     filesSelected: ReadonlyArray<WorkingDirectoryFileChange>,
     mustOverrideExistingMessage: boolean
@@ -1060,6 +1143,47 @@ export class FilterChangesList extends React.Component<
 
   private onCancelGenerateCommitMessage = () => {
     this.props.dispatcher.cancelGenerateCommitMessage(this.props.repository)
+  }
+
+  private onCancelCopilotAssistedCommits = () => {
+    const state = this.props.assistedCommitState
+    if (state !== undefined && state.kind !== 'idle') {
+      this.props.dispatcher.cancelCopilotAssistedCommits(
+        this.props.repository,
+        state.runId
+      )
+    }
+  }
+
+  private onRetryCopilotAssistedCommitRecovery = () => {
+    const state = this.props.assistedCommitState
+    if (state?.kind === 'error') {
+      this.props.dispatcher.retryCopilotAssistedCommitRecovery(
+        this.props.repository,
+        state.runId
+      )
+    }
+  }
+
+  private onDismissCopilotAssistedCommitError = () => {
+    const state = this.props.assistedCommitState
+    if (state?.kind === 'error') {
+      this.props.dispatcher.dismissCopilotAssistedCommitError(
+        this.props.repository,
+        state.runId
+      )
+    }
+  }
+
+  private onAssistedCommitErrorDetails = () => {
+    const state = this.props.assistedCommitState
+    if (state?.kind === 'error') {
+      this.props.dispatcher.showPopup({
+        type: PopupType.Error,
+        error: state.error,
+        showCauses: true,
+      })
+    }
   }
 
   private onShowPopup = (p: Popup) => this.props.dispatcher.showPopup(p)
@@ -1129,7 +1253,7 @@ export class FilterChangesList extends React.Component<
     // The commit is already in-flight but this check prevents the
     // user from changing selection.
     if (
-      this.props.isCommitting &&
+      this.isSelectionDisabled &&
       (event.key === 'Enter' || event.key === ' ')
     ) {
       event.preventDefault()
@@ -1235,7 +1359,7 @@ export class FilterChangesList extends React.Component<
   }
 
   private renderCheckBoxRow = () => {
-    const { workingDirectory, rebaseConflictState, isCommitting } = this.props
+    const { workingDirectory, rebaseConflictState } = this.props
     const { files } = workingDirectory
 
     const visibleFiles = this.state.filteredItems.size
@@ -1247,7 +1371,9 @@ export class FilterChangesList extends React.Component<
     )
 
     const disableAllCheckbox =
-      files.length === 0 || isCommitting || rebaseConflictState !== null
+      files.length === 0 ||
+      this.isSelectionDisabled ||
+      rebaseConflictState !== null
 
     const changedFileCount = this.getChangedFileCountText(files.length)
     const checkAllLabel =

@@ -4,7 +4,6 @@ import { MenuEvent } from './menu-event'
 import { truncateWithEllipsis } from '../../lib/truncate-with-ellipsis'
 import { getLogDirectoryPath } from '../../lib/logging/get-log-path'
 import { UNSAFE_openDirectory } from '../shell'
-import { enableWorktreeSupport } from '../../lib/feature-flag'
 import { MenuLabelsEvent } from '../../models/menu-labels'
 import {
   ApplicationLanguage,
@@ -218,7 +217,6 @@ export function buildDefaultMenuTemplate({
         id: 'show-worktrees-list',
         accelerator: 'CmdOrCtrl+Alt+W',
         click: emit('show-worktrees'),
-        visible: enableWorktreeSupport(),
       },
       separator,
       {
@@ -381,6 +379,14 @@ export function buildDefaultMenuTemplate({
         click: emit('open-external-editor'),
       },
       {
+        label: __DARWIN__
+          ? 'Open in GitHub Copilot'
+          : 'Open in GitHub &Copilot',
+        id: 'open-in-copilot-app',
+        accelerator: 'CmdOrCtrl+Shift+J',
+        click: emit('open-in-copilot-app'),
+      },
+      {
         label: translate('menu.openWith', currentLanguage),
         id: 'open-with-external-editor',
         accelerator: 'CmdOrCtrl+Shift+Alt+A',
@@ -399,9 +405,8 @@ export function buildDefaultMenuTemplate({
         label: translate('menu.newWorktree', currentLanguage),
         click: emit('create-worktree'),
         accelerator: 'CmdOrCtrl+Shift+W',
-        visible: enableWorktreeSupport(),
       },
-      ...(enableWorktreeSupport() ? [separator] : []),
+      separator,
       {
         label: translate('menu.repositorySettings', currentLanguage),
         id: 'show-repository-settings',
@@ -665,6 +670,9 @@ export function emit(name: MenuEvent): ClickHandler {
         ? focusedWindow
         : BrowserWindow.getAllWindows()[0]
     if (window !== undefined) {
+      if (!window.isVisible()) {
+        window.show()
+      }
       ipcWebContents.send(window.webContents, 'menu-event', name)
     }
   }

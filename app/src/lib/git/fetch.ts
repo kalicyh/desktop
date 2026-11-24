@@ -9,13 +9,14 @@ import { getUseGhForRepository } from '../use-gh'
 
 async function getFetchArgs(
   remote: string,
-  progressCallback?: (progress: IFetchProgress) => void
+  progressCallback: ((progress: IFetchProgress) => void) | undefined
 ) {
   return [
     'fetch',
     ...(progressCallback ? ['--progress'] : []),
     '--prune',
     '--recurse-submodules=on-demand',
+    '--',
     remote,
   ]
 }
@@ -98,15 +99,21 @@ export async function fetchRefspec(
   remote: IRemote,
   refspec: string
 ): Promise<void> {
-  await git(['fetch', remote.name, refspec], repository.path, 'fetchRefspec', {
-    successExitCodes: new Set([0, 128]),
-    env: await envForRemoteOperation(
-      remote.url,
-      getUseGhForRepository(repository)
-    ),
-  })
+  await git(
+    ['fetch', '--', remote.name, refspec],
+    repository.path,
+    'fetchRefspec',
+    {
+      successExitCodes: new Set([0, 128]),
+      env: await envForRemoteOperation(
+        remote.url,
+        getUseGhForRepository(repository)
+      ),
+    }
+  )
 }
 
+/** Fast-forward tracking branches. */
 export async function fastForwardBranches(
   repository: Repository,
   branches: ReadonlyArray<ITrackingBranch>

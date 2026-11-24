@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Dialog, DialogContent, DialogFooter } from '../../dialog'
 import { Dispatcher } from '../../dispatcher'
+import { sendNonFatalException } from '../../../lib/helpers/non-fatal-exception'
 import { Repository } from '../../../models/repository'
 import {
   WorkingDirectoryStatus,
@@ -21,8 +22,7 @@ import {
 import { ManualConflictResolution } from '../../../models/manual-conflict-resolution'
 import { OkCancelButtonGroup } from '../../dialog/ok-cancel-button-group'
 import { DialogSuccess } from '../../dialog/success'
-import { enableCopilotConflictResolution } from '../../../lib/feature-flag'
-import { getAccountForCopilotConflictResolution } from '../../../lib/get-account-for-repository'
+import { getAccountForCopilot } from '../../../lib/get-account-for-repository'
 import { Account } from '../../../models/account'
 import { Octicon } from '../../octicons'
 import * as octicons from '../../octicons/octicons.generated'
@@ -130,7 +130,14 @@ export class ConflictsDialog extends React.Component<
    */
   private onSubmit = async () => {
     this.setState({ isCommitting: true })
-    await this.props.onSubmit()
+    try {
+      await this.props.onSubmit()
+    } catch (e) {
+      this.setState({ isCommitting: false })
+      const error = e instanceof Error ? e : new Error(String(e))
+      log.error('ConflictsDialog: onSubmit failed', error)
+      sendNonFatalException('multiCommitOperation', error)
+    }
   }
 
   /**
@@ -140,8 +147,15 @@ export class ConflictsDialog extends React.Component<
     e.preventDefault()
 
     this.setState({ isAborting: true })
-    await this.props.onAbort()
-    this.setState({ isAborting: false })
+    try {
+      await this.props.onAbort()
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e))
+      log.error('ConflictsDialog: onAbort failed', error)
+      sendNonFatalException('multiCommitOperation', error)
+    } finally {
+      this.setState({ isAborting: false })
+    }
   }
 
   private openThisRepositoryInShell = () =>
@@ -254,10 +268,11 @@ export class ConflictsDialog extends React.Component<
    * Renders the "Resolve with Copilot" button when the feature is available.
    * Only shown when:
    * - The onResolveWithCopilot callback is provided (operation supports it)
-   * - The feature flag is enabled
    * - There is at least one signed-in account with Copilot for Desktop
    *   enabled (covers "no Copilot subscription" and "disabled by org policy")
    * - There are still conflicted files to resolve
+   * - At least one conflicted file can be handled by Copilot (has text
+   *   conflict markers or is a delete-vs-modify conflict)
    */
   private renderCopilotButton(
     conflictedFilesCount: number
@@ -266,9 +281,8 @@ export class ConflictsDialog extends React.Component<
 
     if (
       onResolveWithCopilot === undefined ||
-      !enableCopilotConflictResolution() ||
       conflictedFilesCount === 0 ||
-      getAccountForCopilotConflictResolution(accounts, repository) === undefined
+      getAccountForCopilot(accounts, repository) === undefined
     ) {
       return null
     }

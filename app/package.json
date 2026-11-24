@@ -3,7 +3,7 @@
   "productName": "GitHub Desktop",
   "bundleID": "com.github.GitHubClient",
   "companyName": "GitHub, Inc.",
-  "version": "3.5.13-beta1",
+  "version": "3.7.0",
   "main": "./main.js",
   "repository": {
     "type": "git",
@@ -16,11 +16,14 @@
     "url": "https://desktop.github.com/"
   },
   "license": "MIT",
+  "allowScripts": {
+    "koffi": false
+  },
   "dependencies": {
-    "@floating-ui/core": "1.7.5",
+    "@floating-ui/core": "1.6.9",
     "@floating-ui/react-dom": "^2.1.2",
     "@github/alive-client": "^1.2.0",
-    "@github/copilot-sdk": "^1.0.0",
+    "@github/copilot-sdk": "1.0.34",
     "@xterm/xterm": "^5.5.0",
     "app-path": "^3.3.0",
     "byline": "^5.0.0",
@@ -35,12 +38,12 @@
     "deep-equal": "^1.0.1",
     "desktop-notifications": "file:../vendor/desktop-notifications",
     "desktop-trampoline": "file:../vendor/desktop-trampoline",
-    "dexie": "^3.2.3",
-    "dompurify": "^3.4.0",
-    "dugite": "^3.2.2",
+    "dexie": "^4.4.6",
+    "dompurify": "^3.4.17",
+    "dugite": "^3.3.3",
     "electron-window-state": "^5.0.3",
     "event-kit": "^2.0.0",
-    "focus-trap": "6.9.4",
+    "focus-trap": "6.1.0",
     "focus-trap-react": "^8.1.0",
     "fs-admin": "^0.19.0",
     "fuzzaldrin-plus": "^0.6.0",
@@ -74,7 +77,7 @@
     "which": "^5.0.0",
     "windows-argv-parser": "file:../vendor/windows-argv-parser",
     "winston": "^3.6.0",
-    "winston-transport": "4.9.0"
+    "winston-transport": "4.5.0"
   },
   "devDependencies": {
     "@testing-library/dom": "8.20.1",
