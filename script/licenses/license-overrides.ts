@@ -1,19 +1,27 @@
 import { LicenseLookup } from 'legal-eagle'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { dirname, join } from 'path'
 
 export const copilotCLILicenseName = 'GitHub-CLI-1.0.0'
 
-const copilotCLIPkgPath = join(
-  __dirname,
-  '..',
-  '..',
-  'app',
-  'node_modules',
-  '@github',
-  'copilot',
-  'package.json'
-)
+const appRoot = join(__dirname, '..', '..', 'app')
+const copilotCLIPkgPath = [
+  join(appRoot, 'node_modules', '@github', 'copilot', 'package.json'),
+  join(
+    dirname(require.resolve('@github/copilot-sdk', { paths: [appRoot] })),
+    '..',
+    '..',
+    '..',
+    '..',
+    '@github',
+    'copilot',
+    'package.json'
+  ),
+].find(existsSync)
+
+if (copilotCLIPkgPath === undefined) {
+  throw new Error('Unable to find @github/copilot package.json')
+}
 const copilotCLIVersion = JSON.parse(readFileSync(copilotCLIPkgPath, 'utf8'))
   .version as string
 const copilotCLILicense = `GitHub Copilot CLI License

@@ -44,6 +44,7 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  realpathSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -324,7 +325,10 @@ function copyDependencies() {
   })
 
   console.log('  Installing dependencies via pnpm…')
-  cp.execSync('pnpm install --prod', { cwd: outRoot, env: process.env })
+  cp.execSync('pnpm install --prod --ignore-workspace', {
+    cwd: outRoot,
+    env: { ...process.env, CI: process.env.CI ?? 'true' },
+  })
 
   console.log('  Copying desktop-askpass-trampoline…')
   const trampolineSource = path.resolve(
@@ -347,13 +351,37 @@ function copyDependencies() {
 
   if (isNonProductionRelease) {
     console.log('  Copying copilot…')
-    const copilotPkgDir = path.resolve(
-      projectRoot,
-      `app/node_modules/@github/copilot`
-    )
+    const appRoot = path.join(projectRoot, 'app')
+    const copilotMetaPkgDir = [
+      path.join(appRoot, 'node_modules', '@github', 'copilot'),
+      path.join(
+        path.dirname(
+          require.resolve('@github/copilot-sdk', { paths: [appRoot] })
+        ),
+        '..',
+        '..',
+        '..',
+        '..',
+        '@github',
+        'copilot'
+      ),
+    ].find(existsSync)
+    const copilotPlatformPackage = `copilot-${process.platform}-${getDistArchitecture()}`
+    const copilotPkgDir =
+      copilotMetaPkgDir === undefined
+        ? undefined
+        : path.join(
+            path.dirname(realpathSync(copilotMetaPkgDir)),
+            copilotPlatformPackage
+          )
+
+    if (copilotPkgDir === undefined || !existsSync(copilotPkgDir)) {
+      throw new Error('Unable to find @github/copilot')
+    }
 
     const copilotDestination = path.resolve(outRoot, 'copilot')
-    cpSync(copilotPkgDir, copilotDestination, {
+    rmSync(copilotDestination, { recursive: true, force: true })
+    cpSync(realpathSync(copilotPkgDir), copilotDestination, {
       recursive: true,
     })
 
